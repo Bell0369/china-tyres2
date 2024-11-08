@@ -192,12 +192,12 @@ export function exportBusinessApi(params) {
 }
 
 // 導出訂單全流程
-export function exportOrderCompleteFlowSchemeApi(params) {
+export function exportOrderCompleteFlowSchemeApi(data) {
   return request({
     url: "report/exportOrderCompleteFlowScheme",
     method: "post",
     responseType: "blob",
-    params
+    data
   })
 }
 
@@ -271,12 +271,12 @@ export function exportAllApi(params) {
 }
 
 // 導出訂單總覽
-export function exportOrderGeneralViewApi(params) {
+export function exportOrderGeneralViewApi(data) {
   return request({
     url: "report/exportOrderGeneralView",
     method: "post",
     responseType: "blob",
-    params
+    data
   })
 }
 

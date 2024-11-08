@@ -47,10 +47,10 @@ const exportData = (Type) => {
 
   switch (Type) {
     case 1:
-      exportFile(exportOrderUnscheduledProductionApi, loadingBtn1, "銷售單價數量匯總")
+      exportFile(exportSalesUnitPriceQuantitySummaryApi, loadingBtn1, "銷售單價數量匯總")
       break
     case 2:
-      exportFile(exportSalesUnitPriceQuantitySummaryApi, loadingBtn2, "未排產訂單數量匯總")
+      exportFile(exportOrderUnscheduledProductionApi, loadingBtn2, "未排產訂單數量匯總")
       break
     default:
       break
@@ -81,10 +81,20 @@ const exportFile = (api, loadingRef, name) => {
     tyre_type: FormData.tyre_type || undefined
   })
     .then((data) => {
-      const downloadLink = document.createElement("a")
-      downloadLink.href = URL.createObjectURL(data)
-      downloadLink.download = `${name}${FormData.factory_code.name}.${FormattingDates}.xlsx`
-      downloadLink.click()
+      if (data.type === "application/json") {
+        const reader = new FileReader()
+        reader.onload = () => {
+          const text = reader.result
+          const jsonResponse = JSON.parse(text)
+          ElMessage.error(jsonResponse.message)
+        }
+        reader.readAsText(data)
+      } else {
+        const downloadLink = document.createElement("a")
+        downloadLink.href = URL.createObjectURL(data)
+        downloadLink.download = `${name}${FormData.factory_code.name}.${FormattingDates}.xlsx`
+        downloadLink.click()
+      }
     })
     .finally(() => {
       setTimeout(() => {

@@ -53,10 +53,20 @@ const exportFile = (api, loadingRef, name) => {
     id: order_no.value.id
   })
     .then((data) => {
-      const downloadLink = document.createElement("a")
-      downloadLink.href = URL.createObjectURL(data)
-      downloadLink.download = `${name}${order_no.value.order_no}.xlsx`
-      downloadLink.click()
+      if (data.type === "application/json") {
+        const reader = new FileReader()
+        reader.onload = () => {
+          const text = reader.result
+          const jsonResponse = JSON.parse(text)
+          ElMessage.error(jsonResponse.message)
+        }
+        reader.readAsText(data)
+      } else {
+        const downloadLink = document.createElement("a")
+        downloadLink.href = URL.createObjectURL(data)
+        downloadLink.download = `${name}${order_no.value.order_no}.xlsx`
+        downloadLink.click()
+      }
     })
     .finally(() => {
       setTimeout(() => {

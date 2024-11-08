@@ -50,13 +50,23 @@ const exportFile = (api, loadingRef, name) => {
   api({
     start_date: monthrangeData.value[0],
     end_date: monthrangeData.value[1],
-    client_id: clientItem.value.client_id
+    client_id: clientItem.value.id
   })
     .then((data) => {
-      const downloadLink = document.createElement("a")
-      downloadLink.href = URL.createObjectURL(data)
-      downloadLink.download = `${name}${clientItem.value.client_code}.${FormattingDates}.xlsx`
-      downloadLink.click()
+      if (data.type === "application/json") {
+        const reader = new FileReader()
+        reader.onload = () => {
+          const text = reader.result
+          const jsonResponse = JSON.parse(text)
+          ElMessage.error(jsonResponse.message)
+        }
+        reader.readAsText(data)
+      } else {
+        const downloadLink = document.createElement("a")
+        downloadLink.href = URL.createObjectURL(data)
+        downloadLink.download = `${name}${clientItem.value.client_code}.${FormattingDates}.xlsx`
+        downloadLink.click()
+      }
     })
     .finally(() => {
       setTimeout(() => {

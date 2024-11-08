@@ -70,10 +70,20 @@ const exportFile = (api, loadingRef, name) => {
   loadingRef.value = true
   api({ id: inv_no.value.id })
     .then((data) => {
-      const downloadLink = document.createElement("a")
-      downloadLink.href = URL.createObjectURL(data)
-      downloadLink.download = `${name}.${inv_no.value.inv_no}.xlsx`
-      downloadLink.click()
+      if (data.type === "application/json") {
+        const reader = new FileReader()
+        reader.onload = () => {
+          const text = reader.result
+          const jsonResponse = JSON.parse(text)
+          ElMessage.error(jsonResponse.message)
+        }
+        reader.readAsText(data)
+      } else {
+        const downloadLink = document.createElement("a")
+        downloadLink.href = URL.createObjectURL(data)
+        downloadLink.download = `${name}.${inv_no.value.inv_no}.xlsx`
+        downloadLink.click()
+      }
     })
     .finally(() => {
       setTimeout(() => {
