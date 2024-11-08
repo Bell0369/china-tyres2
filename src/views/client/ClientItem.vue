@@ -1,16 +1,20 @@
 <script setup>
 import { ref, reactive, onMounted, watch } from "vue"
-import { Tickets, Delete } from "@element-plus/icons-vue"
+import { Delete } from "@element-plus/icons-vue"
 import { ElMessage } from "element-plus"
 import { useRoute } from "vue-router"
 import ClientProduct from "./ClientProduct.vue"
-import { Dialog } from "@/components/Dialog"
-import { getUserListApi, updateClientListApi, viewClientShowApi } from "@/api/users"
+// import { Dialog } from "@/components/Dialog"
+import { updateClientListApi, viewClientShowApi } from "@/api/users"
 import { useeDeliverTypeSelect, usePayMentSelect, useBrandSelect } from "@/hooks/useSelectOption"
 import AddressList from "@/views/componrnts/address/AddressList.vue"
-import PrepayMents from "@/views/componrnts/prepayments/PrepayMents.vue"
+// import PrepayMents from "@/views/componrnts/prepayments/PrepayMents.vue"
 import { validateNumberMin, validateNumberMinMax } from "@/utils/validate"
 import { useFactorySelect } from "@/hooks/useFactorySelect"
+import { useUserSelect } from "@/hooks/useUserSelect"
+import { useUserStore } from "@/store/modules/user"
+
+const { userinfo } = useUserStore()
 
 defineOptions({
   name: "ClientItem"
@@ -24,31 +28,14 @@ const { brandOptions } = useBrandSelect()
 //工厂
 const { loadFactory, optionsFactory, loadFactoryData } = useFactorySelect()
 
+// 員工
+const { loadUser, optionsUser, loadUserData } = useUserSelect()
+
 const { eDeliverTypeOptions } = useeDeliverTypeSelect()
 
 const { PayMentOptions } = usePayMentSelect()
 
-// 員工列表
-const loading2 = ref(false)
-const userOptions = ref([])
-const remoteMethod = (query) => {
-  loading2.value = true
-  getUserListApi({
-    keyword: query || undefined
-  })
-    .then(({ data }) => {
-      const list = data.data
-      userOptions.value = list
-    })
-    .catch(() => {
-      userOptions.value = []
-    })
-    .finally(() => {
-      loading2.value = false
-    })
-}
-
-const dialogVisible = ref(false)
+// const dialogVisible = ref(false)
 
 const loading = ref(false)
 const ruleFormRef = ref()
@@ -56,6 +43,7 @@ const ruleForm = reactive({
   name: "",
   client_encod: "",
   credit: undefined,
+  primitive_price: "",
   payment_terms_id: "",
   deliver_type: 1,
   commission_ratio: undefined,
@@ -70,7 +58,10 @@ const ruleForm = reactive({
       brand_id: "",
       factory_id: ""
     }
-  ]
+  ],
+  inv_rise_one: "",
+  inv_rise_two: "",
+  inv_rise_three: ""
 })
 
 const rules = reactive({
@@ -107,6 +98,7 @@ onMounted(() => {
 
 // 基本信息
 const isProduct = ref(null)
+const isDeldo = ref(false)
 const getClientShow = () => {
   loading.value = true
   viewClientShowApi({
@@ -118,21 +110,30 @@ const getClientShow = () => {
     datas.deliver_type = parseInt(datas.deliver_type)
 
     // 員工
+    const seenIds1 = new Set()
+    const seenIds2 = new Set()
     datas.client_auth_flow_join.forEach((item) => {
-      userOptions.value.push({
-        id: item.user_id,
-        username: item.user_name
-      })
-      optionsFactory.value.push({
-        id: item.factory_id,
-        name: item.factory_name
-      })
+      if (!seenIds1.has(item.user_id)) {
+        optionsUser.value.push({
+          id: item.user_id,
+          username: item.user_name
+        })
+        seenIds1.add(item.user_id)
+      }
+      if (!seenIds2.has(item.factory_id)) {
+        optionsFactory.value.push({
+          id: item.factory_id,
+          name: item.factory_name
+        })
+        seenIds2.add(item.factory_id)
+      }
     })
 
     Object.assign(ruleForm, datas)
     loading.value = false
 
     isProduct.value = datas.client_contact_id
+    isDeldo.value = datas.client_encod.toUpperCase() === "DELDO" ? true : false
   })
 }
 
@@ -166,9 +167,9 @@ const updataContact = (value) => {
   ruleForm.client_contact_id = value
 }
 
-const handleEditPayment = (value) => {
-  ruleForm.advance_payment = value
-}
+// const handleEditPayment = (value) => {
+//   ruleForm.advance_payment = value
+// }
 </script>
 
 <template>
@@ -222,6 +223,15 @@ const handleEditPayment = (value) => {
             </el-form-item>
           </el-col>
           <el-col :span="6">
+            <el-form-item label="初始金額">
+              <el-input
+                v-model="ruleForm.primitive_price"
+                type="number"
+                @input="ruleForm.primitive_price = validateNumberMin(ruleForm.primitive_price)"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="6">
             <el-form-item label="佣金比例">
               <el-input
                 v-model="ruleForm.commission_ratio"
@@ -256,7 +266,7 @@ const handleEditPayment = (value) => {
               </el-radio-group>
             </el-form-item>
           </el-col>
-          <el-col :span="6">
+          <!-- <el-col :span="6">
             <el-form-item label="預付款">
               <span class="color-red">{{ ruleForm.advance_payment || 0 }}</span>
               <Tickets
@@ -265,9 +275,32 @@ const handleEditPayment = (value) => {
                 @click="dialogVisible = true"
               />
             </el-form-item>
+          </el-col> -->
+          <!-- 發票抬頭 -->
+          <el-col :span="24">
+            <div class="pb">
+              <el-text tag="b">發票抬頭</el-text>
+            </div>
+            <el-row :gutter="20">
+              <el-col :span="8">
+                <el-form-item label="發票1">
+                  <el-input v-model="ruleForm.inv_rise_one" />
+                </el-form-item>
+              </el-col>
+              <el-col :span="8">
+                <el-form-item label="發票2">
+                  <el-input v-model="ruleForm.inv_rise_two" />
+                </el-form-item>
+              </el-col>
+              <el-col :span="8">
+                <el-form-item label="發票3">
+                  <el-input v-model="ruleForm.inv_rise_three" />
+                </el-form-item>
+              </el-col>
+            </el-row>
           </el-col>
           <!-- 员工管理 -->
-          <el-col :span="24">
+          <el-col :span="24" v-if="userinfo.role_name === '管理员'">
             <div class="flex justify-between pb">
               <el-text tag="b">管理員工</el-text>
               <el-button type="success" @click="addDomain">添加</el-button>
@@ -288,22 +321,38 @@ const handleEditPayment = (value) => {
                     filterable
                     remote
                     remote-show-suffix
-                    :remote-method="remoteMethod"
-                    :loading="loading"
+                    :remote-method="loadUserData"
+                    :loading="loadUser"
                   >
-                    <el-option v-for="item in userOptions" :key="item.id" :label="item.username" :value="item.id" />
+                    <el-option v-for="item in optionsUser" :key="item.id" :label="item.username" :value="item.id" />
                   </el-select>
                 </el-form-item>
               </el-col>
               <el-col :span="6">
-                <el-form-item label="品牌">
+                <el-form-item
+                  label="品牌"
+                  :prop="`client_auth_flow_join[${index}].brand_id`"
+                  :rules="{
+                    required: true,
+                    message: '請選擇品牌',
+                    trigger: 'blur'
+                  }"
+                >
                   <el-select v-model="domain.brand_id">
                     <el-option v-for="item in brandOptions" :key="item.id" :label="item.name" :value="item.id" />
                   </el-select>
                 </el-form-item>
               </el-col>
               <el-col :span="6">
-                <el-form-item label="工厂">
+                <el-form-item
+                  label="工厂"
+                  :prop="`client_auth_flow_join[${index}].factory_id`"
+                  :rules="{
+                    required: true,
+                    message: '請選擇工厂',
+                    trigger: 'blur'
+                  }"
+                >
                   <el-select
                     v-model="domain.factory_id"
                     filterable
@@ -334,12 +383,12 @@ const handleEditPayment = (value) => {
     />
 
     <el-card shadow="never">
-      <client-product :isProduct="isProduct" />
+      <client-product :isProduct="isProduct" :isDeldo="isDeldo" />
     </el-card>
 
-    <Dialog v-model="dialogVisible" title="預付款">
+    <!-- <Dialog v-model="dialogVisible" title="預付款">
       <prepay-ments isType="client" @handle-editPayment="handleEditPayment" :id="route.query.id" />
-    </Dialog>
+    </Dialog> -->
   </div>
 </template>
 

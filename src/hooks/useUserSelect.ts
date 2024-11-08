@@ -11,40 +11,45 @@ interface SelectOption {
   disabled?: boolean
 }
 
-export function useFactorySelect() {
-  const loadFactory = ref<boolean>(false)
-  const optionsFactory = ref<SelectOption[]>([])
+export function useUserSelect() {
+  const loadUser = ref<boolean>(false)
+  const optionsUser = ref<SelectOption[]>([])
   const keyword = ref<string>("")
 
-  const loadFactoryData = (query: string) => {
-    loadFactory.value = true
+  const loadUserData = (query: string) => {
+    loadUser.value = true
     keyword.value = query
-    getUserListThrottled()
+
+    if (query) {
+      getUserListThrottled()
+    } else {
+      remoteMethod()
+    }
   }
 
   /** 调用接口获取数据 */
   const remoteMethod = () => {
     getOptionsApi({
-      type: 3,
+      type: 5,
       keyword: keyword.value
     })
       .then(({ data }) => {
-        optionsFactory.value = data
+        optionsUser.value = data
       })
       .catch(() => {
-        optionsFactory.value = []
+        optionsUser.value = []
       })
       .finally(() => {
-        loadFactory.value = false
+        loadUser.value = false
       })
   }
 
-  // 节流
+  // 节流，3秒调起一次
   const getUserListThrottled = debounce(remoteMethod, 500)
 
   return {
-    loadFactory,
-    optionsFactory,
-    loadFactoryData
+    loadUser,
+    optionsUser,
+    loadUserData
   }
 }

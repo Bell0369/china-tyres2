@@ -10,6 +10,16 @@ export function getOrderListApi(params) {
   })
 }
 
+// 導出
+export function exportPIApi(params) {
+  return request({
+    url: "order/exportPI",
+    method: "post",
+    responseType: "blob",
+    params
+  })
+}
+
 // 刪
 export function deleteOrderApi(data) {
   return request({
@@ -356,5 +366,59 @@ export function getFactoryAdvancePaymentApi(params) {
     url: "receipt/factoryAdvancePayment",
     method: "get",
     params
+  })
+}
+
+// 客戶初始金額記錄列表
+export function getClientPrimitivePriceListApi(params) {
+  return request({
+    url: "receipt/clientPrimitivePriceList",
+    method: "get",
+    params
+  })
+}
+
+// 添加客戶初始金額記錄
+export function AddClientPrimitivePriceApi(data) {
+  return request({
+    url: "receipt/clientPrimitivePrice",
+    method: "post",
+    data
+  })
+}
+
+// 財務確認客戶應收
+export function AffirmClientReceivableApi(data) {
+  return request({
+    url: "receipt/affirmReceivable",
+    method: "post",
+    data
+  })
+}
+
+// 工廠初始金額記錄列表
+export function getFactoryPrimitivePriceListApi(params) {
+  return request({
+    url: "receipt/factoryPrimitivePriceList",
+    method: "get",
+    params
+  })
+}
+
+// 添加工廠初始金額記錄
+export function AddFactoryPrimitivePriceApi(data) {
+  return request({
+    url: "receipt/factoryPrimitivePrice",
+    method: "post",
+    data
+  })
+}
+
+// 財務確認工廠應付
+export function AffirmFactoryReceivableApi(data) {
+  return request({
+    url: "receipt/affirmFactoryReceivable",
+    method: "post",
+    data
   })
 }

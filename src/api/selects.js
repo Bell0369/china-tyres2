@@ -151,6 +151,16 @@ export function exportSNApi(params) {
   })
 }
 
+// 導出WeightNoteApi
+export function exportWeightNoteApi(params) {
+  return request({
+    url: "report/exportWeightNote",
+    method: "post",
+    responseType: "blob",
+    params
+  })
+}
+
 // 發貨流水賬導出
 export function exportTheShipmentLedgerApi(params) {
   return request({
@@ -171,10 +181,129 @@ export function exportSellRealSituationApi(params) {
   })
 }
 
+// 導出業務台帳
+export function exportBusinessApi(params) {
+  return request({
+    url: "report/exportBusiness",
+    method: "post",
+    responseType: "blob",
+    params
+  })
+}
+
 // 導出訂單全流程
 export function exportOrderCompleteFlowSchemeApi(params) {
   return request({
     url: "report/exportOrderCompleteFlowScheme",
+    method: "post",
+    responseType: "blob",
+    params
+  })
+}
+
+// 導出客戶銷售總覽
+export function exportClientSellOverviewApi(params) {
+  return request({
+    url: "report/exportClientSellOverview",
+    method: "post",
+    responseType: "blob",
+    params
+  })
+}
+
+// 導出sales data（業務員）
+export function exportSalesDataSalesmanApi(params) {
+  return request({
+    url: "report/exportSalesDataSalesman",
+    method: "post",
+    responseType: "blob",
+    params
+  })
+}
+
+// 導出sales data（管理員）
+export function exportSalesDataAdminApi(params) {
+  return request({
+    url: "report/exportSalesDataAdmin",
+    method: "post",
+    responseType: "blob",
+    params
+  })
+}
+
+// 1=訂單、2=客戶、3=工廠、4=發貨計劃、5=用戶 -- 選擇對象
+export function getOptionsApi(params) {
+  return request({
+    url: "common/options",
+    method: "get",
+    params
+  })
+}
+
+// 導出客戶產品
+export function exportClientProductApi(params) {
+  return request({
+    url: "client/exportClientProduct",
+    method: "post",
+    responseType: "blob",
+    params
+  })
+}
+
+// 導出工廠產品
+export function exportFactoryProductApi(params) {
+  return request({
+    url: "factory/exportFactoryProduct",
+    method: "post",
+    responseType: "blob",
+    params
+  })
+}
+
+// 導出發票，裝箱單，SN到一起
+export function exportAllApi(params) {
+  return request({
+    url: "report/exportAll",
+    method: "post",
+    responseType: "blob",
+    params
+  })
+}
+
+// 導出訂單總覽
+export function exportOrderGeneralViewApi(params) {
+  return request({
+    url: "report/exportOrderGeneralView",
+    method: "post",
+    responseType: "blob",
+    params
+  })
+}
+
+// 導出未排產訂單數量
+export function exportOrderUnscheduledProductionApi(params) {
+  return request({
+    url: "report/exportOrderUnscheduledProduction",
+    method: "post",
+    responseType: "blob",
+    params
+  })
+}
+
+// 導出銷售單價匯總
+export function exportSalesUnitPriceQuantitySummaryApi(params) {
+  return request({
+    url: "report/exportSalesUnitPriceQuantitySummary",
+    method: "post",
+    responseType: "blob",
+    params
+  })
+}
+
+// 導出公斤单价
+export function exportKilogramUnitPriceApi(params) {
+  return request({
+    url: "report/exportKilogramUnitPrice",
     method: "post",
     responseType: "blob",
     params

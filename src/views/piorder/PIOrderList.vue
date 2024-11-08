@@ -1,7 +1,7 @@
 <script setup>
 import { reactive, ref, watch, onActivated } from "vue"
 import { Search, CirclePlus, Refresh, EditPen } from "@element-plus/icons-vue"
-import { getPiListApi, deletePiListApi, updatePiQuantityApi } from "@/api/order"
+import { getPiListApi, deletePiListApi, updatePiQuantityApi, exportPIApi } from "@/api/order"
 import { usePagination } from "@/hooks/usePagination"
 import { useDeleteList } from "@/hooks/useDeleteList"
 import { useBrandSelect, useFactoryCodeSelect } from "@/hooks/useSelectOption"
@@ -96,6 +96,23 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
 onActivated(() => {
   if (handleActivated()) getTableData()
 })
+
+// 导出PI
+const exportPI = (row) => {
+  loading.value = true
+  exportPIApi({ id: row.id })
+    .then((data) => {
+      const downloadLink = document.createElement("a")
+      downloadLink.href = URL.createObjectURL(data)
+      downloadLink.download = `${row.pi_no}.xlsx`
+      downloadLink.click()
+    })
+    .finally(() => {
+      setTimeout(() => {
+        loading.value = false
+      }, 500)
+    })
+}
 </script>
 
 <template>
@@ -197,11 +214,11 @@ onActivated(() => {
             </template>
           </el-table-column>
           <el-table-column prop="created_at" label="创建时间" align="center" sortable />
-          <el-table-column fixed="right" label="操作" width="130" align="center">
+          <el-table-column fixed="right" label="操作" width="200" align="center">
             <template #default="scope">
               <el-button
                 v-permission="['piBasicDetail']"
-                type="success"
+                type="primary"
                 text
                 bg
                 size="small"
@@ -209,7 +226,7 @@ onActivated(() => {
                 :to="`/piorder/piorderitem?id=${scope.row.id}`"
                 >查看</el-button
               >
-              <!-- <el-button type="success" text bg size="small" @click="exportPI(scope.row.id)">下載</el-button> -->
+              <el-button type="success" text bg size="small" @click="exportPI(scope.row)">下載</el-button>
               <el-button
                 v-permission="['deletePi']"
                 type="danger"

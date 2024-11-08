@@ -1,20 +1,24 @@
 <script setup>
-import { ref, watch, reactive } from "vue"
+import { ref, watch, reactive, onUnmounted } from "vue"
 import { Search, Refresh } from "@element-plus/icons-vue"
-import { ElMessage } from "element-plus"
+import { ElMessage, ElMessageBox } from "element-plus"
 import { useRoute } from "vue-router"
 import {
   getClientProductApi,
   viewProductShowApi,
   updateClientProductApi,
   updateAllClientProductApi,
-  deleteClientProductApi
+  deleteClientProductApi,
+  monitorJobApi
 } from "@/api/users"
 import { getProductListApi } from "@/api/product"
 import { usePagination } from "@/hooks/usePagination"
 import { useDeleteList } from "@/hooks/useDeleteList"
 import updatePrice from "@/views/componrnts/updatePrice/updatePrice.vue"
 import { checkPermission } from "@/utils/permission"
+import { exportClientProductApi } from "@/api/selects"
+import { getToken } from "@/utils/cache/cookies"
+import axios from "axios"
 
 const loading = ref(false)
 
@@ -23,7 +27,8 @@ const route = useRoute()
 const { paginationData, handleCurrentChange, handleSizeChange } = usePagination()
 
 const props = defineProps({
-  isProduct: Number
+  isProduct: Number,
+  isDeldo: Boolean
 })
 
 // 删除
@@ -176,6 +181,123 @@ watch(
     defaultContact.value = newValue ? false : true
   }
 )
+
+// 導出產品
+const exportClientProduct = () => {
+  loading.value = true
+  exportClientProductApi({
+    client_id: route.query.id
+  })
+    .then((data) => {
+      const downloadLink = document.createElement("a")
+      downloadLink.href = URL.createObjectURL(data)
+      downloadLink.download = "product.xlsx"
+      downloadLink.click()
+    })
+    .finally(() => {
+      setTimeout(() => {
+        loading.value = false
+      }, 500)
+    })
+}
+const baseUrl = import.meta.env.VITE_BASE_API
+const token = getToken()
+const headersObj = {
+  Authorization: `Bearer ${token}`
+}
+const handleProgress = () => {
+  loading.value = true
+}
+
+const uploadRef = ref()
+const handleSuccess = (uploadFile) => {
+  loading.value = false
+  uploadRef.value.clearFiles()
+  if (uploadFile.code !== 200) {
+    ElMessage.error(uploadFile.message)
+    return
+  }
+  ElMessage.success("操作成功")
+  getTableData()
+}
+
+const handleError = (uploadFile) => {
+  loading.value = false
+  console.log(uploadFile)
+}
+
+// watch(
+//   () => props.isDeldo,
+//   (newValue) => {
+//     if (newValue) {
+
+//     }
+//   }
+// )
+
+const isJobInit = ref(0)
+const isJob = ref(null)
+const getMonitorJob = async () => {
+  await monitorJobApi({}).then(({ data }) => {
+    if (data.job && isJobInit.value > 0) {
+      clearInterval(intervalId)
+      isJobDialg.value = false
+      ElMessage.success("同步成功")
+    }
+    isJob.value = data.job
+  })
+}
+
+// 同步
+const isJobDialg = ref(false)
+const deldoSynchronization = async () => {
+  isJobInit.value = 0
+  await getMonitorJob()
+
+  if (!isJob.value) {
+    ElMessage.warning("已有隊列進程正在處理中，請稍後再試...")
+  } else {
+    axios.defaults.headers.common["Authorization"] = `Bearer ${token}`
+    axios.post(`${baseUrl}/client/deldoSynchronization`).catch(() => {})
+
+    startInterval()
+    isJobDialg.value = true
+  }
+}
+
+// 定時器
+let intervalId
+const startInterval = () => {
+  intervalId = setInterval(() => {
+    isJobInit.value++
+    getMonitorJob()
+  }, 5000)
+}
+
+const handleCloseJob = (done) => {
+  ElMessageBox.confirm("將無法得知數據同步狀態，是否關閉")
+    .then(() => {
+      ElMessage.warning("窗口已關閉，無法查看數據同步狀態")
+      clearInterval(intervalId)
+      done()
+    })
+    .catch(() => {})
+}
+
+// 销毁 清除定时器
+onUnmounted(() => {
+  clearInterval(intervalId)
+})
+
+const svg = `
+        <path class="path" d="
+          M 30 15
+          L 28 17
+          M 25.61 25.61
+          A 15 15, 0, 0, 1, 15 30
+          A 15 15, 0, 1, 1, 27.99 7.5
+          L 15 15
+        " style="stroke-width: 4px; fill: rgba(0, 0, 0, 0)"/>`
 </script>
 
 <template>
@@ -204,10 +326,35 @@ watch(
           </el-tooltip>
         </div>
       </div>
-      <div class="mt2">
-        <el-input v-model="keyword" placeholder="請輸入產品名稱" style="width: 280px; margin-right: 10px" />
-        <el-button type="primary" :icon="Search" @click="handleSearch">查詢</el-button>
-        <el-button :icon="Refresh" @click="resetSearch">重置</el-button>
+      <div class="mt2 flex justify-between">
+        <div>
+          <el-input v-model="keyword" placeholder="請輸入產品名稱" style="width: 280px; margin-right: 10px" />
+          <el-button type="primary" :icon="Search" @click="handleSearch">查詢</el-button>
+          <el-button :icon="Refresh" @click="resetSearch">重置</el-button>
+        </div>
+        <div class="flex">
+          <el-button class="mr3" v-if="isDeldo" type="success" @click="deldoSynchronization">同步</el-button>
+          <el-upload
+            ref="uploadRef"
+            :headers="headersObj"
+            :data="{ client_id: route.query.id }"
+            :action="`${baseUrl}/client/importClientProduct`"
+            :limit="1"
+            :auto-upload="true"
+            :show-file-list="false"
+            accept=".xlsx, .xls"
+            :on-error="handleError"
+            :on-success="handleSuccess"
+            :on-progress="handleProgress"
+          >
+            <template #trigger>
+              <el-button v-permission="['importClientProduct']" type="success">上傳產品</el-button>
+            </template>
+          </el-upload>
+          <el-button class="ml3" v-permission="['exportClientProduct']" type="success" @click="exportClientProduct"
+            >下載產品</el-button
+          >
+        </div>
       </div>
     </div>
     <div class="m-b">
@@ -300,6 +447,17 @@ watch(
         <ElButton type="primary" @click="submitProductSum"> 保存 </ElButton>
         <ElButton @click="dialogVisible2 = false">關閉</ElButton>
       </template>
+    </el-dialog>
+
+    <!-- 同步數據 -->
+    <el-dialog v-model="isJobDialg" title="數據同步中" width="500" align-center :before-close="handleCloseJob">
+      <div
+        v-loading="isJobDialg"
+        :element-loading-svg="svg"
+        element-loading-svg-view-box="-10, -10, 50, 50"
+        class="py-10"
+      />
+      <p class="c-red">請勿關閉當前窗口，否則無法查看同步狀態</p>
     </el-dialog>
   </div>
 </template>

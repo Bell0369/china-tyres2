@@ -34,7 +34,7 @@ const ruleForm = reactive({
   factory_code: "1",
   delivery_plan_no: [],
   company_name: "",
-  shipping_type: "CTD"
+  shipping_type: ""
 })
 
 // 上传文件
@@ -82,6 +82,11 @@ const submitForm = (Type) => {
 
   if (ruleForm.company_name === "") {
     ElMessage.error("請輸入集裝箱承運人名稱")
+    return
+  }
+
+  if (ruleForm.shipping_type === "") {
+    ElMessage.error("請選擇發貨類型")
     return
   }
 
@@ -205,7 +210,7 @@ const handleItemList = (row) => {
         <el-col :span="6">
           <el-form-item label="發貨類型">
             <el-select v-model="ruleForm.shipping_type">
-              <el-option v-for="item in eDeliverTypeOptions" :label="item.name" :value="item.id" :key="item.id" />
+              <el-option v-for="item in eDeliverTypeOptions" :label="item.name" :value="item.name" :key="item.id" />
             </el-select>
           </el-form-item>
         </el-col>

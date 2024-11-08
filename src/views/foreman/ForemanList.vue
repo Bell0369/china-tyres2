@@ -1,6 +1,6 @@
 <script setup>
 import { reactive, ref, watch } from "vue"
-import { getFactoryListApi, deleteFactoryApi, getUserListApi } from "@/api/users"
+import { getFactoryListApi, deleteFactoryApi } from "@/api/users"
 import { ElButton } from "element-plus"
 import { Search, CirclePlus, Refresh } from "@element-plus/icons-vue"
 import { usePagination } from "@/hooks/usePagination"
@@ -9,6 +9,7 @@ import { useBrandSelect } from "@/hooks/useSelectOption"
 import { Dialog } from "@/components/Dialog"
 import ForemanAdd from "./ForemanAdd.vue"
 import { useDeleteList } from "@/hooks/useDeleteList"
+import { useUserSelect } from "@/hooks/useUserSelect"
 
 defineOptions({
   name: "ForemanList"
@@ -32,25 +33,8 @@ watch([isDeleted], () => {
 //品牌
 const { brandOptions } = useBrandSelect()
 
-// 員工列表
-const loading2 = ref(false)
-const userOptions = ref([])
-const remoteMethod = (query) => {
-  loading2.value = true
-  getUserListApi({
-    keyword: query || undefined
-  })
-    .then(({ data }) => {
-      const list = data.data
-      userOptions.value = list
-    })
-    .catch(() => {
-      userOptions.value = []
-    })
-    .finally(() => {
-      loading2.value = false
-    })
-}
+// 員工
+const { loadUser, optionsUser, loadUserData } = useUserSelect()
 
 //#region 查
 const tableData = ref([])
@@ -137,12 +121,12 @@ const handleChildEvent = () => {
             filterable
             remote
             remote-show-suffix
-            :remote-method="remoteMethod"
-            :loading="loading2"
+            :remote-method="loadUserData"
+            :loading="loadUser"
             style="width: 150px"
           >
             <el-option label="全部" value="" />
-            <el-option v-for="item in userOptions" :key="item.id" :label="item.username" :value="item.id" />
+            <el-option v-for="item in optionsUser" :key="item.id" :label="item.username" :value="item.id" />
           </el-select>
         </el-form-item>
         <el-form-item>

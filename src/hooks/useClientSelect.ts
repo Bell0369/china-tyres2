@@ -1,5 +1,5 @@
 import { ref } from "vue"
-import { getClientListApi } from "@/api/users"
+import { getOptionsApi } from "@/api/selects"
 import { debounce } from "lodash-es"
 
 type OptionValue = string | number
@@ -29,12 +29,12 @@ export function useClientSelect() {
 
   /** 调用接口获取数据 */
   const remoteMethod = () => {
-    getClientListApi({
-      page_size: 20,
+    getOptionsApi({
+      type: 2,
       keyword: keyword.value
     })
       .then(({ data }) => {
-        optionsClient.value = data.data
+        optionsClient.value = data
       })
       .catch(() => {
         optionsClient.value = []

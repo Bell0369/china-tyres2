@@ -303,3 +303,21 @@ export function updateAllFactoryProductApi(data) {
     data
   })
 }
+
+// DELDO專屬同步
+export function deldoSynchronizationApi(data) {
+  return request({
+    url: "client/deldoSynchronization",
+    method: "post",
+    data
+  })
+}
+
+// DELDO同步通知
+export function monitorJobApi(data) {
+  return request({
+    url: "client/monitorJob",
+    method: "post",
+    data
+  })
+}

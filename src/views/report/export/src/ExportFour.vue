@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from "vue"
 import { ElMessage } from "element-plus"
-import { exportTheShipmentLedgerApi } from "@/api/selects"
+import { exportClientSellOverviewApi, exportOrderGeneralViewApi } from "@/api/selects"
 import { useClientSelect } from "@/hooks/useClientSelect"
 
 defineOptions({
@@ -12,37 +12,50 @@ defineOptions({
 const { loadClient, optionsClient, loadClientData } = useClientSelect()
 
 const monthrangeData = ref(["", ""])
-const client_id = ref("")
+const clientItem = ref("")
 
 // 導出訂單客戶報表
 const loadingBtn1 = ref(false)
 
+// 導出客戶銷售總覽
+const loadingBtn2 = ref(false)
+
 // 選中數據
-const exportData = () => {
+const exportData = (Type) => {
   if (monthrangeData.value[0] === "") {
     ElMessage.error("請選擇时间先")
     return false
   }
-  if (client_id.value === "") {
+  if (clientItem.value === "") {
     ElMessage.error("請選擇客戶")
     return false
   }
-  ElMessage.info("暫未開通")
-  return
-  // exportFile(exportTheShipmentLedgerApi, loadingBtn1, "customer-report")
+
+  switch (Type) {
+    case 1:
+      exportFile(exportOrderGeneralViewApi, loadingBtn1, "订单发货状态总览")
+      break
+    case 2:
+      exportFile(exportClientSellOverviewApi, loadingBtn2, "销售规格数量统计")
+      break
+    default:
+      break
+  }
 }
 
 const exportFile = (api, loadingRef, name) => {
   loadingRef.value = true
+  const FormattingDates = monthrangeData.value[0].replace(/-/g, "") + "-" + monthrangeData.value[1].replace(/-/g, "")
+
   api({
     start_date: monthrangeData.value[0],
     end_date: monthrangeData.value[1],
-    client_id: client_id.value
+    client_id: clientItem.value.client_id
   })
     .then((data) => {
       const downloadLink = document.createElement("a")
       downloadLink.href = URL.createObjectURL(data)
-      downloadLink.download = `${name}.xlsx`
+      downloadLink.download = `${name}${clientItem.value.client_code}.${FormattingDates}.xlsx`
       downloadLink.click()
     })
     .finally(() => {
@@ -68,7 +81,8 @@ const exportFile = (api, loadingRef, name) => {
       </el-form-item>
       <el-form-item>
         <el-select
-          v-model="client_id"
+          v-model="clientItem"
+          value-key="id"
           filterable
           remote
           remote-show-suffix
@@ -77,16 +91,25 @@ const exportFile = (api, loadingRef, name) => {
           placeholder="客戶"
           style="width: 200px"
         >
-          <el-option v-for="item in optionsClient" :key="item.id" :label="item.client_code" :value="item.id" />
+          <el-option v-for="item in optionsClient" :key="item.id" :label="item.client_code" :value="item" />
         </el-select>
       </el-form-item>
       <el-form-item>
         <el-button
           type="primary"
-          v-permission="['exportTheShipmentLedger']"
-          @click="exportData()"
+          v-permission="['exportOrderGeneralView']"
+          @click="exportData(1)"
           :loading="loadingBtn1"
-          >導出訂單客戶報表</el-button
+          >導出訂單總覽</el-button
+        >
+      </el-form-item>
+      <el-form-item>
+        <el-button
+          type="primary"
+          v-permission="['exportClientSellOverview']"
+          @click="exportData(2)"
+          :loading="loadingBtn2"
+          >導出客戶銷售總覽</el-button
         >
       </el-form-item>
     </el-form>

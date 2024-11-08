@@ -2,7 +2,7 @@
 import { ref } from "vue"
 import { ElMessage } from "element-plus"
 import { getInvListApi } from "@/api/order"
-import { exportInvApi, exportPackingListApi, exportSNApi } from "@/api/selects"
+import { exportInvApi, exportPackingListApi, exportSNApi, exportWeightNoteApi, exportAllApi } from "@/api/selects"
 
 defineOptions({
   name: "ExportTow"
@@ -34,6 +34,10 @@ const loadingInv = ref(false)
 const loadingPacking = ref(false)
 // SN
 const loadingSN = ref(false)
+// WeightNote
+const loadingWeightNote = ref(false)
+//
+const loadingAll = ref(false)
 // 選中數據
 const inv_no = ref(null)
 const exportData = (Type) => {
@@ -43,13 +47,19 @@ const exportData = (Type) => {
   }
   switch (Type) {
     case 1:
-      exportFile(exportInvApi, loadingInv, "inv")
+      exportFile(exportInvApi, loadingInv, "銷售發票")
       break
     case 2:
-      exportFile(exportPackingListApi, loadingPacking, "packing-list")
+      exportFile(exportPackingListApi, loadingPacking, "裝箱單")
       break
     case 3:
-      exportFile(exportSNApi, loadingSN, "sn")
+      exportFile(exportSNApi, loadingSN, "SN")
+      break
+    case 4:
+      exportFile(exportWeightNoteApi, loadingWeightNote, "Weight-Note")
+      break
+    case 5:
+      exportFile(exportAllApi, loadingAll, "發票-裝箱單-SN")
       break
     default:
       break
@@ -62,7 +72,7 @@ const exportFile = (api, loadingRef, name) => {
     .then((data) => {
       const downloadLink = document.createElement("a")
       downloadLink.href = URL.createObjectURL(data)
-      downloadLink.download = `${inv_no.value.inv_no}.${name}.xlsx`
+      downloadLink.download = `${name}.${inv_no.value.inv_no}.xlsx`
       downloadLink.click()
     })
     .finally(() => {
@@ -74,7 +84,7 @@ const exportFile = (api, loadingRef, name) => {
 </script>
 
 <template>
-  <el-card v-permission="['exportInv', 'exportPackingList', 'exportSN']" shadow="never" class="search-wrapper">
+  <el-card shadow="never" class="search-wrapper">
     <el-form :inline="true">
       <el-form-item>
         <el-select
@@ -100,6 +110,16 @@ const exportFile = (api, loadingRef, name) => {
         >
         <el-button type="primary" v-permission="['exportSN']" @click="exportData(3)" :loading="loadingSN"
           >導出SN</el-button
+        >
+        <el-button type="primary" v-permission="['exportAll']" @click="exportData(5)" :loading="loadingAll"
+          >合併發票/裝箱單/SN</el-button
+        >
+        <el-button
+          type="primary"
+          v-permission="['exportWeightNote']"
+          @click="exportData(4)"
+          :loading="loadingWeightNote"
+          >導出Weight Note</el-button
         >
       </el-form-item>
     </el-form>

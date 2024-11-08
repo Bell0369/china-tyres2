@@ -3,7 +3,9 @@ import { ref, reactive } from "vue"
 import { ElMessage } from "element-plus"
 import { Delete } from "@element-plus/icons-vue"
 import { useFactoryCodeSelect, useBrandSelect } from "@/hooks/useSelectOption"
-import { getUserListApi, updateFactoryApi } from "@/api/users"
+import { updateFactoryApi } from "@/api/users"
+import { useUserSelect } from "@/hooks/useUserSelect"
+import { validateNumberMin } from "@/utils/validate"
 
 defineOptions({
   name: "ForemanAdd"
@@ -15,25 +17,8 @@ const factoryCodeOptions = useFactoryCodeSelect()
 // 品牌
 const { brandOptions } = useBrandSelect()
 
-// 員工列表
-const loading = ref(false)
-const userOptions = ref([])
-const remoteMethod = (query) => {
-  loading.value = true
-  getUserListApi({
-    keyword: query || undefined
-  })
-    .then(({ data }) => {
-      const list = data.data
-      userOptions.value = list
-    })
-    .catch(() => {
-      userOptions.value = []
-    })
-    .finally(() => {
-      loading.value = false
-    })
-}
+// 員工
+const { loadUser, optionsUser, loadUserData } = useUserSelect()
 
 // 提交數據
 const ruleFormRef = ref()
@@ -41,6 +26,7 @@ const ruleForm = reactive({
   name: "",
   factory_code: "",
   factory_label_id: 1,
+  primitive_price: "",
   factory_user: [
     {
       key: 1,
@@ -92,17 +78,25 @@ const submitInfo = async (formEl) => {
   <div class="overflow-hidden">
     <el-form ref="ruleFormRef" :model="ruleForm" :rules="rules">
       <el-row :gutter="20">
-        <el-col :span="12">
+        <el-col :span="8">
           <el-form-item label="工廠名稱" prop="name">
             <el-input v-model="ruleForm.name" placeholder="請輸入工廠名稱" />
           </el-form-item>
         </el-col>
-        <el-col :span="1" />
-        <el-col :span="11">
+        <el-col :span="8">
           <el-form-item label="工廠代碼" prop="factory_code">
             <el-select v-model="ruleForm.factory_code">
               <el-option v-for="item in factoryCodeOptions" :label="item.name" :value="item.code" :key="item.id" />
             </el-select>
+          </el-form-item>
+        </el-col>
+        <el-col :span="8">
+          <el-form-item label="初始金額">
+            <el-input
+              v-model="ruleForm.primitive_price"
+              type="number"
+              @input="ruleForm.primitive_price = validateNumberMin(ruleForm.primitive_price)"
+            />
           </el-form-item>
         </el-col>
         <el-col :span="24" class="b b-#ccc b-style-solid mb">
@@ -126,10 +120,10 @@ const submitInfo = async (formEl) => {
                   filterable
                   remote
                   remote-show-suffix
-                  :remote-method="remoteMethod"
-                  :loading="loading"
+                  :remote-method="loadUserData"
+                  :loading="loadUser"
                 >
-                  <el-option v-for="item in userOptions" :key="item.id" :label="item.username" :value="item.id" />
+                  <el-option v-for="item in optionsUser" :key="item.id" :label="item.username" :value="item.id" />
                 </el-select>
               </el-form-item>
             </el-col>

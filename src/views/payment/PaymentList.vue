@@ -8,6 +8,8 @@ import { useFactorySelect } from "@/hooks/useFactorySelect"
 import { usePagination } from "@/hooks/usePagination"
 import { Dialog } from "@/components/Dialog"
 import addPayRecord from "./components/addPayRecord.vue"
+import primitivePriceClient from "./components/primitivePriceClient.vue"
+import primitivePriceFactory from "./components/primitivePriceFactory.vue"
 import PrepayMents from "@/views/componrnts/prepayments/PrepayMents.vue"
 
 defineOptions({
@@ -97,11 +99,29 @@ const handleAddPrice = (row) => {
   prepayType.value = orderType.value ? 2 : 1
 }
 
+// 預付款
 const dialogVisible2 = ref(false)
-const showPrepay = (id) => {
-  prepayType.value = orderType.value ? "factory" : "client"
-  dialogVisible2.value = true
+// const showPrepay = (id) => {
+//   prepayType.value = orderType.value ? "factory" : "client"
+//   dialogVisible2.value = true
+//   prepayId.value = id
+// }
+
+// 初始金額
+const dialogVisible3 = ref(false)
+const receiptId = ref(0)
+const showPrimitive1 = (id, listId) => {
+  dialogVisible3.value = true
   prepayId.value = id
+  receiptId.value = listId
+}
+
+// 初始金額
+const dialogVisible4 = ref(false)
+const showPrimitive2 = (id, listId) => {
+  dialogVisible4.value = true
+  prepayId.value = id
+  receiptId.value = listId
 }
 
 //#region
@@ -158,11 +178,11 @@ const handleListPayment = () => {
         <el-form-item prop="status" label="應收" v-show="orderType === 0">
           <el-select v-model="searchData.status" style="width: 150px">
             <el-option label="全部" value="" />
-            <el-option label="未收" value="0" />
-            <el-option label="已收" value="1" />
+            <el-option label="未收款" value="0" />
+            <el-option label="已收款" value="1" />
           </el-select>
         </el-form-item>
-        <el-form-item prop="client_id" label="客戶名稱" v-show="orderType === 0">
+        <el-form-item prop="client_id" label="客戶代碼" v-show="orderType === 0">
           <el-select
             v-model="searchData.client_id"
             filterable
@@ -173,15 +193,15 @@ const handleListPayment = () => {
             style="width: 150px"
           >
             <el-option label="全部" value="" />
-            <el-option v-for="item in optionsClient" :key="item.id" :label="item.client_name" :value="item.id" />
+            <el-option v-for="item in optionsClient" :key="item.id" :label="item.client_code" :value="item.id" />
           </el-select>
         </el-form-item>
 
         <el-form-item prop="status" label="應付" v-show="orderType === 1">
           <el-select v-model="searchData.status" style="width: 150px">
             <el-option label="全部" value="" />
-            <el-option label="未付" value="0" />
-            <el-option label="已付" value="1" />
+            <el-option label="未付款" value="0" />
+            <el-option label="已付款" value="1" />
           </el-select>
         </el-form-item>
         <el-form-item prop="factory_id" label="工廠名稱" v-show="orderType === 1">
@@ -225,22 +245,32 @@ const handleListPayment = () => {
           <el-table :data="tableData" border>
             <el-table-column prop="client_name" label="客戶名稱" align="center" />
             <el-table-column prop="inv_no" label="銷售發票" align="center" />
-            <el-table-column prop="receivable_price" label="應收金額" align="center" />
-            <el-table-column prop="paicl_price" label="實收金額" align="center">
+            <el-table-column prop="primitive_price" label="初始金額" align="center">
               <template #default="scope">
-                <span class="inline-block align-mid">{{ scope.row.paicl_price }}</span>
+                <span class="inline-block align-mid">{{ scope.row.primitive_price }}</span>
                 <Tickets
-                  v-permission="['clientAdvancePayment-1', 'clientAdvancePaymentList']"
-                  @click="showPrepay(scope.row.client_id)"
+                  @click="showPrimitive1(scope.row.client_id, scope.row.id)"
                   class="color-blue cursor-pointer w5 h5 inline-block align-mid"
                 />
               </template>
             </el-table-column>
+            <el-table-column prop="receivable_price" label="應收金額" align="center" />
+            <el-table-column prop="paicl_price" label="實收金額" align="center">
+              <template #default="scope">
+                <span class="inline-block align-mid">{{ scope.row.paicl_price }}</span>
+                <!-- <Tickets
+                  v-permission="['clientAdvancePayment-1', 'clientAdvancePaymentList']"
+                  @click="showPrepay(scope.row.client_id)"
+                  class="color-blue cursor-pointer w5 h5 inline-block align-mid"
+                /> -->
+              </template>
+            </el-table-column>
             <el-table-column prop="uncollected_price" label="未收金額" align="center" />
+            <el-table-column prop="balance" label="預收金額" align="center" />
             <el-table-column prop="status" label="應收狀態" align="center">
               <template #default="scope">
-                <el-tag type="success" v-if="scope.row.status">已收</el-tag>
-                <el-tag type="danger" v-else>未收</el-tag>
+                <el-tag type="success" v-if="scope.row.status">已收款</el-tag>
+                <el-tag type="danger" v-else>未收款</el-tag>
               </template>
             </el-table-column>
             <el-table-column prop="created_at" label="创建时间" align="center" sortable />
@@ -279,22 +309,32 @@ const handleListPayment = () => {
                 <span v-for="item in scope.row.procurement_invoice_no" :key="item">{{ item }}</span>
               </template>
             </el-table-column>
-            <el-table-column prop="accrued_price" label="應付金額" align="center" />
-            <el-table-column prop="actually_price" label="實付金額" align="center">
+            <el-table-column prop="primitive_price" label="初始金額" align="center">
               <template #default="scope">
-                <span class="inline-block align-mid">{{ scope.row.actually_price }}</span>
+                <span class="inline-block align-mid">{{ scope.row.primitive_price }}</span>
                 <Tickets
-                  v-permission="['factoryAdvancePayment', 'factoryAdvancePaymentList']"
-                  @click="showPrepay(scope.row.factory_id)"
+                  @click="showPrimitive2(scope.row.factory_id, scope.row.id)"
                   class="color-blue cursor-pointer w5 h5 inline-block align-mid"
                 />
               </template>
             </el-table-column>
+            <el-table-column prop="accrued_price" label="應付金額" align="center" />
+            <el-table-column prop="actually_price" label="實付金額" align="center">
+              <template #default="scope">
+                <span class="inline-block align-mid">{{ scope.row.actually_price }}</span>
+                <!-- <Tickets
+                  v-permission="['factoryAdvancePayment', 'factoryAdvancePaymentList']"
+                  @click="showPrepay(scope.row.factory_id)"
+                  class="color-blue cursor-pointer w5 h5 inline-block align-mid"
+                /> -->
+              </template>
+            </el-table-column>
             <el-table-column prop="unpaid_price" label="未付金額" align="center" />
+            <el-table-column prop="balance" label="預付金額" align="center" />
             <el-table-column prop="status" label="應付狀態" align="center">
               <template #default="scope">
-                <el-tag type="success" v-if="scope.row.status">已付</el-tag>
-                <el-tag type="danger" v-else>未付</el-tag>
+                <el-tag type="success" v-if="scope.row.status">已付款</el-tag>
+                <el-tag type="danger" v-else>未付款</el-tag>
               </template>
             </el-table-column>
             <el-table-column prop="created_at" label="创建时间" align="center" sortable />
@@ -345,6 +385,15 @@ const handleListPayment = () => {
 
     <Dialog v-model="dialogVisible2" title="預付款">
       <prepay-ments :isType="prepayType" :id="prepayId" @handle-listPayment="handleListPayment" />
+    </Dialog>
+
+    <!-- 客户 -->
+    <Dialog v-model="dialogVisible3" title="待審核金額">
+      <primitive-price-client :id="prepayId" :ids="receiptId" @handle-listPayment="handleListPayment" />
+    </Dialog>
+    <!-- 工厂 -->
+    <Dialog v-model="dialogVisible4" title="待審核金額">
+      <primitive-price-factory :id="prepayId" :ids="receiptId" @handle-listPayment="handleListPayment" />
     </Dialog>
   </div>
 </template>

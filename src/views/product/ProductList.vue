@@ -1,8 +1,8 @@
 <script setup>
 import { reactive, ref, watch } from "vue"
 import { getProductListApi, exportProductApi } from "@/api/product"
-import { ElButton } from "element-plus"
-import { Search, CirclePlus, Refresh, Upload } from "@element-plus/icons-vue"
+import { ElButton, ElMessage } from "element-plus"
+import { Search, CirclePlus, Refresh, Upload, FolderAdd } from "@element-plus/icons-vue"
 import { usePagination } from "@/hooks/usePagination"
 import { useRouter } from "vue-router"
 import { Dialog } from "@/components/Dialog"
@@ -11,6 +11,7 @@ import { useBrandSelect } from "@/hooks/useSelectOption"
 import { useFactorySelect } from "@/hooks/useFactorySelect"
 import { useClientSelect } from "@/hooks/useClientSelect"
 import { useDeleteList } from "@/hooks/useDeleteList"
+import { getToken } from "@/utils/cache/cookies"
 
 defineOptions({
   name: "ProductList"
@@ -47,7 +48,8 @@ const searchData = reactive({
   name: "",
   factory_id: "",
   client_id: "",
-  brand_id: ""
+  brand_id: "",
+  tyre_type: ""
 })
 const getTableData = () => {
   loading.value = true
@@ -57,7 +59,8 @@ const getTableData = () => {
     name: searchData.name || undefined,
     factory_id: searchData.factory_id || undefined,
     client_id: searchData.client_id || undefined,
-    brand_id: searchData.brand_id || undefined
+    brand_id: searchData.brand_id || undefined,
+    tyre_type: searchData.tyre_type || undefined
   })
     .then(({ data }) => {
       paginationData.total = data.total
@@ -136,6 +139,35 @@ const exportProduct = () => {
       }, 500)
     })
 }
+
+const baseUrl = import.meta.env.VITE_BASE_API
+const token = getToken()
+const headersObj = {
+  Authorization: `Bearer ${token}`
+}
+
+const handleProgress = () => {
+  loading.value = true
+}
+
+const uploadRef = ref()
+const handleSuccess = (uploadFile) => {
+  loading.value = false
+  uploadRef.value.clearFiles()
+  if (uploadFile.code !== 200) {
+    ElMessage.error(uploadFile.message)
+    return
+  }
+  ElMessage.success("操作成功")
+  getTableData()
+  // console.log(uploadFile)
+}
+
+const handleError = (uploadFile) => {
+  loading.value = false
+  ElMessage.success("上傳失敗")
+  console.log(uploadFile)
+}
 </script>
 
 <template>
@@ -179,6 +211,15 @@ const exportProduct = () => {
             <el-option v-for="item in brandOptions" :key="item.id" :label="item.name" :value="item.id" />
           </el-select>
         </el-form-item>
+        <el-form-item prop="tyre_type" label="輪胎類型">
+          <el-select v-model="searchData.tyre_type" style="width: 150px">
+            <el-option label="全部" value="" />
+            <el-option label="4S" value="4S" />
+            <el-option label="SUMMER" value="SUMMER" />
+            <el-option label="TBR" value="TBR" />
+            <el-option label="WINTER" value="WINTER" />
+          </el-select>
+        </el-form-item>
         <el-form-item>
           <el-button type="primary" :icon="Search" @click="handleSearch">查詢</el-button>
           <el-button :icon="Refresh" @click="resetSearch">重置</el-button>
@@ -187,10 +228,27 @@ const exportProduct = () => {
     </el-card>
     <el-card v-loading="loading" shadow="never">
       <div class="toolbar-wrapper">
-        <div>
+        <div class="flex">
           <el-button v-permission="['addProduct']" type="primary" :icon="CirclePlus" @click="handleUpdate(0)"
             >新增產品</el-button
           >
+          <el-upload
+            class="ml3 mr3"
+            ref="uploadRef"
+            :headers="headersObj"
+            :action="`${baseUrl}/product/importProduct`"
+            :limit="1"
+            :auto-upload="true"
+            :show-file-list="false"
+            accept=".xlsx, .xls"
+            :on-error="handleError"
+            :on-success="handleSuccess"
+            :on-progress="handleProgress"
+          >
+            <template #trigger>
+              <el-button type="primary" :icon="FolderAdd">批量新增產品</el-button>
+            </template>
+          </el-upload>
           <el-button v-permission="['exportProduct']" type="primary" :icon="Upload" @click="exportProduct"
             >導出產品</el-button
           >

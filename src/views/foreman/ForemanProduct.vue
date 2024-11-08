@@ -14,6 +14,8 @@ import { getProductListApi, getProductShowApi } from "@/api/product"
 import { usePagination } from "@/hooks/usePagination"
 import { useDeleteList } from "@/hooks/useDeleteList"
 import updatePrice from "@/views/componrnts/updatePrice/updatePrice.vue"
+import { exportFactoryProductApi } from "@/api/selects"
+import { getToken } from "@/utils/cache/cookies"
 
 const loading = ref(false)
 
@@ -194,6 +196,52 @@ watch(
     defaultContact.value = newValue ? false : true
   }
 )
+
+// 導出產品
+const exportFactoryProduct = () => {
+  loading.value = true
+  exportFactoryProductApi({
+    factory_id: route.query.id
+  })
+    .then((data) => {
+      const downloadLink = document.createElement("a")
+      downloadLink.href = URL.createObjectURL(data)
+      downloadLink.download = "product.xlsx"
+      downloadLink.click()
+    })
+    .finally(() => {
+      setTimeout(() => {
+        loading.value = false
+      }, 500)
+    })
+}
+const baseUrl = import.meta.env.VITE_BASE_API
+const token = getToken()
+const headersObj = {
+  Authorization: `Bearer ${token}`
+}
+
+const handleProgress = () => {
+  loading.value = true
+}
+
+const uploadRef = ref()
+const handleSuccess = (uploadFile) => {
+  loading.value = false
+  uploadRef.value.clearFiles()
+  if (uploadFile.code !== 200) {
+    ElMessage.error(uploadFile.message)
+    return
+  }
+  ElMessage.success("操作成功")
+  getTableData()
+  // console.log(uploadFile)
+}
+
+const handleError = (uploadFile) => {
+  loading.value = false
+  console.log(uploadFile)
+}
 </script>
 
 <template>
@@ -222,10 +270,34 @@ watch(
           </el-tooltip>
         </div>
       </div>
-      <div class="m-t2">
-        <el-input v-model="keyword" placeholder="請輸入產品名稱" style="width: 300px; margin-right: 10px" />
-        <el-button type="primary" :icon="Search" @click="handleSearch">查詢</el-button>
-        <el-button :icon="Refresh" @click="resetSearch">重置</el-button>
+      <div class="m-t2 flex justify-between">
+        <div>
+          <el-input v-model="keyword" placeholder="請輸入產品名稱" style="width: 300px; margin-right: 10px" />
+          <el-button type="primary" :icon="Search" @click="handleSearch">查詢</el-button>
+          <el-button :icon="Refresh" @click="resetSearch">重置</el-button>
+        </div>
+        <div class="flex">
+          <el-upload
+            ref="uploadRef"
+            :headers="headersObj"
+            :data="{ factory_id: route.query.id }"
+            :action="`${baseUrl}/factory/importFactoryProduct`"
+            :limit="1"
+            :auto-upload="true"
+            :show-file-list="false"
+            accept=".xlsx, .xls"
+            :on-error="handleError"
+            :on-success="handleSuccess"
+            :on-progress="handleProgress"
+          >
+            <template #trigger>
+              <el-button v-permission="['importFactoryProduct']" type="success">上傳產品</el-button>
+            </template>
+          </el-upload>
+          <el-button class="ml3" v-permission="['exportFactoryProduct']" type="success" @click="exportFactoryProduct"
+            >下載產品</el-button
+          >
+        </div>
       </div>
     </div>
     <div class="m-b">

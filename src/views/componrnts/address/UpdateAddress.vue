@@ -31,23 +31,28 @@ const ruleForm = computed(() => {
 onMounted(() => {
   Object.assign(ruleForm.value, addressData)
 
+  console.log(ruleForm.value)
+
   // 默認 phone
   const phones = ruleForm.value.phones
-  phones_default.value = phones.findIndex((phone) => phone.default === 1)
+  const phonesIndex = phones.findIndex((phone) => phone.default === 1)
+  phones_default.value = phonesIndex !== -1 ? phonesIndex : 0
 
   // 默認 address
   const addresses = ruleForm.value.address
-  address_default.value = addresses.findIndex((address) => address.default === 1)
+  const addressIndex = addresses.findIndex((address) => address.default === 1)
+  address_default.value = addressIndex !== -1 ? addressIndex : 0
+
+  // 默認 email
+  const emails = ruleForm.value.phones
+  const emailsIndex = emails.findIndex((emails) => emails.default === 1)
+  emails_default.value = emailsIndex !== -1 ? emailsIndex : 0
   // for (const key in addressData.address) {
   //   if (ruleForm.value.address[key].default === 1) {
   //     address_default.value = Number(key)
   //     break
   //   }
   // }
-
-  // 默認 email
-  const emails = ruleForm.value.phones
-  emails_default.value = emails.findIndex((emails) => emails.default === 1)
 })
 
 // 區號
@@ -324,27 +329,29 @@ const submitForm = () => {
     ElMessage.error("請輸入聯繫人")
     return
   }
-  if (ruleForm.value.phones.length === 0) {
+
+  if (ruleForm.value.phones.length === phones_default.value) {
     ElMessage.error("請選中默認電話")
     return
   }
   // 默認 phone
   setDefaultProperty(ruleForm.value.phones, phones_default.value, "default")
 
-  if (ruleForm.value.address.length === 0) {
+  if (ruleForm.value.address.length === address_default.value) {
     ElMessage.error("請選中默認地址")
     return
   }
   // 默認 address
   setDefaultProperty(ruleForm.value.address, address_default.value, "default")
 
-  if (ruleForm.value.emails.length === 0) {
+  if (ruleForm.value.emails.length === emails_default.value) {
     ElMessage.error("請選中默認電郵")
     return
   }
   // 默認 email
   setDefaultProperty(ruleForm.value.emails, emails_default.value, "default")
 
+  // console.log(ruleForm.value)
   const api = idName === "factory" ? updateFactoryContactApi : updateClientContactApi
   api({
     address_json: JSON.stringify([ruleForm.value])

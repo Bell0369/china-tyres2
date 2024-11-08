@@ -97,7 +97,18 @@ const submitForm = (formEl) => {
     <el-card v-loading="loading" shadow="never" class="search-wrapper">
       <div>
         <div class="m-b">
-          <el-text tag="b" size="large">銷售發票基本信息</el-text>
+          <div class="flex justify-between">
+            <el-text tag="b" size="large">銷售發票基本信息</el-text>
+            <!-- status: 0 未收  1  已收 -->
+            <el-alert
+              :title="invDate.status ? '已收款' : '未收款'"
+              :type="invDate.status ? 'success' : 'error'"
+              effect="dark"
+              :closable="false"
+              show-icon
+              style="width: auto"
+            />
+          </div>
         </div>
         <el-descriptions :column="4" border>
           <el-descriptions-item label="訂單號" :span="2">{{ invDate.order_no }}</el-descriptions-item>

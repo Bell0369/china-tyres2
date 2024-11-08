@@ -68,6 +68,11 @@ const resetSearch = () => {
 
 /** 监听分页参数的变化 */
 watch([() => paginationData.currentPage, () => paginationData.pageSize], getTableData, { immediate: true })
+
+// 逗號隔開
+const userList = (list) => {
+  return list.map((item) => item.delivery_plan_no).join(", ")
+}
 </script>
 
 <template>
@@ -117,14 +122,25 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
           <el-table-column prop="product_total_price" label="金額" align="center" />
           <el-table-column prop="inv_fee" label="附加金額" align="center" />
           <el-table-column prop="other_fee_price" label="其他費用" align="center" />
-          <el-table-column prop="status" label="應收狀態" align="center">
+          <!-- <el-table-column prop="status" label="應收狀態" align="center">
             <template #default="scope">
               <el-tag type="danger" v-if="scope.row.status === 0"> 未收 </el-tag>
               <el-tag type="success" v-else> 已收 </el-tag>
             </template>
+          </el-table-column> -->
+          <el-table-column
+            prop="delivery_plan_no"
+            label="發貨計劃"
+            width="200"
+            :show-overflow-tooltip="true"
+            align="center"
+          >
+            <template #default="scope">
+              <el-text>{{ userList(scope.row.delivery_plan_no) }}</el-text>
+            </template>
           </el-table-column>
           <el-table-column prop="created_at" label="创建时间" align="center" sortable />
-          <el-table-column fixed="right" label="操作" width="100" align="center">
+          <el-table-column fixed="right" label="操作" width="130" align="center">
             <template #default="scope">
               <el-button
                 v-permission="['invDetail', 'editInv']"
@@ -143,7 +159,6 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
                 bg
                 size="small"
                 @click="handleDelete(scope.row.id)"
-                style="display: none"
                 >删除</el-button
               >
             </template>

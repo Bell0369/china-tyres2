@@ -1,12 +1,13 @@
 <script setup>
 import { reactive, ref, watch } from "vue"
-import { getClientListApi, deleteClientListApi, getUserListApi } from "@/api/users"
+import { getClientListApi, deleteClientListApi } from "@/api/users"
 import { ElButton } from "element-plus"
 import { Search, CirclePlus, Refresh } from "@element-plus/icons-vue"
 import { usePagination } from "@/hooks/usePagination"
 import { useRouter } from "vue-router"
 import { usePayMentSelect } from "@/hooks/useSelectOption"
 import { useDeleteList } from "@/hooks/useDeleteList"
+import { useUserSelect } from "@/hooks/useUserSelect"
 import { Dialog } from "@/components/Dialog"
 import ClientAdd from "./ClientAdd.vue"
 
@@ -18,25 +19,8 @@ const router = useRouter()
 
 const { PayMentOptions } = usePayMentSelect()
 
-// 員工列表
-const loading2 = ref(false)
-const userOptions = ref([])
-const remoteMethod = (query) => {
-  loading2.value = true
-  getUserListApi({
-    keyword: query || undefined
-  })
-    .then(({ data }) => {
-      const list = data.data
-      userOptions.value = list
-    })
-    .catch(() => {
-      userOptions.value = []
-    })
-    .finally(() => {
-      loading2.value = false
-    })
-}
+// 員工
+const { loadUser, optionsUser, loadUserData } = useUserSelect()
 
 const loading = ref(false)
 
@@ -121,7 +105,7 @@ const handleChildEvent = () => {
     <el-card shadow="never" class="search-wrapper">
       <el-form ref="searchFormRef" :inline="true" :model="searchData">
         <el-form-item prop="keyword" label="用户名">
-          <el-input v-model="searchData.keyword" placeholder="請輸入客戶名稱、電話" style="width: 300px" />
+          <el-input v-model="searchData.keyword" placeholder="請輸入客戶名稱、客户编码" style="width: 300px" />
         </el-form-item>
         <el-form-item prop="payment_terms_id" label="付款條件">
           <el-select v-model="searchData.payment_terms_id" style="width: 150px">
@@ -135,12 +119,12 @@ const handleChildEvent = () => {
             filterable
             remote
             remote-show-suffix
-            :remote-method="remoteMethod"
-            :loading="loading"
+            :remote-method="loadUserData"
+            :loading="loadUser"
             style="width: 150px"
           >
             <el-option label="全部" value="" />
-            <el-option v-for="item in userOptions" :key="item.id" :label="item.username" :value="item.id" />
+            <el-option v-for="item in optionsUser" :key="item.id" :label="item.username" :value="item.id" />
           </el-select>
         </el-form-item>
         <el-form-item>
@@ -160,7 +144,7 @@ const handleChildEvent = () => {
       <div class="table-wrapper">
         <el-table ref="tableRef" :data="tableData" border>
           <el-table-column prop="client_name" label="客戶名稱" align="center" />
-          <!-- <el-table-column prop="username" label="所屬員工" align="center" /> -->
+          <el-table-column prop="client_code" label="编码" align="center" />
           <el-table-column prop="client_contact" label="聯繫人" align="center" />
           <el-table-column prop="phone" label="電話" width="150" align="center" />
           <el-table-column prop="email" label="Email" width="150" :show-overflow-tooltip="true" align="center" />

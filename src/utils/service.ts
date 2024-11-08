@@ -141,6 +141,7 @@ function createRequest(service: AxiosInstance) {
       headers: {
         // 携带 Token
         Authorization: token ? `Bearer ${token}` : undefined,
+        // application/json;multipart/form-data;charset=UTF-8
         "Content-Type": "application/json"
       },
       timeout: 20000,

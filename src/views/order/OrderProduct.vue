@@ -3,7 +3,7 @@ import { ref, reactive, onMounted } from "vue"
 import { Search, Refresh } from "@element-plus/icons-vue"
 import { getOrderDetailProductApi, getEtdOptionsApi, getEtdOrderProductSelectApi } from "@/api/order"
 import { useBrandSelect, useFactoryCodeSelect } from "@/hooks/useSelectOption"
-import { useClientSelect } from "@/hooks/useClientSelect"
+// import { useClientSelect } from "@/hooks/useClientSelect"
 import { Dialog } from "@/components/Dialog"
 
 defineOptions({
@@ -21,7 +21,7 @@ const { brandOptions } = useBrandSelect()
 const factoryCodeOptions = useFactoryCodeSelect()
 
 // 客户
-const { loadClient, optionsClient, loadClientData } = useClientSelect()
+// const { loadClient, optionsClient, loadClientData } = useClientSelect()
 
 const searchFormRef = ref()
 const searchData = reactive({
@@ -100,7 +100,7 @@ const getEtdList = () => {
         <el-form-item prop="product_name" label="產品名稱">
           <el-input v-model="searchData.product_name" placeholder="請輸入產品名稱" style="width: 200px" />
         </el-form-item>
-        <el-form-item prop="client_id" label="客戶編碼">
+        <!-- <el-form-item prop="client_id" label="客戶編碼">
           <el-select
             v-model="searchData.client_id"
             filterable
@@ -113,7 +113,7 @@ const getEtdList = () => {
             <el-option label="全部" value="" />
             <el-option v-for="item in optionsClient" :key="item.id" :label="item.client_code" :value="item.id" />
           </el-select>
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item prop="brand_code" label="品牌">
           <el-select v-model="searchData.brand_code" style="width: 150px">
             <el-option label="全部" value="" />

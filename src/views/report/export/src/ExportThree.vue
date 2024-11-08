@@ -2,6 +2,7 @@
 import { ref } from "vue"
 import { getOrderListApi } from "@/api/order"
 import { exportOrderCompleteFlowSchemeApi } from "@/api/selects"
+import { ElMessage } from "element-plus"
 
 defineOptions({
   name: "ExportThree"
@@ -26,7 +27,7 @@ const remoteMethod = (query) => {
     })
 }
 
-const order_no = ref(null)
+const order_no = ref("")
 
 // 導出訂單流程數據
 const loadingBtn1 = ref(false)
@@ -39,7 +40,7 @@ const exportData = (Type) => {
   }
   switch (Type) {
     case 1:
-      exportFile(exportOrderCompleteFlowSchemeApi, loadingBtn1, "order-process")
+      exportFile(exportOrderCompleteFlowSchemeApi, loadingBtn1, "訂單全流程數據")
       break
     default:
       break
@@ -54,7 +55,7 @@ const exportFile = (api, loadingRef, name) => {
     .then((data) => {
       const downloadLink = document.createElement("a")
       downloadLink.href = URL.createObjectURL(data)
-      downloadLink.download = `${order_no.value.order_no}.${name}.xlsx`
+      downloadLink.download = `${name}${order_no.value.order_no}.xlsx`
       downloadLink.click()
     })
     .finally(() => {
@@ -84,7 +85,13 @@ const exportFile = (api, loadingRef, name) => {
         </el-select>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" @click="exportData(1)" :loading="loadingBtn1">導出訂單全流程數據</el-button>
+        <el-button
+          v-permission="['exportOrderCompleteFlowScheme']"
+          type="primary"
+          @click="exportData(1)"
+          :loading="loadingBtn1"
+          >導出訂單全流程數據</el-button
+        >
       </el-form-item>
     </el-form>
   </el-card>

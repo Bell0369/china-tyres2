@@ -1,5 +1,5 @@
 import { ref } from "vue"
-import { getOrderListApi } from "@/api/order"
+import { getOptionsApi } from "@/api/selects"
 import { debounce } from "lodash-es"
 
 type OptionValue = string | number
@@ -24,12 +24,12 @@ export function useOrderSelet() {
 
   /** 调用接口获取数据 */
   const remoteMethod = () => {
-    getOrderListApi({
-      page_size: 20,
+    getOptionsApi({
+      type: 1,
       keyword: keyword.value
     })
       .then(({ data }) => {
-        optionsOrder.value = data.data
+        optionsOrder.value = data
       })
       .catch(() => {
         optionsOrder.value = []
