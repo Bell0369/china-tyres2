@@ -477,6 +477,15 @@ export const dynamicRoutes: RouteRecordRaw[] = [
           name: "Configuration",
           title: "付款條件"
         }
+      },
+      {
+        path: "ordernotes",
+        component: () => import("@/views/configuration/OrderNotes.vue"),
+        name: "OrderNotes",
+        meta: {
+          name: "Configuration",
+          title: "訂單備註"
+        }
       }
     ]
   },

@@ -228,12 +228,13 @@ const handleItemList = (row) => {
       </div>
       <div class="mb5">
         <el-tag effect="dark" type="danger" class="mr">
-          采購發票號：{{ infoData.procurement_invoice_no || " ----" }}
+          采購發票號：{{ infoData.procurement_invoice_no || "----" }}
         </el-tag>
-        <el-tag effect="dark" type="success" class="mr">采装箱柜量(40'HQ)：{{ infoData.quantity || " ----" }}</el-tag>
-        <el-tag effect="dark" type="warning" v-permission="['deliveryPlanListCost']"
-          >采购成本：{{ infoData.cost_price || " ----" }}</el-tag
+        <el-tag effect="dark" type="success" class="mr">采装箱柜量(40'HQ)：{{ infoData.quantity || "----" }}</el-tag>
+        <el-tag effect="dark" type="warning" class="mr" v-permission="['deliveryPlanListCost']"
+          >采购成本：{{ infoData.cost_price || "----" }}</el-tag
         >
+        <el-tag effect="dark" type="primary">裝貨數量：{{ infoData.total_number }}</el-tag>
       </div>
       <el-table :data="listInfo" border>
         <el-table-column type="expand">

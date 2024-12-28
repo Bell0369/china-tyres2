@@ -2,6 +2,7 @@
 import { ref } from "vue"
 import { exportSalesDataSalesmanApi, exportSalesDataAdminApi } from "@/api/selects"
 import { useUserStore } from "@/store/modules/user"
+import { ElMessage } from "element-plus"
 
 defineOptions({
   name: "ExportSix"
@@ -19,9 +20,14 @@ const loadingBtn2 = ref(false)
 
 // 選中數據
 const exportData = (Type) => {
+  if (monthrangeData.value[0] === "") {
+    ElMessage.error("請選擇时间先")
+    return false
+  }
+
   switch (Type) {
     case 1:
-      exportFile(exportSalesDataSalesmanApi, loadingBtn1, "業務員")
+      exportFile(exportSalesDataSalesmanApi, loadingBtn1, "Sales Data")
       break
     case 2:
       exportFile(exportSalesDataAdminApi, loadingBtn2, "管理員")
@@ -83,12 +89,12 @@ const exportFile = (api, loadingRef, name) => {
           v-permission="['exportSalesDataSalesman']"
           @click="exportData(1)"
           :loading="loadingBtn1"
-          >導出sales data(業務員)</el-button
+          >導出Sales Data</el-button
         >
       </el-form-item>
-      <el-form-item>
+      <el-form-item style="display: none">
         <el-button v-if="userinfo.role_name === '管理员'" type="primary" @click="exportData(2)" :loading="loadingBtn2"
-          >導出sales data(管理員)</el-button
+          >導出Sales Data(管理員)</el-button
         >
       </el-form-item>
     </el-form>

@@ -47,19 +47,19 @@ const exportData = (Type) => {
   }
   switch (Type) {
     case 1:
-      exportFile(exportInvApi, loadingInv, "銷售發票")
+      exportFile(exportInvApi, loadingInv, "INV")
       break
     case 2:
-      exportFile(exportPackingListApi, loadingPacking, "裝箱單")
+      exportFile(exportPackingListApi, loadingPacking, "PL")
       break
     case 3:
       exportFile(exportSNApi, loadingSN, "SN")
       break
     case 4:
-      exportFile(exportWeightNoteApi, loadingWeightNote, "Weight-Note")
+      exportFile(exportWeightNoteApi, loadingWeightNote, "WN")
       break
     case 5:
-      exportFile(exportAllApi, loadingAll, "發票-裝箱單-SN")
+      exportFile(exportAllApi, loadingAll, "INV-PL-SN")
       break
     default:
       break
@@ -79,9 +79,10 @@ const exportFile = (api, loadingRef, name) => {
         }
         reader.readAsText(data)
       } else {
+        const InvNo = inv_no.value.inv_no.slice(3)
         const downloadLink = document.createElement("a")
         downloadLink.href = URL.createObjectURL(data)
-        downloadLink.download = `${name}.${inv_no.value.inv_no}.xlsx`
+        downloadLink.download = `${name}${InvNo}-${inv_no.value.quantity}X40'HQ-${inv_no.value.client_code}.xlsx`
         downloadLink.click()
       }
     })
@@ -115,15 +116,23 @@ const exportFile = (api, loadingRef, name) => {
         <el-button type="primary" v-permission="['exportInv']" @click="exportData(1)" :loading="loadingInv"
           >導出銷售發票</el-button
         >
+      </el-form-item>
+      <el-form-item>
         <el-button type="primary" v-permission="['exportPackingList']" @click="exportData(2)" :loading="loadingPacking"
           >導出裝箱單</el-button
         >
+      </el-form-item>
+      <el-form-item>
         <el-button type="primary" v-permission="['exportSN']" @click="exportData(3)" :loading="loadingSN"
           >導出SN</el-button
         >
+      </el-form-item>
+      <el-form-item>
         <el-button type="primary" v-permission="['exportAll']" @click="exportData(5)" :loading="loadingAll"
           >合併發票/裝箱單/SN</el-button
         >
+      </el-form-item>
+      <el-form-item>
         <el-button
           type="primary"
           v-permission="['exportWeightNote']"

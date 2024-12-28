@@ -104,8 +104,8 @@ const handleChildEvent = () => {
   <div class="app-container">
     <el-card shadow="never" class="search-wrapper">
       <el-form ref="searchFormRef" :inline="true" :model="searchData">
-        <el-form-item prop="keyword" label="用户名">
-          <el-input v-model="searchData.keyword" placeholder="請輸入客戶名稱、客户编码" style="width: 300px" />
+        <el-form-item prop="keyword" label="客戶名稱">
+          <el-input v-model="searchData.keyword" placeholder="請輸入客戶名稱或客户编码" style="width: 300px" />
         </el-form-item>
         <el-form-item prop="payment_terms_id" label="付款條件">
           <el-select v-model="searchData.payment_terms_id" style="width: 150px">

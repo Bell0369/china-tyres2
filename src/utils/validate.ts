@@ -103,3 +103,9 @@ export const validateNumberMinMax = (value: string) => {
   if (Number(value) > 100) value = "100"
   return value
 }
+
+// 只能输入正负数值和保留两位小数
+export const isValidNumber = (value: string) => {
+  const regex = /^-?\d+(\.\d{0,2})?$/
+  return regex.test(value)
+}

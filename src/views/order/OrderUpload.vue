@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive } from "vue"
+import { ref, reactive, onMounted } from "vue"
 import { ElButton, ElMessage } from "element-plus"
 import { useRoute, useRouter } from "vue-router"
 import { useBrandSelect, useFactoryCodeSelect } from "@/hooks/useSelectOption"
@@ -8,6 +8,7 @@ import { uploadOrderApi } from "@/api/order"
 import UploadInfo from "./components/UploadInfo.vue"
 import { UploadXlsx } from "@/components/UploadXlsx"
 import { redirectTo } from "@/utils/tagsclose"
+import { getOrderRemarksConfigListApi } from "@/api/selects"
 
 defineOptions({
   name: "OrderUpload"
@@ -23,6 +24,21 @@ const factoryCodeOptions = useFactoryCodeSelect()
 
 // 客户
 const { loadClient, optionsClient, loadClientData } = useClientSelect()
+
+const contentOptions = ref([])
+const contentValue = ref("")
+const getContentService = () => {
+  getOrderRemarksConfigListApi({
+    page: 1,
+    pageSize: 1000
+  }).then(({ data }) => {
+    contentOptions.value = data.data
+  })
+}
+
+onMounted(() => {
+  getContentService()
+})
 
 // tag
 const route = useRoute()
@@ -79,6 +95,7 @@ const submitForm = (Type) => {
       formData.append("client_id", ruleForm.client_id)
       formData.append("factory_code", ruleForm.factory_code)
       formData.append("brand_id", ruleForm.brand_id)
+      formData.append("content", contentValue.value)
       uploadOrderApi(formData)
         .then(({ data }) => {
           if (Type === 1) {
@@ -157,6 +174,13 @@ const filterTable = () => {
             <el-form-item label="品牌代碼" prop="brand_id">
               <el-select v-model="ruleForm.brand_id">
                 <el-option v-for="item in brandOptions" :key="item.id" :label="item.name" :value="item.id" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="6">
+            <el-form-item label="訂單備註">
+              <el-select v-model="contentValue" clearable>
+                <el-option v-for="item in contentOptions" :key="item.id" :label="item.content" :value="item.content" />
               </el-select>
             </el-form-item>
           </el-col>

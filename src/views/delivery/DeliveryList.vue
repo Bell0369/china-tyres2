@@ -1,6 +1,6 @@
 <script setup>
 import { reactive, ref, watch, onActivated } from "vue"
-import { getDeliveryPlanListApi, deleteDeliveryPlanApi, createInvApi } from "@/api/order"
+import { getDeliveryPlanListApi, deleteDeliveryPlanApi, createInvApi, exportDeliveryPlanApi } from "@/api/order"
 import { ElButton, ElMessage } from "element-plus"
 import { Search, CirclePlus, Refresh, FolderAdd } from "@element-plus/icons-vue"
 import { useRouter } from "vue-router"
@@ -53,7 +53,8 @@ const searchData = reactive({
   keyword: "" || undefined,
   client_code: "" || undefined,
   factory_code: "" || undefined,
-  brand_code: "" || undefined
+  brand_code: "" || undefined,
+  procurement_invoice_no: "" || undefined
 })
 const getTableData = () => {
   loading.value = true
@@ -161,6 +162,35 @@ const selectable = (row) => {
     return true
   }
 }
+
+// 導出
+const handleExport = (rows) => {
+  loading.value = true
+  exportDeliveryPlanApi({
+    id: rows.id
+  })
+    .then((data) => {
+      if (data.type === "application/json") {
+        const reader = new FileReader()
+        reader.onload = () => {
+          const text = reader.result
+          const jsonResponse = JSON.parse(text)
+          ElMessage.error(jsonResponse.message)
+        }
+        reader.readAsText(data)
+      } else {
+        const downloadLink = document.createElement("a")
+        downloadLink.href = URL.createObjectURL(data)
+        downloadLink.download = `${rows.delivery_plan_no}.${rows.brand_code}.${rows.client_code}.xlsx`
+        downloadLink.click()
+      }
+    })
+    .finally(() => {
+      setTimeout(() => {
+        loading.value = false
+      }, 500)
+    })
+}
 </script>
 
 <template>
@@ -169,6 +199,9 @@ const selectable = (row) => {
       <el-form ref="searchFormRef" :inline="true" :model="searchData">
         <el-form-item prop="keyword" label="訂單">
           <el-input v-model="searchData.keyword" placeholder="請輸入PI號，發貨計劃號" style="width: 300px" />
+        </el-form-item>
+        <el-form-item prop="keyword" label="采購發票號">
+          <el-input v-model="searchData.procurement_invoice_no" placeholder="請輸入采購發票號" style="width: 300px" />
         </el-form-item>
         <el-form-item>
           <el-date-picker
@@ -253,7 +286,7 @@ const selectable = (row) => {
           <el-table-column prop="not_shipped" label="未發貨數" align="center" />
           <el-table-column prop="procurement_invoice_no" label="採購發票號" align="center" />
           <el-table-column prop="created_at" label="创建时间" align="center" sortable />
-          <el-table-column fixed="right" label="操作" width="150" align="center">
+          <el-table-column fixed="right" label="操作" width="190" align="center">
             <template #default="scope">
               <el-button
                 v-permission="['deliveryPlanDetails']"
@@ -273,6 +306,7 @@ const selectable = (row) => {
                 @click="handleDelete(scope.row.id)"
                 >删除</el-button
               >
+              <el-button type="warning" text bg size="small" @click="handleExport(scope.row)">導出</el-button>
             </template>
           </el-table-column>
         </el-table>

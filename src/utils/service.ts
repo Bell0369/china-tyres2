@@ -144,7 +144,7 @@ function createRequest(service: AxiosInstance) {
         // application/json;multipart/form-data;charset=UTF-8
         "Content-Type": "application/json"
       },
-      timeout: 20000,
+      timeout: 1200000,
       baseURL: import.meta.env.VITE_BASE_API,
       data: {}
     }

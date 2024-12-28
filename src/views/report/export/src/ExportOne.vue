@@ -32,7 +32,7 @@ const exportData = (Type) => {
 
   switch (Type) {
     case 1:
-      exportFile(exportTheShipmentLedgerApi, loadingBtn1, "发票流水账")
+      exportFile(exportTheShipmentLedgerApi, loadingBtn1, "發貨流水賬")
       break
     case 2:
       exportFile(exportSellRealSituationApi, loadingBtn2, "銷售流水账")

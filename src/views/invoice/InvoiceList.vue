@@ -119,7 +119,7 @@ const userList = (list) => {
         <el-table :data="tableData" border>
           <el-table-column prop="inv_no" label="銷售發票號" align="center" />
           <el-table-column prop="client_code" label="客戶編碼" align="center" />
-          <el-table-column prop="product_total_price" label="金額" align="center" />
+          <el-table-column prop="original_product_total_price" label="FOB 金額" align="center" />
           <el-table-column prop="inv_fee" label="附加金額" align="center" />
           <el-table-column prop="other_fee_price" label="其他費用" align="center" />
           <!-- <el-table-column prop="status" label="應收狀態" align="center">

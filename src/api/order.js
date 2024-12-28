@@ -230,6 +230,16 @@ export function createInvApi(data) {
   })
 }
 
+// 導出销售发票
+export function exportDeliveryPlanApi(data) {
+  return request({
+    url: "delivery/exportDeliveryPlan",
+    method: "post",
+    responseType: "blob",
+    data
+  })
+}
+
 // 查詢發貨計劃號
 export function getDeliveryPlanNoApi(params) {
   return request({

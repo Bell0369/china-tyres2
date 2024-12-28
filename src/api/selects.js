@@ -83,6 +83,34 @@ export function addPaymentTermsApi(data) {
   })
 }
 
+/**訂單備注配置列表 */
+//  查
+export function getOrderRemarksConfigListApi(params) {
+  return request({
+    url: "config/orderRemarksConfigList",
+    method: "get",
+    params
+  })
+}
+
+//  加
+export function addOrderRemarksConfigApi(data) {
+  return request({
+    url: "config/addOrderRemarksConfig",
+    method: "post",
+    data
+  })
+}
+
+//  刪
+export function deleteOrderRemarksConfigApi(data) {
+  return request({
+    url: "config/deleteOrderRemarksConfig",
+    method: "post",
+    data
+  })
+}
+
 // 國家地區
 export function getCountriesAreaApi(params) {
   return request({

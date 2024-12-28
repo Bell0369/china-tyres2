@@ -5,7 +5,7 @@ import { useRoute } from "vue-router"
 import { getinvDetailApi, updateInvApi } from "@/api/order"
 import ProductInvoice from "./components/ProductInvoice.vue"
 import { ElMessage } from "element-plus"
-import { validateNumberMin } from "@/utils/validate"
+import { isValidNumber } from "@/utils/validate"
 
 const route = useRoute()
 
@@ -176,11 +176,7 @@ const submitForm = (formEl) => {
                     trigger: 'blur'
                   }"
                 >
-                  <el-input
-                    v-model="domain.price"
-                    type="number"
-                    @input="domain.price = validateNumberMin(domain.price)"
-                  />
+                  <el-input v-model="domain.price" type="number" @input="isValidNumber(domain.price)" />
                 </el-form-item>
               </el-col>
               <el-col :span="2">
@@ -210,7 +206,7 @@ const submitForm = (formEl) => {
                   <el-input
                     v-model="otherFee.other_fee_price"
                     type="number"
-                    @input="otherFee.other_fee_price = validateNumberMin(otherFee.other_fee_price)"
+                    @input="isValidNumber(otherFee.other_fee_price)"
                   />
                 </el-form-item>
               </el-col>

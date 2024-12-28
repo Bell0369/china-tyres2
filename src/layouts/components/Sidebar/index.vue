@@ -85,13 +85,13 @@ const hiddenScrollbarVerticalBar = computed(() => {
 .has-logo {
   .el-scrollbar {
     // 多 1% 是为了在左侧模式时侧边栏最底部不显示 1px 左右的白色线条
-    height: calc(101% - var(--v3-header-height));
+    height: calc(100% - var(--v3-header-height));
   }
 }
 
 .el-scrollbar {
   // 多 1% 是为了在顶部模式时防止垂直滚动
-  height: 101%;
+  height: 100%;
   :deep(.scrollbar-wrapper) {
     // 限制水平宽度
     overflow-x: hidden !important;
