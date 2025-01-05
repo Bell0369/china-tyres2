@@ -76,6 +76,7 @@ setTimeout(() => {
         />
       </el-descriptions-item>
       <el-descriptions-item label="訂單總金額">{{ infoData.order_total_price }}</el-descriptions-item>
+      <el-descriptions-item label="訂單備註">{{ infoData.order_remarks || "----" }}</el-descriptions-item>
       <el-descriptions-item label="目的港">{{ infoData.destination }}</el-descriptions-item>
       <el-descriptions-item label="Remarks">{{ infoData.remarks }}</el-descriptions-item>
       <el-descriptions-item label="Terms of Pay ment">{{ infoData.terms_of_payment }}</el-descriptions-item>

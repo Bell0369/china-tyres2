@@ -145,6 +145,9 @@ watch(
           <el-descriptions-item label="採購發票號">
             {{ orderInfo1.procurement_invoice_no || "---" }}
           </el-descriptions-item>
+          <el-descriptions-item label="訂單備註">
+            {{ orderInfo1.order_remarks || "---" }}
+          </el-descriptions-item>
           <el-descriptions-item label="工廠名稱">{{ orderInfo1.factory_name }}</el-descriptions-item>
           <el-descriptions-item label="目的港">{{ orderInfo1.destination }}</el-descriptions-item>
           <el-descriptions-item label="ETD時間">{{ orderInfo1.etd_date || "---" }}</el-descriptions-item>

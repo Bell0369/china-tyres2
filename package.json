@@ -33,6 +33,7 @@
     "element-plus": "2.6.2",
     "js-cookie": "3.0.5",
     "jspdf": "^2.5.2",
+    "jspdf-autotable": "^3.8.4",
     "lodash-es": "4.17.21",
     "mitt": "3.0.1",
     "normalize.css": "8.0.1",

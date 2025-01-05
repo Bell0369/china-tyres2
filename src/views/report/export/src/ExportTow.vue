@@ -3,6 +3,7 @@ import { ref } from "vue"
 import { ElMessage } from "element-plus"
 import { getInvListApi } from "@/api/order"
 import { exportInvApi, exportPackingListApi, exportSNApi, exportWeightNoteApi, exportAllApi } from "@/api/selects"
+import { exportDataPdf } from "../exportPdf"
 
 defineOptions({
   name: "ExportTow"
@@ -82,7 +83,13 @@ const exportFile = (api, loadingRef, name) => {
         const InvNo = inv_no.value.inv_no.slice(3)
         const downloadLink = document.createElement("a")
         downloadLink.href = URL.createObjectURL(data)
-        downloadLink.download = `${name}${InvNo}-${inv_no.value.quantity}X40'HQ-${inv_no.value.client_code}.xlsx`
+        // 仅在發貨類型為WH或DIR的時候加上工廠名稱，發票列表已返回發貨類型字段：shipped_type
+        if (inv_no.value.shipped_type === "WH" || inv_no.value.shipped_type === "DIR") {
+          downloadLink.download = `${name}${InvNo}-${inv_no.value.quantity}X40HQ-${inv_no.value.factory_name}-${inv_no.value.client_code}.xlsx`
+        } else {
+          downloadLink.download = `${name}${InvNo}-${inv_no.value.quantity}X40HQ-${inv_no.value.client_code}.xlsx`
+        }
+        // downloadLink.download = `${name}${InvNo}-${inv_no.value.quantity}X40HQ-${inv_no.value.client_code}.xlsx`
         downloadLink.click()
       }
     })
@@ -91,6 +98,15 @@ const exportFile = (api, loadingRef, name) => {
         loadingRef.value = false
       }, 500)
     })
+}
+
+//
+const loadingPdf = ref(false)
+const handleExportPdf = () => {
+  loadingPdf.value = true
+  exportDataPdf(inv_no.value, () => {
+    loadingPdf.value = false
+  })
 }
 </script>
 
@@ -139,6 +155,11 @@ const exportFile = (api, loadingRef, name) => {
           @click="exportData(4)"
           :loading="loadingWeightNote"
           >導出Weight Note</el-button
+        >
+      </el-form-item>
+      <el-form-item>
+        <el-button type="warning" v-permission="['exportInv']" @click="handleExportPdf" :loading="loadingPdf"
+          >導出銷售發票(PDF)</el-button
         >
       </el-form-item>
     </el-form>

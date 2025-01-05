@@ -432,3 +432,12 @@ export function AffirmFactoryReceivableApi(data) {
     data
   })
 }
+
+// 發票導出PDF數據
+export function exportInvToPdfApi(data) {
+  return request({
+    url: "inv/exportInvToPdf",
+    method: "post",
+    data
+  })
+}

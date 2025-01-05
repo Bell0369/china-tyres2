@@ -56,6 +56,7 @@ watch([isQuantity], () => {
         <el-descriptions-item label="起運港">{{ orderInfo.originating }}</el-descriptions-item>
         <el-descriptions-item label="目的港">{{ orderInfo.destination }}</el-descriptions-item>
         <el-descriptions-item label="商品描述">{{ orderInfo.describe }}</el-descriptions-item>
+        <el-descriptions-item label="訂單備註">{{ orderInfo.order_remarks || "----" }}</el-descriptions-item>
         <el-descriptions-item label="Remarks" :span="2">{{ orderInfo.remarks }}</el-descriptions-item>
         <el-descriptions-item label="Packing">{{ orderInfo.packing }}</el-descriptions-item>
         <el-descriptions-item label="Terms of Pay ment" :span="2">{{ orderInfo.terms_payment }}</el-descriptions-item>

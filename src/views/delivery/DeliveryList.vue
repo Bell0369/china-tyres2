@@ -285,6 +285,7 @@ const handleExport = (rows) => {
           <el-table-column prop="shipped" label="已發貨數" align="center" />
           <el-table-column prop="not_shipped" label="未發貨數" align="center" />
           <el-table-column prop="procurement_invoice_no" label="採購發票號" align="center" />
+          <el-table-column prop="order_remarks" label="訂單備註" align="center" />
           <el-table-column prop="created_at" label="创建时间" align="center" sortable />
           <el-table-column fixed="right" label="操作" width="190" align="center">
             <template #default="scope">
