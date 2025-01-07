@@ -13,12 +13,20 @@ const centerTexts = [
 
 // a4纸的尺寸[210毫米×297毫米]
 const options = {
-  orientation: "landscape",
+  // orientation: "landscape",
   unit: "mm",
   format: "a4",
   putOnlyUsedFonts: true,
   floatPrecision: 14
 }
+
+const cells1 = 24
+const cells2 = 25
+const cells3 = 67
+const cells4 = 17
+const cells5 = 19
+const fontSize = 8
+const margins = { top: 15, right: 10, bottom: 15, left: 10 }
 
 export const exportDataPdf = async (inv_no, callback) => {
   const { data } = await exportInvToPdfApi({ id: inv_no.id })
@@ -26,16 +34,16 @@ export const exportDataPdf = async (inv_no, callback) => {
   const doc = new jsPDF(options)
   doc.addFileToVFS("ok.ttf", myFont)
   doc.addFont("ok.ttf", "myFont", "normal")
-  doc.setFontSize(10)
+  doc.setFontSize(fontSize)
   // 添加標題
-  doc.text(centerTexts[0], setTextCenter(doc, centerTexts[0]), 20)
+  doc.text(centerTexts[0], setTextCenter(doc, centerTexts[0]), 15)
   doc.setFont("myFont")
-  doc.text(centerTexts[1], setTextCenter(doc, centerTexts[1]), 26)
+  doc.text(centerTexts[1], setTextCenter(doc, centerTexts[1]), 21)
   doc.setFont("helvetica", "italic")
-  doc.text(centerTexts[2], setTextCenter(doc, centerTexts[2]), 32)
-  doc.text(centerTexts[3], setTextCenter(doc, centerTexts[3]), 38)
+  doc.text(centerTexts[2], setTextCenter(doc, centerTexts[2]), 27)
+  doc.text(centerTexts[3], setTextCenter(doc, centerTexts[3]), 33)
   doc.setFont("helvetica", "normal")
-  doc.text(centerTexts[4], setTextCenter(doc, centerTexts[4]), 44)
+  doc.text(centerTexts[4], setTextCenter(doc, centerTexts[4]), 39)
 
   const tableInfo1 = [
     ["TO:", data.to[0], "DATE:", data.date],
@@ -44,35 +52,35 @@ export const exportDataPdf = async (inv_no, callback) => {
   ]
   autoTable(doc, {
     body: tableInfo1,
-    startY: 50,
+    startY: 45,
     styles: {
-      fontSize: 10,
+      fontSize: fontSize,
       cellPadding: 1
     },
+    margin: margins,
     theme: "plain",
     columnStyles: {
-      0: { cellWidth: 40 },
-      1: { cellWidth: 140 },
-      2: { cellWidth: 32 },
-      3: { cellWidth: 50 }
+      0: { cellWidth: cells1 },
+      1: { cellWidth: cells2 + cells3 },
+      2: { cellWidth: cells4 + cells5 },
+      3: { cellWidth: cells5 * 2 }
     }
   })
-  let tops1 = tableInfo1.length * 8 + 50
+  let tops1 = 45 + 20
   doc.text(
-    "************************************************************************************************************************************************************************************",
-    15,
+    "***************************************************************************************************************************************************************************",
+    margins.left,
     tops1
   )
   tops1 = tops1 + 5
-  doc.text(data.destination, 15, tops1)
-  tops1 = tops1 + 8
+  doc.text(data.destination, margins.left, tops1)
+  tops1 = tops1 + 5
   doc.text(
-    "************************************************************************************************************************************************************************************",
-    15,
+    "***************************************************************************************************************************************************************************",
+    margins.left,
     tops1
   )
   // 商品描述
-  tops1 = tops1 + 3
   const tableInfo2 = [
     ["SHIPPING", "EAN CODE", "DESCRIPTION OF GOODS", "QTY.", "UNIT PRICE", "AMOUNT"],
     ["MARKS", "", data.describe_str, "PCS", "(USD)", "(USD)"]
@@ -81,55 +89,58 @@ export const exportDataPdf = async (inv_no, callback) => {
     body: tableInfo2,
     startY: tops1,
     styles: {
-      fontSize: 10,
+      fontSize: fontSize,
       cellPadding: 1
     },
+    margin: margins,
     theme: "plain",
     columnStyles: {
-      0: { halign: "center", cellWidth: 40 },
-      1: { halign: "center", cellWidth: 37 },
-      2: { halign: "left", cellWidth: 112 },
-      4: { halign: "center", cellWidth: 25 },
-      5: { halign: "center", cellWidth: 25 },
-      6: { halign: "center", cellWidth: 28 }
+      0: { halign: "center", cellWidth: cells1 },
+      1: { halign: "center", cellWidth: cells2 },
+      2: { halign: "left", cellWidth: cells3 + cells4 },
+      4: { halign: "center", cellWidth: cells5 },
+      5: { halign: "center", cellWidth: cells5 },
+      6: { halign: "center", cellWidth: cells5 }
     }
   })
 
   // 添加表格-海關代碼
   autoTable(doc, {
     body: tableData1(data.customs_code),
-    startY: doc.lastAutoTable.finalY + 5,
+    startY: doc.lastAutoTable.finalY + 2,
     styles: {
-      fontSize: 10, // 字体大小
+      fontSize: fontSize, // 字体大小
       cellPadding: 1 // 单元格内边距
     },
+    margin: margins,
     theme: "plain",
     columnStyles: {
-      0: { halign: "center", cellWidth: 40 },
-      1: { halign: "left", cellWidth: 37 },
-      2: { halign: "right", cellWidth: 90 },
-      3: { halign: "right", cellWidth: 47 },
-      4: { halign: "right", cellWidth: 53 }
+      0: { halign: "center", cellWidth: cells1 },
+      1: { halign: "left", cellWidth: cells2 },
+      2: { halign: "right", cellWidth: cells3 },
+      3: { halign: "right", cellWidth: cells4 + cells5 },
+      4: { halign: "right", cellWidth: cells5 * 2 }
     }
   })
 
   // 添加表格 - 装箱单
   autoTable(doc, {
     body: tableData(data.product_info),
-    startY: doc.lastAutoTable.finalY + 2,
+    startY: doc.lastAutoTable.finalY + 1,
     styles: {
-      fontSize: 9,
-      cellPadding: 2
+      fontSize: 7,
+      cellPadding: 1
     },
+    margin: margins,
     theme: "grid",
     columnStyles: {
-      0: { halign: "center", valign: "middle", cellWidth: 40 },
-      1: { halign: "center", cellWidth: 37 },
-      2: { halign: "left", cellWidth: 90 },
-      3: { halign: "center", cellWidth: 22 },
-      4: { halign: "right", cellWidth: 25 },
-      5: { halign: "right", cellWidth: 25 },
-      6: { halign: "right", cellWidth: 28 }
+      0: { halign: "center", valign: "middle", cellWidth: cells1, fontStyle: "bold", textColor: "#000000" },
+      1: { halign: "center", cellWidth: cells2 },
+      2: { halign: "left", cellWidth: cells3 },
+      3: { halign: "center", cellWidth: cells4 },
+      4: { halign: "right", cellWidth: cells5 },
+      5: { halign: "right", cellWidth: cells5 },
+      6: { halign: "right", cellWidth: cells5 }
     }
   })
 
@@ -142,17 +153,18 @@ export const exportDataPdf = async (inv_no, callback) => {
   tableInfo3.push(["", "TOTAL: 4 X40 HQ", data.total_number, data.end_price.toFixed(2)])
   autoTable(doc, {
     body: tableInfo3,
-    startY: doc.lastAutoTable.finalY + 2,
+    startY: doc.lastAutoTable.finalY,
     styles: {
-      fontSize: 10, // 字体大小
-      cellPadding: 1 // 单元格内边距
+      fontSize: fontSize,
+      cellPadding: 1
     },
+    margin: margins,
     theme: "plain",
     columnStyles: {
-      0: { cellWidth: 40 },
-      1: { cellWidth: 127 },
-      2: { halign: "right", cellWidth: 47 },
-      3: { halign: "right", cellWidth: 53 }
+      0: { cellWidth: cells1 },
+      1: { cellWidth: cells2 + cells3 },
+      2: { halign: "right", cellWidth: cells4 + cells5 },
+      3: { halign: "right", cellWidth: cells5 * 2 }
     }
   })
 
@@ -170,26 +182,45 @@ export const exportDataPdf = async (inv_no, callback) => {
   ]
   autoTable(doc, {
     body: tableInfo4,
-    startY: doc.lastAutoTable.finalY + 15,
+    startY: doc.lastAutoTable.finalY + 10,
     styles: {
-      fontSize: 10,
+      fontSize: fontSize,
       cellPadding: 1
     },
+    margin: margins,
     theme: "plain",
     columnStyles: {
-      0: { cellWidth: 40 },
-      1: { cellWidth: 227 }
+      0: { cellWidth: cells1 + cells4 },
+      1: { cellWidth: cells3 + cells2 + cells5 * 3 }
     }
   })
 
-  const tops = doc.lastAutoTable.finalY + 20
-  doc.text(data.client_code, 15, tops)
-  doc.text("DIRECT ORDER", 15, tops + 5)
-  doc.text("ALL TYRES MENTIONED ON THIS INVOICE ARE MADE IN CHINA", 15, tops + 10)
+  autoTable(doc, {
+    body: [[data.client_code], ["DIRECT ORDER"], ["ALL TYRES MENTIONED ON THIS INVOICE ARE MADE IN CHINA"]],
+    startY: doc.lastAutoTable.finalY + 10,
+    styles: {
+      fontSize: fontSize,
+      cellPadding: 1
+    },
+    margin: margins,
+    theme: "plain"
+  })
+
+  // 手动添加页码
+  const pageCount = doc.internal.getNumberOfPages()
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i) // 设置当前页
+    doc.setFont("myFont")
+    const footerText = `第${i}页-共${pageCount}页`
+    doc.text(footerText, doc.internal.pageSize.width / 2, doc.internal.pageSize.height - 8, {
+      align: "center"
+    })
+  }
 
   // 保存 PDF
   if (inv_no.shipped_type === "WH" || inv_no.shipped_type === "DIR") {
-    doc.save(`${inv_no.inv_no}-${inv_no.quantity}X40HQ-${inv_no.factory_name}-${inv_no.client_code}.pdf`)
+    const factoryName = inv_no.factory_name.join("-")
+    doc.save(`${inv_no.inv_no}-${inv_no.quantity}X40HQ-${factoryName}-${inv_no.client_code}.pdf`)
   } else {
     doc.save(`${inv_no.inv_no}-${inv_no.quantity}X40HQ-${inv_no.client_code}.pdf`)
   }
@@ -201,7 +232,7 @@ export const exportDataPdf = async (inv_no, callback) => {
 const tableData1 = (data) => {
   const tableData = []
   for (let i = 0; i < data.length; i++) {
-    tableData.push(["", data[i].title, data[i].code, data[i].code_number, data[i].total_prices])
+    tableData.push(["", data[i].title, data[i].code, data[i].code_number, data[i].total_prices.toFixed(2)])
   }
   return tableData
 }
@@ -219,17 +250,18 @@ const tableData = (data) => {
   const tableData = []
   for (const [category, items] of Object.entries(data)) {
     // 第一列内容需要合并
-    tableData.push([
-      { content: category, rowSpan: items.length },
-      items[0].ean,
-      items[0].product_name,
-      items[0].brand,
-      items[0].number,
-      items[0].unit_price,
-      items[0].total_price
-    ])
-    for (let i = 1; i < items.length; i++) {
+    // tableData.push([
+    //   { content: category, rowSpan: items.length },
+    //   items[0].ean,
+    //   items[0].product_name,
+    //   items[0].brand,
+    //   items[0].number,
+    //   items[0].unit_price,
+    //   items[0].total_price
+    // ])
+    for (let i = 0; i < items.length; i++) {
       tableData.push([
+        i === 0 ? category : "",
         items[i].ean,
         items[i].product_name,
         items[i].brand,

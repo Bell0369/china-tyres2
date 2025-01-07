@@ -187,7 +187,7 @@ const handleItemList = (row) => {
               :label="city.delivery_plan_no"
               :value="city.delivery_plan_no"
             >
-              {{ city.delivery_plan_no }}
+              {{ city.delivery_plan_no }} <span style="color: #999">({{ city.order_remarks }})</span>
             </el-checkbox>
           </el-checkbox-group>
         </el-col>

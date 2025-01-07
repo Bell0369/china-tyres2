@@ -145,13 +145,13 @@ const handleChildEvent = () => {
         <el-table ref="tableRef" :data="tableData" border>
           <el-table-column prop="client_name" label="客戶名稱" align="center" />
           <el-table-column prop="client_code" label="编码" align="center" />
+          <el-table-column prop="payment_terms_name" label="付款條件" align="center" />
+          <el-table-column prop="credit" label="信用額度" align="center" />
+          <el-table-column prop="advance_payment" label="預付款" align="center" />
           <el-table-column prop="client_contact" label="聯繫人" align="center" />
           <el-table-column prop="phone" label="電話" width="150" align="center" />
           <el-table-column prop="email" label="Email" width="150" :show-overflow-tooltip="true" align="center" />
           <el-table-column prop="address" width="150" :show-overflow-tooltip="true" label="地址" align="center" />
-          <el-table-column prop="payment_terms_name" label="付款條件" align="center" />
-          <el-table-column prop="credit" label="信用額度" align="center" />
-          <el-table-column prop="advance_payment" label="預付款" align="center" />
           <el-table-column prop="created_at" label="创建时间" align="center" sortable />
           <el-table-column fixed="right" label="操作" width="100" align="center">
             <template #default="scope">

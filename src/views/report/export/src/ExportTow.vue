@@ -85,7 +85,8 @@ const exportFile = (api, loadingRef, name) => {
         downloadLink.href = URL.createObjectURL(data)
         // 仅在發貨類型為WH或DIR的時候加上工廠名稱，發票列表已返回發貨類型字段：shipped_type
         if (inv_no.value.shipped_type === "WH" || inv_no.value.shipped_type === "DIR") {
-          downloadLink.download = `${name}${InvNo}-${inv_no.value.quantity}X40HQ-${inv_no.value.factory_name}-${inv_no.value.client_code}.xlsx`
+          const factoryName = inv_no.value.factory_name.join("-")
+          downloadLink.download = `${name}${InvNo}-${inv_no.value.quantity}X40HQ-${factoryName}-${inv_no.value.client_code}.xlsx`
         } else {
           downloadLink.download = `${name}${InvNo}-${inv_no.value.quantity}X40HQ-${inv_no.value.client_code}.xlsx`
         }

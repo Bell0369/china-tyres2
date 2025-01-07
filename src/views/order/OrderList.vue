@@ -6,6 +6,7 @@ import { usePagination } from "@/hooks/usePagination"
 import { getOrderListApi, updateQuantityApi, deleteOrderApi } from "@/api/order"
 import { useBrandSelect, useFactoryCodeSelect } from "@/hooks/useSelectOption"
 import { useClientSelect } from "@/hooks/useClientSelect"
+import { useRemarksSelect } from "@/hooks/useOrderRemarksSelect"
 import { useDeleteList } from "@/hooks/useDeleteList"
 import { useUpdateQuantity } from "@/hooks/useUpdateQuantity"
 import { handleActivated } from "@/utils/tagsclose"
@@ -26,6 +27,9 @@ const factoryCodeOptions = useFactoryCodeSelect()
 
 // 客户
 const { loadClient, optionsClient, loadClientData } = useClientSelect()
+
+// 订单备注
+const { loadRemarks, optionsRemarks, loadRemarksData } = useRemarksSelect()
 
 // 删除
 const { handleDelete, isDeleted } = useDeleteList({
@@ -53,7 +57,8 @@ const searchData = reactive({
   keyword: "",
   client_code: "",
   brand_code: "",
-  factory_code: ""
+  factory_code: "",
+  order_remarks: ""
 })
 const getTableData = () => {
   loading.value = true
@@ -144,6 +149,20 @@ onActivated(() => {
             <el-option v-for="item in factoryCodeOptions" :key="item.id" :label="item.name" :value="item.code" />
           </el-select>
         </el-form-item>
+        <el-form-item prop="order_remarks" label="訂單備註">
+          <el-select
+            v-model="searchData.order_remarks"
+            filterable
+            remote
+            remote-show-suffix
+            :remote-method="loadRemarksData"
+            :loading="loadRemarks"
+            style="width: 150px"
+          >
+            <el-option label="全部" value="" />
+            <el-option v-for="item in optionsRemarks" :key="item.id" :label="item.content" :value="item.content" />
+          </el-select>
+        </el-form-item>
         <el-form-item>
           <el-button type="primary" :icon="Search" @click="handleSearch">查詢</el-button>
           <el-button :icon="Refresh" @click="resetSearch">重置</el-button>
@@ -176,6 +195,7 @@ onActivated(() => {
           <el-table-column prop="pi_number" label="PI數量" align="center" />
           <el-table-column prop="pi_shipped_number" label="PI已發貨數量" align="center" />
           <el-table-column prop="pi_not_shipped_number" label="PI未發貨數量" align="center" />
+          <el-table-column prop="order_remarks" label="訂單備註" align="center" />
           <el-table-column prop="created_at" label="创建时间" align="center" sortable />
           <el-table-column fixed="right" label="操作" width="130" align="center">
             <template #default="scope">

@@ -1,14 +1,14 @@
 <script setup>
-import { ref, reactive, onMounted } from "vue"
+import { ref, reactive } from "vue"
 import { ElButton, ElMessage } from "element-plus"
 import { useRoute, useRouter } from "vue-router"
 import { useBrandSelect, useFactoryCodeSelect } from "@/hooks/useSelectOption"
 import { useClientSelect } from "@/hooks/useClientSelect"
+import { useRemarksSelect } from "@/hooks/useOrderRemarksSelect"
 import { uploadOrderApi } from "@/api/order"
 import UploadInfo from "./components/UploadInfo.vue"
 import { UploadXlsx } from "@/components/UploadXlsx"
 import { redirectTo } from "@/utils/tagsclose"
-import { getOrderRemarksConfigListApi } from "@/api/selects"
 
 defineOptions({
   name: "OrderUpload"
@@ -25,20 +25,8 @@ const factoryCodeOptions = useFactoryCodeSelect()
 // 客户
 const { loadClient, optionsClient, loadClientData } = useClientSelect()
 
-const contentOptions = ref([])
-const contentValue = ref("")
-const getContentService = () => {
-  getOrderRemarksConfigListApi({
-    page: 1,
-    pageSize: 1000
-  }).then(({ data }) => {
-    contentOptions.value = data.data
-  })
-}
-
-onMounted(() => {
-  getContentService()
-})
+// 订单备注
+const { loadRemarks, optionsRemarks, loadRemarksData } = useRemarksSelect()
 
 // tag
 const route = useRoute()
@@ -49,7 +37,8 @@ const ruleForm = reactive({
   file: "",
   client_id: undefined,
   factory_code: undefined,
-  brand_id: undefined
+  brand_id: undefined,
+  ruleForm: undefined
 })
 
 const rules = reactive({
@@ -95,7 +84,7 @@ const submitForm = (Type) => {
       formData.append("client_id", ruleForm.client_id)
       formData.append("factory_code", ruleForm.factory_code)
       formData.append("brand_id", ruleForm.brand_id)
-      formData.append("content", contentValue.value)
+      formData.append("content", ruleForm.remarks_id)
       uploadOrderApi(formData)
         .then(({ data }) => {
           if (Type === 1) {
@@ -179,8 +168,15 @@ const filterTable = () => {
           </el-col>
           <el-col :span="6">
             <el-form-item label="訂單備註">
-              <el-select v-model="contentValue" clearable>
-                <el-option v-for="item in contentOptions" :key="item.id" :label="item.content" :value="item.content" />
+              <el-select
+                v-model="ruleForm.remarks_id"
+                filterable
+                remote
+                remote-show-suffix
+                :remote-method="loadRemarksData"
+                :loading="loadRemarks"
+              >
+                <el-option v-for="item in optionsRemarks" :key="item.id" :label="item.content" :value="item.content" />
               </el-select>
             </el-form-item>
           </el-col>
