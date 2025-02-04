@@ -154,8 +154,10 @@ const handleChildEvent = () => {
           <el-table-column prop="advance_payment" label="預付款" align="center" />
           <el-table-column prop="factory_contact" label="聯絡人" align="center" />
           <el-table-column prop="phone" label="電話" align="center" />
+          <!-- 
           <el-table-column prop="email" label="Email" align="center" />
-          <el-table-column prop="address" width="150" :show-overflow-tooltip="true" label="地址" align="center" />
+          <el-table-column prop="address" width="150" :show-overflow-tooltip="true" label="地址" align="center" /> 
+          -->
           <el-table-column prop="created_at" label="创建时间" align="center" sortable />
           <el-table-column fixed="right" label="操作" width="100" align="center">
             <template #default="scope">

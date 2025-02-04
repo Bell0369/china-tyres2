@@ -35,10 +35,10 @@ const router = useRouter()
 const ruleFormRef = ref()
 const ruleForm = reactive({
   file: "",
-  client_id: undefined,
-  factory_code: undefined,
-  brand_id: undefined,
-  ruleForm: undefined
+  client_id: "",
+  factory_code: "",
+  brand_id: "",
+  remarks_id: ""
 })
 
 const rules = reactive({

@@ -486,6 +486,15 @@ export const dynamicRoutes: RouteRecordRaw[] = [
           name: "Configuration",
           title: "訂單備註"
         }
+      },
+      {
+        path: "bankmanagement",
+        component: () => import("@/views/configuration/BankManagement.vue"),
+        name: "BankManagement",
+        meta: {
+          name: "Configuration",
+          title: "銀行管理"
+        }
       }
     ]
   },

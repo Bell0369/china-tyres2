@@ -7,6 +7,7 @@ import { useOrderSelet } from "@/hooks/useOrderSelet"
 import { UploadXlsx } from "@/components/UploadXlsx"
 import { uploadPiApi } from "@/api/order"
 import { redirectTo } from "@/utils/tagsclose"
+import { useFactorySelect } from "@/hooks/useFactorySelect"
 
 defineOptions({
   name: "PIOrderUpload"
@@ -17,6 +18,9 @@ const loading = ref(false)
 // 订单
 const { loadOrder, optionsOrder, loadOrderData } = useOrderSelet()
 
+//工厂
+const { loadFactory, optionsFactory, loadFactoryData } = useFactorySelect()
+
 // tag
 const route = useRoute()
 const router = useRouter()
@@ -25,12 +29,14 @@ const ruleFormRef = ref()
 const ruleForm = reactive({
   file: "",
   date: "",
-  order_id: ""
+  order_id: "",
+  factory_id: ""
 })
 
 const rules = reactive({
   order_id: [{ required: true, message: "請選擇订单", trigger: "change" }],
-  date: [{ required: true, message: "請選擇时间", trigger: "change" }]
+  date: [{ required: true, message: "請選擇时间", trigger: "change" }],
+  factory_id: [{ required: true, message: "請選擇工厂", trigger: "change" }]
 })
 
 // 上传文件
@@ -69,6 +75,7 @@ const submitForm = (Type) => {
       formData.append("type", Type)
       formData.append("order_id", ruleForm.order_id)
       formData.append("date", ruleForm.date)
+      formData.append("factory_id", ruleForm.factory_id)
       uploadPiApi(formData)
         .then(({ data }) => {
           if (Type === 1) {
@@ -136,9 +143,23 @@ const filterTable = () => {
               </el-select>
             </el-form-item>
           </el-col>
-          <el-col :span="10">
+          <el-col :span="8">
             <el-form-item label="計劃月份" prop="date">
               <el-date-picker v-model="ruleForm.date" type="month" value-format="YYYYMM" placeholder="请选择月份" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="工廠名稱" prop="factory_id">
+              <el-select
+                v-model="ruleForm.factory_id"
+                filterable
+                remote
+                remote-show-suffix
+                :remote-method="loadFactoryData"
+                :loading="loadFactory"
+              >
+                <el-option v-for="item in optionsFactory" :key="item.id" :label="item.name" :value="item.id" />
+              </el-select>
             </el-form-item>
           </el-col>
         </el-row>

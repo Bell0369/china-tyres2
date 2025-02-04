@@ -2,7 +2,6 @@
 import { ref, reactive } from "vue"
 import { ElMessage, ElMessageBox } from "element-plus"
 import { useRoute, useRouter } from "vue-router"
-import { useFactorySelect } from "@/hooks/useFactorySelect"
 import { uploadPiQuantityPlanApi, deliveryPlanApplyCheckApi } from "@/api/order"
 import FileInfo from "./components/FileInfo.vue"
 import { UploadXlsx } from "@/components/UploadXlsx"
@@ -14,22 +13,13 @@ defineOptions({
 
 const loading = ref(false)
 
-//工厂
-const { loadFactory, optionsFactory, loadFactoryData } = useFactorySelect()
-
 // tag
 const route = useRoute()
 const router = useRouter()
 
-const ruleFormRef = ref()
 const ruleForm = reactive({
   file: "",
-  pi_id: route.query.id,
-  factory_id: undefined
-})
-
-const rules = reactive({
-  factory_id: [{ required: true, message: "請選擇工廠", trigger: "change" }]
+  pi_id: route.query.id
 })
 
 // 上传文件
@@ -82,55 +72,47 @@ const sendFormData = (Type) => {
     return
   }
 
-  if (!ruleFormRef.value) return
-  ruleFormRef.value.validate((valid, fields) => {
-    if (valid) {
-      loading.value = true
-      const formData = new FormData()
-      formData.append("file", ruleForm.file)
-      formData.append("type", Type)
-      formData.append("pi_id", ruleForm.pi_id)
-      formData.append("factory_id", ruleForm.factory_id)
-      uploadPiQuantityPlanApi(formData)
-        .then(({ data }) => {
-          if (Type === 1) {
-            orderCheck.value = orderChecks.value = data.product_list
-            data.product_list.forEach((item) => {
-              if (item.err_msg === "") {
-                orderCheck0.value.push(item)
-              } else {
-                orderCheck1.value.push(item)
-              }
-            })
-            Object.assign(infoData, data.pi_info)
-            loading.value = false
-            isorderInfo.value = true
-            // 无异常，按钮亮起
-            if (orderCheck1.value.length === 0) {
-              isSubmit.value = false
-            } else {
-              isSubmit.value = true
-            }
+  loading.value = true
+  const formData = new FormData()
+  formData.append("file", ruleForm.file)
+  formData.append("type", Type)
+  formData.append("pi_id", ruleForm.pi_id)
+  uploadPiQuantityPlanApi(formData)
+    .then(({ data }) => {
+      if (Type === 1) {
+        orderCheck.value = orderChecks.value = data.product_list
+        data.product_list.forEach((item) => {
+          if (item.err_msg === "") {
+            orderCheck0.value.push(item)
           } else {
-            if (infoData.is_check_deliver_project) {
-              deliveryPlanApplyCheckApi({
-                id: data.delivery_plan_id,
-                apply_remarks: apply_remarks.value
-              }).then(() => {
-                redirectTo(router, route, "/delivery/deliverylist")
-              })
-            } else {
-              redirectTo(router, route, "/delivery/deliverylist")
-            }
+            orderCheck1.value.push(item)
           }
         })
-        .finally(() => {
-          loading.value = false
-        })
-    } else {
-      console.log("error submit!", fields)
-    }
-  })
+        Object.assign(infoData, data.pi_info)
+        loading.value = false
+        isorderInfo.value = true
+        // 无异常，按钮亮起
+        if (orderCheck1.value.length === 0) {
+          isSubmit.value = false
+        } else {
+          isSubmit.value = true
+        }
+      } else {
+        if (infoData.is_check_deliver_project) {
+          deliveryPlanApplyCheckApi({
+            id: data.delivery_plan_id,
+            apply_remarks: apply_remarks.value
+          }).then(() => {
+            redirectTo(router, route, "/delivery/deliverylist")
+          })
+        } else {
+          redirectTo(router, route, "/delivery/deliverylist")
+        }
+      }
+    })
+    .finally(() => {
+      loading.value = false
+    })
 }
 
 /** 核對 */
@@ -152,24 +134,6 @@ const filterTable = () => {
       <div class="toolbar-wrapper">
         <el-text tag="b" size="large">選擇文件</el-text>
       </div>
-      <el-form ref="ruleFormRef" :model="ruleForm" :rules="rules">
-        <el-row>
-          <el-col :span="6">
-            <el-form-item prop="factory_id" label="工廠名稱">
-              <el-select
-                v-model="ruleForm.factory_id"
-                filterable
-                remote
-                remote-show-suffix
-                :remote-method="loadFactoryData"
-                :loading="loadFactory"
-              >
-                <el-option v-for="item in optionsFactory" :key="item.id" :label="item.name" :value="item.id" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-        </el-row>
-      </el-form>
       <div class="flex items-center">
         <div class="w-sm">
           <UploadXlsx @setUploadXlsx="setUploadXlsx" />

@@ -441,3 +441,12 @@ export function exportInvToPdfApi(data) {
     data
   })
 }
+
+// 財務操作客戶應收
+export function editClientPayRecord(data) {
+  return request({
+    url: "receipt/editClientPayRecord",
+    method: "post",
+    data
+  })
+}

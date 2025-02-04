@@ -44,23 +44,29 @@ const setUploadXlsx = (value) => {
 
 // 查詢發貨計劃
 const cities = ref([])
+const buttonLoading = ref(false)
 const getDeliveryPlanNo = () => {
   ruleForm.delivery_plan_no = []
   if (ruleForm.client_code === "" || ruleForm.factory_code === "") {
     ElMessage.error("請選擇客戶")
     return
   }
+  buttonLoading.value = true
   getDeliveryPlanNoApi({
     client_code: ruleForm.client_code,
     factory_code: ruleForm.factory_code
-  }).then(({ data }) => {
-    if (data.length === 0) {
-      ElMessage.warning("無發貨計劃")
-      cities.value = []
-      return
-    }
-    cities.value = data
   })
+    .then(({ data }) => {
+      if (data.length === 0) {
+        ElMessage.warning("無發貨計劃")
+        cities.value = []
+        return
+      }
+      cities.value = data
+    })
+    .finally(() => {
+      buttonLoading.value = false
+    })
 }
 
 const isSubmit = ref(true)
@@ -177,7 +183,7 @@ const handleItemList = (row) => {
         </el-col>
         <el-col :span="1" />
         <el-col :span="6">
-          <el-button type="primary" @click="getDeliveryPlanNo" plain>查詢發貨計劃</el-button>
+          <el-button type="primary" @click="getDeliveryPlanNo" plain :loading="buttonLoading">查詢發貨計劃</el-button>
         </el-col>
         <el-col :span="24">
           <el-checkbox-group v-model="ruleForm.delivery_plan_no">

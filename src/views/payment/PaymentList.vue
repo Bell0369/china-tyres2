@@ -11,6 +11,7 @@ import addPayRecord from "./components/addPayRecord.vue"
 import primitivePriceClient from "./components/primitivePriceClient.vue"
 import primitivePriceFactory from "./components/primitivePriceFactory.vue"
 import PrepayMents from "@/views/componrnts/prepayments/PrepayMents.vue"
+import { useUserStore } from "@/store/modules/user"
 
 defineOptions({
   name: "PaymentList"
@@ -25,6 +26,8 @@ const { loadFactory, optionsFactory, loadFactoryData } = useFactorySelect()
 
 // 客户
 const { loadClient, optionsClient, loadClientData } = useClientSelect()
+
+const { userinfo } = useUserStore()
 
 // 修改查詢狀態
 const orderType = ref(0)
@@ -227,7 +230,7 @@ const handleListPayment = () => {
     <el-card v-loading="loading" shadow="never">
       <div class="toolbar-wrapper">
         <div class="flex justify-between">
-          <div>
+          <div v-if="userinfo.id === 1 || userinfo.role_id === 1">
             <el-radio-group v-model="orderType" fill="#29d" @change="updataOrderType">
               <el-radio-button label="應收" :value="0" />
               <el-radio-button label="應付" :value="1" />
@@ -265,6 +268,7 @@ const handleListPayment = () => {
                 /> -->
               </template>
             </el-table-column>
+            <el-table-column prop="updated_at" label="確認金額日期" align="center" />
             <el-table-column prop="uncollected_price" label="未收金額" align="center" />
             <el-table-column prop="balance" label="預收金額" align="center" />
             <el-table-column prop="status" label="應收狀態" align="center">
@@ -329,6 +333,7 @@ const handleListPayment = () => {
                 /> -->
               </template>
             </el-table-column>
+            <el-table-column prop="updated_at" label="確認金額日期" align="center" />
             <el-table-column prop="unpaid_price" label="未付金額" align="center" />
             <el-table-column prop="balance" label="預付金額" align="center" />
             <el-table-column prop="status" label="應付狀態" align="center">

@@ -3,7 +3,7 @@ import { ref, reactive, onMounted, computed } from "vue"
 import { ElMessage, ElMessageBox } from "element-plus"
 import { Refresh, Search } from "@element-plus/icons-vue"
 import { useRoute, useRouter } from "vue-router"
-import { useFactorySelect } from "@/hooks/useFactorySelect"
+// import { useFactorySelect } from "@/hooks/useFactorySelect"
 import {
   getPiProductDetailApi,
   getPiBasicDetailApi,
@@ -20,7 +20,7 @@ defineOptions({
 const loading = ref(false)
 
 //工厂
-const { loadFactory, optionsFactory, loadFactoryData } = useFactorySelect()
+// const { loadFactory, optionsFactory, loadFactoryData } = useFactorySelect()
 
 // tag
 const route = useRoute()
@@ -84,11 +84,12 @@ const handleSelectionChange = (newSelection) => {
 
 // 審批
 const apply_remarks = ref("")
+const buttonLoading = ref(false)
 const submitForm = () => {
-  if (ruleForm.factory_id === "") {
-    ElMessage.error("請選擇工廠")
-    return
-  }
+  // if (ruleForm.factory_id === "") {
+  //   ElMessage.error("請選擇工廠")
+  //   return
+  // }
   if (rows.value.length === 0) {
     ElMessage.error("請勾選產品")
     return false
@@ -120,7 +121,7 @@ const tableRef = ref()
 const ruleForm = reactive({
   type: 2,
   pi_id: route.query.id,
-  factory_id: "",
+  // factory_id: "",
   data_arr: []
 })
 
@@ -134,6 +135,7 @@ const sendFormData = () => {
     }
     ruleForm.data_arr.push(data_arr)
   })
+  buttonLoading.value = true
   loading.value = true
   uploadPIDeliveryPlanApi(ruleForm)
     .then(({ data }) => {
@@ -142,14 +144,16 @@ const sendFormData = () => {
           id: data.delivery_plan_id,
           apply_remarks: apply_remarks.value
         }).then(() => {
+          buttonLoading.value = false
           redirectTo(router, route, "/delivery/deliverylist")
         })
       } else {
+        buttonLoading.value = false
         redirectTo(router, route, "/delivery/deliverylist")
       }
     })
     .finally(() => {
-      loading.value = true
+      loading.value = false
     })
 }
 
@@ -167,6 +171,7 @@ const PiNumber = computed(() => {
 
 <template>
   <div class="app-container">
+    <!-- 
     <el-card shadow="never" class="search-wrapper">
       <div class="toolbar-wrapper">
         <el-text tag="b" size="large">選擇工廠</el-text>
@@ -189,7 +194,8 @@ const PiNumber = computed(() => {
           </el-col>
         </el-row>
       </el-form>
-    </el-card>
+    </el-card> 
+    -->
 
     <item-info :infoData="infoData" />
 
@@ -197,7 +203,7 @@ const PiNumber = computed(() => {
       <div class="toolbar-wrapper">
         <div class="flex justify-between">
           <el-text tag="b" size="large">核對信息</el-text>
-          <el-button type="primary" @click="submitForm">生成發貨計劃</el-button>
+          <el-button type="primary" @click="submitForm" :loading="buttonLoading">生成發貨計劃</el-button>
         </div>
       </div>
       <div class="mb">

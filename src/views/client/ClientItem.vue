@@ -99,6 +99,7 @@ onMounted(() => {
 // 基本信息
 const isProduct = ref(null)
 const isDeldo = ref(false)
+const isClientName = ref("")
 const getClientShow = () => {
   loading.value = true
   viewClientShowApi({
@@ -134,6 +135,7 @@ const getClientShow = () => {
 
     isProduct.value = datas.client_contact_id
     isDeldo.value = datas.client_encod.toUpperCase() === "DELDO" ? true : false
+    isClientName.value = datas.name
   })
 }
 
@@ -383,7 +385,7 @@ const updataContact = (value) => {
     />
 
     <el-card shadow="never">
-      <client-product :isProduct="isProduct" :isDeldo="isDeldo" />
+      <client-product :isProduct="isProduct" :isDeldo="isDeldo" :isClientName="isClientName" />
     </el-card>
 
     <!-- <Dialog v-model="dialogVisible" title="預付款">

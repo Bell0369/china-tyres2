@@ -28,7 +28,8 @@ const { paginationData, handleCurrentChange, handleSizeChange } = usePagination(
 
 const props = defineProps({
   isProduct: Number,
-  isDeldo: Boolean
+  isDeldo: Boolean,
+  isClientName: String
 })
 
 // 删除
@@ -183,6 +184,13 @@ watch(
 )
 
 // 導出產品
+const clientName = ref("")
+watch(
+  () => props.isClientName,
+  (newValue) => {
+    clientName.value = newValue
+  }
+)
 const exportClientProduct = () => {
   loading.value = true
   exportClientProductApi({
@@ -191,7 +199,7 @@ const exportClientProduct = () => {
     .then((data) => {
       const downloadLink = document.createElement("a")
       downloadLink.href = URL.createObjectURL(data)
-      downloadLink.download = "product.xlsx"
+      downloadLink.download = `${clientName.value}.product.xlsx`
       downloadLink.click()
     })
     .finally(() => {

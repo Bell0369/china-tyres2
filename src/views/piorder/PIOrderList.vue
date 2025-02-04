@@ -233,6 +233,7 @@ const exportPI = (row) => {
             </template>
           </el-table-column>
           <el-table-column prop="order_remarks" label="訂單備註" align="center" />
+          <el-table-column prop="profit_margin" label="毛利率" align="center" />
           <el-table-column prop="created_at" label="创建时间" align="center" sortable />
           <el-table-column fixed="right" label="操作" width="200" align="center">
             <template #default="scope">

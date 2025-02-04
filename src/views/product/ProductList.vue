@@ -264,12 +264,13 @@ const handleError = (uploadFile) => {
           <el-table-column prop="customs_code" label="海關編碼" align="center" />
           <el-table-column prop="quantity" label="40'HQ裝櫃量" align="center" />
           <el-table-column prop="piece_weight" label="單重" align="center" />
+          <!-- 
           <el-table-column prop="client" label="客戶" align="center" width="150" :show-overflow-tooltip="true">
             <template #default="scope">
               <el-text>{{ userList(scope.row.client) }}</el-text>
-              <!-- <el-text v-for="item in scope.row.client" :key="item.id">{{ item.name }}</el-text> -->
             </template>
-          </el-table-column>
+          </el-table-column> 
+          -->
           <el-table-column prop="advance_payment" label="工廠" align="center">
             <template #default="scope">
               <el-text>{{ userList(scope.row.factory) }}</el-text>
@@ -280,6 +281,7 @@ const handleError = (uploadFile) => {
           <el-table-column fixed="right" label="操作" width="130" align="center">
             <template #default="scope">
               <el-button
+                v-if="false"
                 v-permission="['addProduct']"
                 type="primary"
                 text

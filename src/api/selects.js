@@ -111,6 +111,34 @@ export function deleteOrderRemarksConfigApi(data) {
   })
 }
 
+/**銀行配置列表 */
+//  查
+export function getBankConfigListApi(params) {
+  return request({
+    url: "config/bankConfigList",
+    method: "get",
+    params
+  })
+}
+
+//  加
+export function addBankConfigApi(data) {
+  return request({
+    url: "config/addBankConfig",
+    method: "post",
+    data
+  })
+}
+
+//  刪
+export function deleteBankConfigApi(data) {
+  return request({
+    url: "config/deleteBankConfig",
+    method: "post",
+    data
+  })
+}
+
 // 國家地區
 export function getCountriesAreaApi(params) {
   return request({
