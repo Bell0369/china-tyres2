@@ -1,8 +1,14 @@
 <script setup>
-import { reactive, ref, onMounted, defineEmits } from "vue"
+import { reactive, ref, onMounted, defineEmits, watch } from "vue"
 import { ElMessage } from "element-plus"
-import { getClientPrimitivePriceListApi, AddClientPrimitivePriceApi, AffirmClientReceivableApi } from "@/api/order"
+import {
+  getClientPrimitivePriceListApi,
+  AddClientPrimitivePriceApi,
+  AffirmClientReceivableApi,
+  deleteClientPrimitivePriceRecordApi
+} from "@/api/order"
 import { validateNumberMin } from "@/utils/validate"
+import { useDeleteList } from "@/hooks/useDeleteList"
 
 const { id, ids } = defineProps(["id", "ids"])
 const itemId = id
@@ -75,6 +81,17 @@ const handleSubmitPrice = (row) => {
     getTableData()
   })
 }
+
+// 刪除記錄
+const { handleDelete, isDeleted } = useDeleteList({
+  api: deleteClientPrimitivePriceRecordApi,
+  text: "記錄?"
+})
+watch([isDeleted], () => {
+  prepayFormRef.value.resetFields()
+  emit("handleListPayment")
+  getTableData()
+})
 </script>
 
 <template>
@@ -106,19 +123,19 @@ const handleSubmitPrice = (row) => {
             <el-table-column prop="created_at" label="添加時間" align="center" />
             <el-table-column prop="price" label="金額" align="center" />
             <el-table-column prop="remarks" label="備註" align="center" />
-            <el-table-column prop="other_fee" label="其他扣除費用" align="center">
+            <el-table-column prop="other_fee" label="其他扣除費用" align="center" v-permission="['affirmReceivable']">
               <template #default="scope">
                 <el-input v-if="!scope.row.status" v-model="scope.row.other_fee" type="number" />
                 <span v-else class="inline-block align-mid">{{ scope.row.other_fee }}</span>
               </template>
             </el-table-column>
-            <el-table-column prop="reality_price" label="實際金額" align="center">
+            <el-table-column prop="reality_price" label="實際金額" align="center" v-permission="['affirmReceivable']">
               <template #default="scope">
                 <el-input v-if="!scope.row.status" v-model="scope.row.reality_price" type="number" />
                 <span v-else class="inline-block align-mid">{{ scope.row.reality_price }}</span>
               </template>
             </el-table-column>
-            <el-table-column fixed="right" label="操作" width="100" align="center">
+            <el-table-column fixed="right" label="操作" width="130" align="center">
               <template #default="scope">
                 <el-button
                   v-permission="['affirmReceivable']"
@@ -130,6 +147,16 @@ const handleSubmitPrice = (row) => {
                   @click="handleSubmitPrice(scope.row)"
                   >確認</el-button
                 >
+                <el-button
+                  v-if="!scope.row.status"
+                  type="danger"
+                  text
+                  bg
+                  size="small"
+                  @click="handleDelete(scope.row.id)"
+                >
+                  刪除
+                </el-button>
               </template>
             </el-table-column>
           </el-table>

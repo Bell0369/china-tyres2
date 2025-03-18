@@ -47,7 +47,12 @@ const ruleForm = reactive({
   ],
   inv_rise_one: "",
   inv_rise_two: "",
-  inv_rise_three: ""
+  inv_rise_three: "",
+  beneficiary: "",
+  bank_name: "",
+  bank_account: "",
+  bank_code: "",
+  bank_address: ""
 })
 
 const rules = reactive({
@@ -57,7 +62,12 @@ const rules = reactive({
     { required: true, message: "請輸入客戶編碼", trigger: "blur" },
     { pattern: /^[^\u4e00-\u9fa5]+$/, message: "不能含有漢字", trigger: "blur" }
   ],
-  deliver_type: [{ required: true, message: "請選擇發貨類型", trigger: "blur" }]
+  deliver_type: [{ required: true, message: "請選擇發貨類型", trigger: "blur" }],
+  beneficiary: [{ required: true, message: "請輸入受益人", trigger: "blur" }],
+  bank_name: [{ required: true, message: "請輸入銀行名稱", trigger: "blur" }],
+  bank_account: [{ required: true, message: "請輸入銀行賬戶", trigger: "blur" }],
+  bank_code: [{ required: true, message: "請輸入銀行代碼", trigger: "blur" }],
+  bank_address: [{ required: true, message: "請輸入銀行地址", trigger: "blur" }]
 })
 
 // 移除
@@ -178,7 +188,7 @@ const submitForm = (formEl) => {
           </el-row>
         </el-col>
         <!-- 员工管理 -->
-        <el-col :span="24" class="b b-#ccc b-style-solid mb">
+        <el-col :span="24" class="b-t-#ccc b-b-none b b-style-solid mb">
           <div class="flex justify-between py">
             <el-text tag="b">管理員工</el-text>
             <el-button type="success" @click="addDomain">添加</el-button>
@@ -206,7 +216,7 @@ const submitForm = (formEl) => {
                 </el-select>
               </el-form-item>
             </el-col>
-            <el-col :span="6">
+            <el-col :span="7">
               <el-form-item
                 label="品牌"
                 :prop="`client_auth_flow_join[${index}].brand_id`"
@@ -221,7 +231,7 @@ const submitForm = (formEl) => {
                 </el-select>
               </el-form-item>
             </el-col>
-            <el-col :span="6">
+            <el-col :span="7">
               <el-form-item
                 label="工厂"
                 :prop="`client_auth_flow_join[${index}].factory_id`"
@@ -245,6 +255,39 @@ const submitForm = (formEl) => {
             </el-col>
             <el-col :span="2">
               <el-button type="primary" @click.prevent="removeDomain(domain)" :icon="Delete" plain />
+            </el-col>
+          </el-row>
+        </el-col>
+        <!-- 銀行信息 -->
+        <el-col :span="24" class="b b-#ccc b-style-solid mb">
+          <div class="py">
+            <el-text tag="b">銀行信息</el-text>
+          </div>
+          <el-row :gutter="10">
+            <el-col :span="12">
+              <el-form-item label="受益人" prop="beneficiary">
+                <el-input v-model="ruleForm.beneficiary" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item label="銀行名稱" prop="bank_name">
+                <el-input v-model="ruleForm.bank_name" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item label="銀行代碼" prop="bank_code">
+                <el-input v-model="ruleForm.bank_code" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item label="銀行賬號" prop="bank_account">
+                <el-input v-model="ruleForm.bank_account" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="24">
+              <el-form-item label="銀行地址" prop="bank_address">
+                <el-input v-model="ruleForm.bank_address" />
+              </el-form-item>
             </el-col>
           </el-row>
         </el-col>

@@ -59,7 +59,8 @@ const searchData = reactive({
   factory_code: "" || undefined,
   brand_code: "" || undefined,
   procurement_invoice_no: "" || undefined,
-  order_remarks: "" || undefined
+  order_remarks: "" || undefined,
+  bl_no: "" || undefined
 })
 const getTableData = () => {
   loading.value = true
@@ -205,7 +206,7 @@ const handleExport = (rows) => {
         <el-form-item prop="keyword" label="訂單">
           <el-input v-model="searchData.keyword" placeholder="請輸入PI號，發貨計劃號" style="width: 300px" />
         </el-form-item>
-        <el-form-item prop="keyword" label="采購發票號">
+        <el-form-item prop="procurement_invoice_no" label="采購發票號">
           <el-input v-model="searchData.procurement_invoice_no" placeholder="請輸入采購發票號" style="width: 300px" />
         </el-form-item>
         <el-form-item>
@@ -217,6 +218,9 @@ const handleExport = (rows) => {
             end-placeholder="結束日期"
             value-format="YYYY-MM-DD"
           />
+        </el-form-item>
+        <el-form-item prop="bl_no" label="提單號">
+          <el-input v-model="searchData.bl_no" placeholder="請輸入提單號" style="width: 300px" />
         </el-form-item>
         <el-form-item prop="client_code" label="客戶編碼">
           <el-select

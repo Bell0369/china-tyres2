@@ -1,7 +1,7 @@
 import { exportInvToPdfApi } from "@/api/order"
 import { jsPDF } from "jspdf"
 import autoTable from "jspdf-autotable"
-import myFont from "../../../../public/fonts/my-font" //引入字体js文件，解决中文乱码
+import myFont from "../../../../../public/fonts/my-font" //引入字体js文件，解决中文乱码
 
 const centerTexts = [
   "CHINA TYRES DISTRIBUTION LIMITED",
@@ -98,9 +98,9 @@ export const exportDataPdf = async (inv_no, callback) => {
       0: { halign: "center", cellWidth: cells1 },
       1: { halign: "center", cellWidth: cells2 },
       2: { halign: "left", cellWidth: cells3 + cells4 },
+      3: { halign: "center", cellWidth: cells5 },
       4: { halign: "center", cellWidth: cells5 },
-      5: { halign: "center", cellWidth: cells5 },
-      6: { halign: "center", cellWidth: cells5 }
+      5: { halign: "center", cellWidth: cells5 }
     }
   })
 
@@ -118,8 +118,9 @@ export const exportDataPdf = async (inv_no, callback) => {
       0: { halign: "center", cellWidth: cells1 },
       1: { halign: "left", cellWidth: cells2 },
       2: { halign: "right", cellWidth: cells3 },
-      3: { halign: "right", cellWidth: cells4 + cells5 },
-      4: { halign: "right", cellWidth: cells5 * 2 }
+      3: { halign: "center", cellWidth: cells4 },
+      4: { halign: "center", cellWidth: cells5 },
+      5: { halign: "right", cellWidth: cells5 * 2 }
     }
   })
 
@@ -138,9 +139,9 @@ export const exportDataPdf = async (inv_no, callback) => {
       1: { halign: "center", cellWidth: cells2 },
       2: { halign: "left", cellWidth: cells3 },
       3: { halign: "center", cellWidth: cells4 },
-      4: { halign: "right", cellWidth: cells5 },
-      5: { halign: "right", cellWidth: cells5 },
-      6: { halign: "right", cellWidth: cells5 }
+      4: { halign: "center", cellWidth: cells5 },
+      5: { halign: "center", cellWidth: cells5 },
+      6: { halign: "center", cellWidth: cells5 }
     }
   })
 
@@ -196,7 +197,7 @@ export const exportDataPdf = async (inv_no, callback) => {
   })
 
   autoTable(doc, {
-    body: [[data.client_code], ["DIRECT ORDER"], ["ALL TYRES MENTIONED ON THIS INVOICE ARE MADE IN CHINA"]],
+    body: shippedType(data.shipped_type),
     startY: doc.lastAutoTable.finalY + 10,
     styles: {
       fontSize: fontSize,
@@ -232,7 +233,7 @@ export const exportDataPdf = async (inv_no, callback) => {
 const tableData1 = (data) => {
   const tableData = []
   for (let i = 0; i < data.length; i++) {
-    tableData.push(["", data[i].title, data[i].code, data[i].code_number, data[i].total_prices.toFixed(2)])
+    tableData.push(["", data[i].title, data[i].code, "", data[i].code_number, data[i].total_prices.toFixed(2)])
   }
   return tableData
 }
@@ -272,6 +273,17 @@ const tableData = (data) => {
     }
   }
   return tableData
+}
+
+// 出貨類型判斷
+const shippedType = (type) => {
+  if (type === "WH") {
+    return [["WAREHOUSE ORDER"], ["ALL TYRES MENTIONED ON THIS INVOICE ARE MADE IN CHINA"]]
+  } else if (type === "DIR") {
+    return [["DIRECT ORDER"], ["ALL TYRES MENTIONED ON THIS INVOICE ARE MADE IN CHINA"]]
+  } else {
+    return []
+  }
 }
 
 // 文本居中的x轴距离

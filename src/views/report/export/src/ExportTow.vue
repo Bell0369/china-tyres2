@@ -2,8 +2,16 @@
 import { ref } from "vue"
 import { ElMessage } from "element-plus"
 import { getInvListApi } from "@/api/order"
-import { exportInvApi, exportPackingListApi, exportSNApi, exportWeightNoteApi, exportAllApi } from "@/api/selects"
-import { exportDataPdf } from "../exportPdf"
+import {
+  exportInvApi,
+  exportPackingListApi,
+  exportSNApi,
+  exportWeightNoteApi,
+  exportAllApi,
+  exportFourInOneApi
+} from "@/api/selects"
+import { exportDataPdf } from "../jsPdf/exportPdf"
+import { exportDataPdfPacking } from "../jsPdf/exportPdfPacking"
 
 defineOptions({
   name: "ExportTow"
@@ -39,6 +47,13 @@ const loadingSN = ref(false)
 const loadingWeightNote = ref(false)
 //
 const loadingAll = ref(false)
+// 銷售發票-pdf
+const loadingPdfInv = ref(false)
+// 裝箱單-pdf
+const loadingPdfPacking = ref(false)
+//
+const loadingAll2 = ref(false)
+
 // 選中數據
 const inv_no = ref(null)
 const exportData = (Type) => {
@@ -61,6 +76,21 @@ const exportData = (Type) => {
       break
     case 5:
       exportFile(exportAllApi, loadingAll, "INV-PL-SN")
+      break
+    case 6:
+      loadingPdfInv.value = true
+      exportDataPdf(inv_no.value, () => {
+        loadingPdfInv.value = false
+      })
+      break
+    case 7:
+      loadingPdfPacking.value = true
+      exportDataPdfPacking(inv_no.value, () => {
+        loadingPdfPacking.value = false
+      })
+      break
+    case 8:
+      exportFile(exportFourInOneApi, loadingAll2, "INV-PL-SN-WN")
       break
     default:
       break
@@ -100,15 +130,6 @@ const exportFile = (api, loadingRef, name) => {
       }, 500)
     })
 }
-
-//
-const loadingPdf = ref(false)
-const handleExportPdf = () => {
-  loadingPdf.value = true
-  exportDataPdf(inv_no.value, () => {
-    loadingPdf.value = false
-  })
-}
 </script>
 
 <template>
@@ -129,38 +150,36 @@ const handleExportPdf = () => {
           <el-option v-for="item in optionsData" :key="item.id" :label="item.inv_no" :value="item" />
         </el-select>
       </el-form-item>
-      <el-form-item>
-        <el-button type="primary" v-permission="['exportInv']" @click="exportData(1)" :loading="loadingInv"
-          >導出銷售發票</el-button
+      <el-form-item v-permission="['exportInv']">
+        <el-button type="primary" @click="exportData(1)" :loading="loadingInv">導出銷售發票</el-button>
+      </el-form-item>
+      <el-form-item v-permission="['exportPackingList']">
+        <el-button type="primary" @click="exportData(2)" :loading="loadingPacking">導出裝箱單</el-button>
+      </el-form-item>
+      <el-form-item v-permission="['exportSN']">
+        <el-button type="primary" @click="exportData(3)" :loading="loadingSN">導出SN</el-button>
+      </el-form-item>
+      <el-form-item v-permission="['exportWeightNote']">
+        <el-button type="primary" @click="exportData(4)" :loading="loadingWeightNote">導出Weight Note</el-button>
+      </el-form-item>
+      <el-form-item v-permission="['exportFourInOne']">
+        <el-button type="primary" @click="exportData(8)" :loading="loadingAll2"
+          >合併發票/裝箱單/SN/Weight Note</el-button
         >
       </el-form-item>
-      <el-form-item>
-        <el-button type="primary" v-permission="['exportPackingList']" @click="exportData(2)" :loading="loadingPacking"
-          >導出裝箱單</el-button
-        >
+      <el-form-item v-permission="['exportAll']">
+        <el-button type="primary" @click="exportData(5)" :loading="loadingAll">合併發票/裝箱單/SN</el-button>
       </el-form-item>
-      <el-form-item>
-        <el-button type="primary" v-permission="['exportSN']" @click="exportData(3)" :loading="loadingSN"
-          >導出SN</el-button
-        >
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" v-permission="['exportAll']" @click="exportData(5)" :loading="loadingAll"
-          >合併發票/裝箱單/SN</el-button
-        >
+      <el-form-item v-permission="['exportInv']">
+        <el-button type="warning" @click="exportData(6)" :loading="loadingPdfInv">導出銷售發票(PDF)</el-button>
       </el-form-item>
       <el-form-item>
         <el-button
-          type="primary"
-          v-permission="['exportWeightNote']"
-          @click="exportData(4)"
-          :loading="loadingWeightNote"
-          >導出Weight Note</el-button
-        >
-      </el-form-item>
-      <el-form-item>
-        <el-button type="warning" v-permission="['exportInv']" @click="handleExportPdf" :loading="loadingPdf"
-          >導出銷售發票(PDF)</el-button
+          type="warning"
+          v-permission="['exportPackingList']"
+          @click="exportData(7)"
+          :loading="loadingPdfPacking"
+          >導出裝箱單(PDF)</el-button
         >
       </el-form-item>
     </el-form>

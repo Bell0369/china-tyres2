@@ -30,11 +30,26 @@ const exportData = (Type) => {
     return false
   }
 
+  // // 将日期字符串转换为 Date 对象
+  // const startDate = new Date(monthrangeData.value[0])
+  // const endDate = new Date(monthrangeData.value[1])
+
+  // // 获取时间差（以毫秒为单位）
+  // const timeDiff = endDate - startDate
+  // // 将毫秒转换为天数
+  // const daysDiff = timeDiff / (1000 * 3600 * 24)
+
   switch (Type) {
     case 1:
       exportFile(exportTheShipmentLedgerApi, loadingBtn1, "發貨流水賬")
       break
     case 2:
+      // if (daysDiff <= 5) {
+      //   exportFile(exportSellRealSituationApi, loadingBtn2, "銷售流水账")
+      // } else {
+      //   ElMessage.error("最多選擇5天")
+      //   return false
+      // }
       exportFile(exportSellRealSituationApi, loadingBtn2, "銷售流水账")
       break
     case 3:
@@ -93,37 +108,17 @@ const exportFile = (api, loadingRef, name) => {
           value-format="YYYY-MM-DD"
         />
       </el-form-item>
-      <el-form-item>
-        <el-button
-          type="primary"
-          v-permission="['exportTheShipmentLedger']"
-          @click="exportData(1)"
-          :loading="loadingBtn1"
-          >導出發貨流水賬</el-button
-        >
+      <el-form-item v-permission="['exportTheShipmentLedger']">
+        <el-button type="primary" @click="exportData(1)" :loading="loadingBtn1">導出發貨流水賬</el-button>
       </el-form-item>
-      <el-form-item>
-        <el-button
-          type="primary"
-          v-permission="['exportSellRealSituation']"
-          @click="exportData(2)"
-          :loading="loadingBtn2"
-          >導出銷售流水賬</el-button
-        >
+      <el-form-item v-permission="['exportSellRealSituation']">
+        <el-button type="primary" @click="exportData(2)" :loading="loadingBtn2">導出銷售流水賬</el-button>
       </el-form-item>
-      <el-form-item>
-        <el-button type="primary" v-permission="['exportBusiness']" @click="exportData(3)" :loading="loadingBtn3"
-          >導出業務台賬</el-button
-        >
+      <el-form-item v-permission="['exportBusiness']">
+        <el-button type="primary" @click="exportData(3)" :loading="loadingBtn3">導出業務台賬</el-button>
       </el-form-item>
-      <el-form-item>
-        <el-button
-          type="primary"
-          @click="exportData(4)"
-          v-permission="['exportKilogramUnitPrice']"
-          :loading="loadingBtn4"
-          >導出公斤單價</el-button
-        >
+      <el-form-item v-permission="['exportKilogramUnitPrice']">
+        <el-button type="primary" @click="exportData(4)" :loading="loadingBtn4">導出公斤單價</el-button>
       </el-form-item>
     </el-form>
   </el-card>

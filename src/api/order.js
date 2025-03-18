@@ -442,10 +442,55 @@ export function exportInvToPdfApi(data) {
   })
 }
 
+// 發票導出PDF數據
+export function exportPackingListToPdfApi(data) {
+  return request({
+    url: "inv/exportPackingListToPdf",
+    method: "post",
+    data
+  })
+}
+
 // 財務操作客戶應收
 export function editClientPayRecord(data) {
   return request({
     url: "receipt/editClientPayRecord",
+    method: "post",
+    data
+  })
+}
+
+// 應收初始金額記錄刪除
+export function deleteClientPrimitivePriceRecordApi(data) {
+  return request({
+    url: "receipt/deleteClientPrimitivePriceRecord",
+    method: "post",
+    data
+  })
+}
+
+// 應收-添加金額記錄-刪除
+export function deleteClientPayRecordApi(data) {
+  return request({
+    url: "receipt/deleteClientPayRecord",
+    method: "post",
+    data
+  })
+}
+
+// 應付-初始金額記錄刪除
+export function deleteFactoryPrimitivePriceRecordApi(data) {
+  return request({
+    url: "receipt/deleteFactoryPrimitivePriceRecord",
+    method: "post",
+    data
+  })
+}
+
+// 應付-添加金額記錄-刪除
+export function deleteFactoryPayRecordApi(data) {
+  return request({
+    url: "receipt/deleteFactoryPayRecord",
     method: "post",
     data
   })

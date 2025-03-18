@@ -384,7 +384,7 @@ const handleListPayment = () => {
       </div>
     </el-card>
 
-    <Dialog v-model="dialogVisible" :title="prepayId.status ? '查看记录' : '添加金額'">
+    <Dialog v-model="dialogVisible" :title="prepayId.status ? '查看记录' : '添加金額'" :width="900">
       <add-payRecord :isType="prepayType" :row="prepayId" @handle-listPayment="handleListPayment" />
     </Dialog>
 
@@ -393,11 +393,11 @@ const handleListPayment = () => {
     </Dialog>
 
     <!-- 客户 -->
-    <Dialog v-model="dialogVisible3" title="待審核金額">
+    <Dialog v-model="dialogVisible3" title="待審核金額" :width="900">
       <primitive-price-client :id="prepayId" :ids="receiptId" @handle-listPayment="handleListPayment" />
     </Dialog>
     <!-- 工厂 -->
-    <Dialog v-model="dialogVisible4" title="待審核金額">
+    <Dialog v-model="dialogVisible4" title="待審核金額" :width="900">
       <primitive-price-factory :id="prepayId" :ids="receiptId" @handle-listPayment="handleListPayment" />
     </Dialog>
   </div>

@@ -60,14 +60,14 @@ onMounted(() => {
         <el-text tag="b" size="large">銷售客戶</el-text>
         <el-table :data="clientData" border class="mt" max-height="400px">
           <el-table-column prop="name" label="客戶編碼" />
-          <el-table-column prop="price" label="銷售價格" />
+          <el-table-column prop="price" label="銷售價格" sortable />
         </el-table>
       </div>
       <div class="mt10">
         <el-text tag="b" size="large">生產工廠</el-text>
         <el-table :data="factoryDate" border class="mt">
           <el-table-column prop="name" label="工廠名稱" />
-          <el-table-column prop="price" label="工廠價格" />
+          <el-table-column prop="price" label="工廠價格" sortable />
         </el-table>
       </div>
     </el-card>

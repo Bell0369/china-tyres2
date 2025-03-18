@@ -61,7 +61,12 @@ const ruleForm = reactive({
   ],
   inv_rise_one: "",
   inv_rise_two: "",
-  inv_rise_three: ""
+  inv_rise_three: "",
+  beneficiary: "",
+  bank_name: "",
+  bank_account: "",
+  bank_code: "",
+  bank_address: ""
 })
 
 const rules = reactive({
@@ -70,7 +75,12 @@ const rules = reactive({
   client_encod: [
     { required: true, message: "請輸入客戶編碼", trigger: "blur" },
     { pattern: /^[^\u4e00-\u9fa5]+$/, message: "不能含有漢字", trigger: "blur" }
-  ]
+  ],
+  beneficiary: [{ required: true, message: "請輸入受益人", trigger: "blur" }],
+  bank_name: [{ required: true, message: "請輸入銀行名稱", trigger: "blur" }],
+  bank_account: [{ required: true, message: "請輸入銀行賬戶", trigger: "blur" }],
+  bank_code: [{ required: true, message: "請輸入銀行代碼", trigger: "blur" }],
+  bank_address: [{ required: true, message: "請輸入銀行地址", trigger: "blur" }]
 })
 
 // 移除
@@ -189,7 +199,7 @@ const updataContact = (value) => {
           >
         </div>
       </div>
-      <el-form ref="ruleFormRef" :model="ruleForm" :rules="rules">
+      <el-form ref="ruleFormRef" :model="ruleForm" :rules="rules" hide-required-asterisk>
         <el-row :gutter="20">
           <el-col :span="6">
             <el-form-item label="客戶名稱" prop="name">
@@ -369,6 +379,39 @@ const updataContact = (value) => {
               </el-col>
               <el-col :span="2">
                 <el-button type="primary" @click.prevent="removeDomain(domain)" :icon="Delete" plain />
+              </el-col>
+            </el-row>
+          </el-col>
+          <!-- 銀行信息 -->
+          <el-col :span="24">
+            <div class="py">
+              <el-text tag="b">銀行信息</el-text>
+            </div>
+            <el-row :gutter="10">
+              <el-col :span="12">
+                <el-form-item label="受益人" prop="beneficiary">
+                  <el-input v-model="ruleForm.beneficiary" />
+                </el-form-item>
+              </el-col>
+              <el-col :span="12">
+                <el-form-item label="銀行名稱" prop="bank_name">
+                  <el-input v-model="ruleForm.bank_name" />
+                </el-form-item>
+              </el-col>
+              <el-col :span="12">
+                <el-form-item label="銀行代碼" prop="bank_code">
+                  <el-input v-model="ruleForm.bank_code" />
+                </el-form-item>
+              </el-col>
+              <el-col :span="12">
+                <el-form-item label="銀行賬號" prop="bank_account">
+                  <el-input v-model="ruleForm.bank_account" />
+                </el-form-item>
+              </el-col>
+              <el-col :span="24">
+                <el-form-item label="銀行地址" prop="bank_address">
+                  <el-input v-model="ruleForm.bank_address" />
+                </el-form-item>
               </el-col>
             </el-row>
           </el-col>

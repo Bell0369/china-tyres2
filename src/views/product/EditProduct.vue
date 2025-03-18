@@ -3,10 +3,14 @@ import { reactive, ref, onMounted } from "vue"
 import { getProductShowApi, updateProductApi } from "@/api/product"
 import { ElMessage } from "element-plus"
 import { useBrandSelect } from "@/hooks/useSelectOption.js"
+import { useFactorySelect } from "@/hooks/useFactorySelect"
 
 defineOptions({
   name: "EditProduct"
 })
+
+//工厂
+const { loadFactory, optionsFactory, loadFactoryData } = useFactorySelect()
 
 const ruleFormRef = ref()
 const ruleForm = reactive({
@@ -16,6 +20,7 @@ const ruleForm = reactive({
   brand_id: "",
   customs_code: "",
   quantity: "",
+  standard_quantity: "",
   tyre_type: "",
   piece_weight: "",
   spout: "",
@@ -23,7 +28,8 @@ const ruleForm = reactive({
   decorative_design: "",
   european_standard: "",
   european_standard_level: "",
-  sort: 0
+  sort: 0,
+  factory_id: ""
 })
 
 const rules = reactive({
@@ -32,12 +38,14 @@ const rules = reactive({
   ean: [{ required: true, message: "請輸入條碼", trigger: "blur" }],
   brand_id: [{ required: true, message: "請輸入品牌", trigger: "blur" }],
   customs_code: [{ required: true, message: "請輸入海關編碼", trigger: "blur" }],
-  quantity: [{ required: true, message: "請輸入裝箱量", trigger: "blur" }],
+  quantity: [{ required: true, message: "請輸入裝櫃量", trigger: "blur" }],
+  standard_quantity: [{ required: true, message: "請輸入標準櫃量", trigger: "blur" }],
   tyre_type: [{ required: true, message: "請輸入輪胎類型", trigger: "blur" }],
   piece_weight: [{ required: true, message: "請輸入單重", trigger: "blur" }],
   type: [{ required: true, message: "請輸入類型", trigger: "blur" }],
   spout: [{ required: true, message: "請輸入寸口", trigger: "blur" }],
-  decorative_design: [{ required: true, message: "請輸入花紋", trigger: "blur" }]
+  decorative_design: [{ required: true, message: "請輸入花紋", trigger: "blur" }],
+  factory_id: [{ required: true, message: "請选择工厂 ", trigger: "blur" }]
 })
 
 // 品牌
@@ -54,6 +62,11 @@ onMounted(() => {
     })
       .then(({ data }) => {
         Object.assign(ruleForm, data.info)
+        ruleForm.factory_id = data.factory[0].factory_id
+        optionsFactory.value.push({
+          id: data.factory[0].factory_id,
+          name: data.factory[0].name
+        })
       })
       .finally(() => {
         loading.value = false
@@ -85,7 +98,7 @@ const submitForm = (formEl) => {
         <el-row :gutter="10">
           <el-col :span="6">
             <el-form-item label="產品名稱" prop="name">
-              <el-input v-model="ruleForm.name" placeholder="請輸入產品名稱" />
+              <el-input v-model="ruleForm.name" placeholder="請輸入產品名稱" :disabled="rowId" />
             </el-form-item>
           </el-col>
           <el-col :span="6">
@@ -100,7 +113,7 @@ const submitForm = (formEl) => {
           </el-col>
           <el-col :span="6">
             <el-form-item label="品牌" prop="brand_id">
-              <el-select v-model="ruleForm.brand_id">
+              <el-select v-model="ruleForm.brand_id" :disabled="rowId">
                 <el-option v-for="item in brandOptions" :key="item.id" :label="item.name" :value="item.id" />
               </el-select>
             </el-form-item>
@@ -111,8 +124,13 @@ const submitForm = (formEl) => {
             </el-form-item>
           </el-col>
           <el-col :span="6">
-            <el-form-item label="40'HQ裝箱量" prop="quantity">
-              <el-input v-model="ruleForm.quantity" placeholder="請輸入裝箱量" />
+            <el-form-item label="40'HQ裝櫃量" prop="quantity">
+              <el-input v-model="ruleForm.quantity" placeholder="請輸入裝櫃量" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="6">
+            <el-form-item label="40'HQ標準櫃量" prop="standard_quantity">
+              <el-input v-model="ruleForm.standard_quantity" placeholder="請輸入標準櫃量" />
             </el-form-item>
           </el-col>
           <el-col :span="6">
@@ -153,6 +171,20 @@ const submitForm = (formEl) => {
           <el-col :span="6">
             <el-form-item label="排序值">
               <el-input-number v-model="ruleForm.sort" :min="0" style="width: 100%" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="6">
+            <el-form-item label="工厂" prop="factory_id">
+              <el-select
+                v-model="ruleForm.factory_id"
+                filterable
+                remote
+                remote-show-suffix
+                :remote-method="loadFactoryData"
+                :loading="loadFactory"
+              >
+                <el-option v-for="item in optionsFactory" :key="item.id" :label="item.name" :value="item.id" />
+              </el-select>
             </el-form-item>
           </el-col>
         </el-row>

@@ -111,8 +111,9 @@ const submitForm = (formEl) => {
           </div>
         </div>
         <el-descriptions :column="4" border>
+          <el-descriptions-item label="發票號" :span="2">{{ invDate.inv_no }}</el-descriptions-item>
           <el-descriptions-item label="訂單號" :span="2">{{ invDate.order_no }}</el-descriptions-item>
-          <el-descriptions-item label="PI號" :span="2">
+          <el-descriptions-item label="PI號" :span="4">
             <el-text
               v-for="item in invDate.pi_no"
               :key="item.id"
@@ -122,7 +123,7 @@ const submitForm = (formEl) => {
               <router-link :to="`/piorder/piorderitem?id=${item.id}`">{{ item.pi_no }}</router-link>
             </el-text>
           </el-descriptions-item>
-          <el-descriptions-item label="發貨計劃號" :span="2">
+          <el-descriptions-item label="發貨計劃號" :span="4">
             <el-text
               v-for="item in invDate.delivery_plan_no"
               :key="item.id"
@@ -139,8 +140,8 @@ const submitForm = (formEl) => {
           </el-descriptions-item>
           <el-descriptions-item label="發票總金額">{{ invDate.product_total_price }}</el-descriptions-item>
           <el-descriptions-item label="客戶編碼">{{ invDate.client_code }}</el-descriptions-item>
+          <el-descriptions-item label="目的港" :span="2">{{ invDate.destination }}</el-descriptions-item>
           <el-descriptions-item label="工廠名稱">{{ invDate.factory_name }}</el-descriptions-item>
-          <el-descriptions-item label="目的港">{{ invDate.destination }}</el-descriptions-item>
         </el-descriptions>
       </div>
       <div class="mt5">

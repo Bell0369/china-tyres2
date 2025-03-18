@@ -16,6 +16,10 @@ const props = defineProps({
   fullscreen: {
     type: Boolean,
     default: true
+  },
+  width: {
+    type: Number,
+    default: 850
   }
 })
 
@@ -43,7 +47,7 @@ const fullscreenSvgName = computed(() => {
 
 <template>
   <ElDialog
-    width="850"
+    :width="width"
     v-bind="getBindValue"
     :fullscreen="isFullscreen"
     destroy-on-close

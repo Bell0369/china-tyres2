@@ -159,23 +159,11 @@ const exportFile = (api, loadingRef, name) => {
           <el-option label="WINTER" value="WINTER" />
         </el-select>
       </el-form-item>
-      <el-form-item>
-        <el-button
-          type="primary"
-          @click="exportData(1)"
-          v-permission="['exportSalesUnitPriceQuantitySummary']"
-          :loading="loadingBtn1"
-          >導出銷售單價數量匯總</el-button
-        >
+      <el-form-item v-permission="['exportSalesUnitPriceQuantitySummary']">
+        <el-button type="primary" @click="exportData(1)" :loading="loadingBtn1">導出銷售單價數量匯總</el-button>
       </el-form-item>
-      <el-form-item>
-        <el-button
-          type="primary"
-          @click="exportData(2)"
-          v-permission="['exportOrderUnscheduledProduction']"
-          :loading="loadingBtn2"
-          >導出未排產訂單數量匯總</el-button
-        >
+      <el-form-item v-permission="['exportOrderUnscheduledProduction']">
+        <el-button type="primary" @click="exportData(2)" :loading="loadingBtn2">導出未排產訂單數量匯總</el-button>
       </el-form-item>
     </el-form>
   </el-card>

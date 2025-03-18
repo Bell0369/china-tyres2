@@ -1,6 +1,6 @@
 <script setup>
-import { reactive, ref, watch } from "vue"
-import { getProductListApi, exportProductApi } from "@/api/product"
+import { reactive, ref, watch, computed } from "vue"
+import { getProductListApi, exportProductApi, deleteProductApi } from "@/api/product"
 import { ElButton, ElMessage } from "element-plus"
 import { Search, CirclePlus, Refresh, Upload, FolderAdd } from "@element-plus/icons-vue"
 import { usePagination } from "@/hooks/usePagination"
@@ -32,8 +32,8 @@ const { loadClient, optionsClient, loadClientData } = useClientSelect()
 
 // 删除
 const { handleDelete, isDeleted } = useDeleteList({
-  api: getProductListApi,
-  text: "品牌"
+  api: deleteProductApi,
+  text: "产品"
 })
 
 // 删除/修改柜量 成功
@@ -70,6 +70,7 @@ const getTableData = () => {
       tableData.value = []
     })
     .finally(() => {
+      editButton.value = []
       loading.value = false
     })
 }
@@ -102,15 +103,26 @@ const handleView = (row) => {
 const dialogVisible = ref(false)
 const dialogTitle = ref("")
 const dialogId = ref(0)
+//
+const editButton = ref([])
 const handleUpdate = (row) => {
   dialogId.value = row
   dialogVisible.value = true
   if (row) {
     dialogTitle.value = "編輯產品"
+    const index = editButton.value.findIndex((n) => n === row)
+    if (index === -1) {
+      editButton.value.push(row)
+    }
   } else {
     dialogTitle.value = "新增產品"
   }
 }
+
+// 计算属性，用来返回按钮类型
+const getButtonType = computed(() => (buttonId) => {
+  return editButton.value.includes(buttonId) ? "info" : "primary"
+})
 
 // 逗號隔開
 const userList = (list) => {
@@ -263,6 +275,7 @@ const handleError = (uploadFile) => {
           <el-table-column prop="tyre_type" label="輪胎類型" align="center" />
           <el-table-column prop="customs_code" label="海關編碼" align="center" />
           <el-table-column prop="quantity" label="40'HQ裝櫃量" align="center" />
+          <el-table-column prop="standard_quantity" label="40'HQ標準櫃量" align="center" />
           <el-table-column prop="piece_weight" label="單重" align="center" />
           <!-- 
           <el-table-column prop="client" label="客戶" align="center" width="150" :show-overflow-tooltip="true">
@@ -278,12 +291,11 @@ const handleError = (uploadFile) => {
           </el-table-column>
           <el-table-column prop="cost_price" label="採購價" align="center" />
           <el-table-column prop="created_at" label="创建时间" align="center" sortable />
-          <el-table-column fixed="right" label="操作" width="130" align="center">
+          <el-table-column fixed="right" label="操作" width="190" align="center">
             <template #default="scope">
               <el-button
-                v-if="false"
                 v-permission="['addProduct']"
-                type="primary"
+                :type="getButtonType(scope.row.id)"
                 text
                 bg
                 size="small"
@@ -300,9 +312,7 @@ const handleError = (uploadFile) => {
                 >查看</el-button
               >
 
-              <el-button type="danger" text bg size="small" @click="handleDelete(scope.row.id)" style="display: none">
-                删除
-              </el-button>
+              <el-button type="danger" text bg size="small" @click="handleDelete(scope.row.id)">删除</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -320,7 +330,7 @@ const handleError = (uploadFile) => {
         />
       </div>
     </el-card>
-    <Dialog v-model="dialogVisible" :title="dialogTitle" width="60%">
+    <Dialog v-model="dialogVisible" :title="dialogTitle" width="800px">
       <EditProduct :rowId="dialogId" @childEvent="handleChildEvent" />
     </Dialog>
   </div>

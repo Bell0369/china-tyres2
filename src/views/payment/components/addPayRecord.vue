@@ -1,11 +1,18 @@
 <script setup>
-import { reactive, ref, onMounted, defineEmits } from "vue"
-import { ElMessage } from "element-plus"
-import { getAddPayRecordApi, AddPriceApi, editClientPayRecord } from "@/api/order"
+import { reactive, ref, onMounted, defineEmits, watch } from "vue"
+import { ElMessage, ElMessageBox } from "element-plus"
+import {
+  getAddPayRecordApi,
+  AddPriceApi,
+  editClientPayRecord,
+  deleteClientPayRecordApi,
+  deleteFactoryPayRecordApi
+} from "@/api/order"
 import { validateNumberMin } from "@/utils/validate"
 import { EditPen } from "@element-plus/icons-vue"
 import { Dialog } from "@/components/Dialog"
 import { useBankSelect } from "@/hooks/useBankSelect"
+import { useDeleteList } from "@/hooks/useDeleteList"
 
 //工厂
 const { loadBank, optionsBank, loadBankData } = useBankSelect()
@@ -84,7 +91,6 @@ const ClientPayRules = reactive({
 })
 
 const submitClientPayForm = (formEl) => {
-  console.log("111")
   if (!formEl) return
   formEl.validate((valid, fields) => {
     if (valid) {
@@ -116,6 +122,38 @@ const showDialog = (row) => {
   ClientPayForm.reality_price = row.reality_price
   ClientPayForm.remark = row.remark
   ClientPayForm.price = row.price
+}
+
+// 刪除客戶添加記錄
+const { handleDelete, isDeleted } = useDeleteList({
+  api: deleteClientPayRecordApi,
+  text: "記錄?"
+})
+watch([isDeleted], () => {
+  getTableData()
+})
+
+// 刪除工廠添加記錄
+const deleteClientPayRecord = (id) => {
+  ElMessageBox.confirm("確認刪除该記錄?", "提示", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning"
+  })
+    .then(() => {
+      deleteFactoryPayRecordApi({
+        id
+      }).then(() => {
+        ElMessage.success("刪除成功")
+        getTableData()
+      })
+    })
+    .catch(() => {
+      ElMessage({
+        type: "info",
+        message: "已取消"
+      })
+    })
 }
 </script>
 
@@ -175,19 +213,31 @@ const showDialog = (row) => {
                 <EditPen class="w4 h4 cursor-pointer hover:c-blue" @click="showDialog(scope.row)" />
               </template>
             </el-table-column>
-            <el-table-column label="實時費用" align="center" v-permission="['editClientPayRecord']">
+            <el-table-column label="實際到賬" align="center" v-permission="['editClientPayRecord']">
               <template #default="scope">
                 {{ scope.row.reality_price }}
                 <EditPen class="w4 h4 cursor-pointer hover:c-blue" @click="showDialog(scope.row)" />
               </template>
             </el-table-column>
             <el-table-column prop="created_at" label="添加時間" align="center" />
+            <el-table-column fixed="right" label="操作" width="100" align="center">
+              <template #default="scope">
+                <el-button type="danger" text bg size="small" @click="handleDelete(scope.row.id)"> 刪除 </el-button>
+              </template>
+            </el-table-column>
           </el-table>
           <el-table :data="tableData" height="300" v-else>
             <el-table-column prop="price" label="金額" align="center" />
             <el-table-column prop="bank_statement_number" label="銀行水單" align="center" />
             <el-table-column prop="bank_name" label="銀行名稱" align="center" />
             <el-table-column prop="created_at" label="添加時間" align="center" />
+            <el-table-column fixed="right" label="操作" width="100" align="center">
+              <template #default="scope">
+                <el-button type="danger" text bg size="small" @click="deleteClientPayRecord(scope.row.id)">
+                  刪除
+                </el-button>
+              </template>
+            </el-table-column>
           </el-table>
         </div>
       </div>

@@ -365,3 +365,13 @@ export function exportKilogramUnitPriceApi(params) {
     params
   })
 }
+
+// 發票/裝箱單/SN/weight note合并導出
+export function exportFourInOneApi(params) {
+  return request({
+    url: "report/exportFourInOne",
+    method: "post",
+    responseType: "blob",
+    params
+  })
+}

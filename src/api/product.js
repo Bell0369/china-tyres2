@@ -11,12 +11,12 @@ export function getProductListApi(params) {
 }
 
 // 導出
-export function exportProductApi(params) {
+export function exportProductApi(data) {
   return request({
     url: "product/exportProduct",
     method: "post",
     responseType: "blob",
-    params
+    data
   })
 }
 
@@ -30,10 +30,19 @@ export function getProductShowApi(params) {
 }
 
 // 改
-export function updateProductApi(params) {
+export function updateProductApi(data) {
   return request({
     url: "product/addProduct",
     method: "post",
-    params
+    data
+  })
+}
+
+// 删
+export function deleteProductApi(data) {
+  return request({
+    url: "product/deleteProduct",
+    method: "post",
+    data
   })
 }
