@@ -1,7 +1,7 @@
 <script setup>
 import { reactive, ref, watch, onActivated } from "vue"
 import { Search, CirclePlus, Refresh, EditPen } from "@element-plus/icons-vue"
-import { getPiListApi, deletePiListApi, updatePiQuantityApi, exportPIApi } from "@/api/order"
+import { getPiListApi, deletePiListApi, updatePiQuantityApi, exportPIApi, accomplishPApi } from "@/api/order"
 import { usePagination } from "@/hooks/usePagination"
 import { useDeleteList } from "@/hooks/useDeleteList"
 import { useBrandSelect, useFactoryCodeSelect } from "@/hooks/useSelectOption"
@@ -9,6 +9,9 @@ import { useClientSelect } from "@/hooks/useClientSelect"
 import { useRemarksSelect } from "@/hooks/useOrderRemarksSelect"
 import { useUpdateQuantity } from "@/hooks/useUpdateQuantity"
 import { handleActivated } from "@/utils/tagsclose"
+import { ElMessage, ElMessageBox } from "element-plus"
+import { checkPermission } from "@/utils/permission"
+import { useUserStore } from "@/store/modules/user"
 
 defineOptions({
   name: "PIOrderList"
@@ -59,7 +62,8 @@ const searchData = reactive({
   client_code: "",
   brand_code: "",
   factory_code: "",
-  order_remarks: ""
+  order_remarks: "",
+  status: 0
 })
 const getTableData = () => {
   loading.value = true
@@ -118,6 +122,46 @@ const exportPI = (row) => {
       }, 500)
     })
 }
+
+/**完成PI */
+const connectUpdate = (row) => {
+  if (row.delivery_plan_is_shipped) {
+    ElMessageBox.confirm("有未完成發貨計劃，確定完成PI？", "警告", {
+      confirmButtonText: "確定",
+      cancelButtonText: "取消",
+      type: "warning"
+    })
+      .then(() => {
+        accomplishPI(row.pi_no)
+      })
+      .catch(() => {})
+  } else {
+    ElMessageBox.confirm("確定完成PI？", "提示", {
+      confirmButtonText: "確定",
+      cancelButtonText: "取消",
+      type: "warning"
+    })
+      .then(() => {
+        accomplishPI(row.pi_no)
+      })
+      .catch(() => {})
+  }
+}
+const accomplishPI = (pi_no) => {
+  accomplishPApi({
+    pi_no
+  }).then(() => {
+    ElMessage.success("修改成功")
+    getTableData()
+  })
+}
+
+const updataOrderStatus = () => {
+  handleSearch()
+}
+
+// 毛利率
+const { userinfo } = useUserStore()
 </script>
 
 <template>
@@ -207,6 +251,12 @@ const exportPI = (row) => {
           </div>
         </div>
       </div>
+      <div class="mb5">
+        <el-radio-group v-model="searchData.status" fill="#29d" @change="updataOrderStatus">
+          <el-radio-button label="未完成" :value="0" />
+          <el-radio-button label="已完成" :value="1" />
+        </el-radio-group>
+      </div>
       <div class="table-wrapper">
         <el-table border :data="tableData">
           <el-table-column prop="pi_no" label="PI號" align="center" />
@@ -228,14 +278,20 @@ const exportPI = (row) => {
           <el-table-column prop="total_price" label="PI總金額" align="center" />
           <el-table-column prop="status" label="是否完成" align="center" width="100">
             <template #default="scope">
-              <el-tag type="success" v-if="scope.row.status">已完成</el-tag>
-              <el-tag type="danger" v-else>未完成</el-tag>
+              <el-tag :type="scope.row.status ? 'success' : 'danger'">
+                {{ scope.row.status ? "已完成" : "未完成" }}
+              </el-tag>
             </template>
           </el-table-column>
           <el-table-column prop="order_remarks" label="訂單備註" align="center" />
-          <el-table-column prop="profit_margin" label="毛利率" align="center" />
+          <el-table-column
+            prop="profit_margin"
+            label="毛利率"
+            align="center"
+            v-if="checkPermission(['maolilv']) || userinfo.role_id === 1"
+          />
           <el-table-column prop="created_at" label="创建时间" align="center" sortable />
-          <el-table-column fixed="right" label="操作" width="200" align="center">
+          <el-table-column fixed="right" label="操作" width="260" align="center">
             <template #default="scope">
               <el-button
                 v-permission="['piBasicDetail']"
@@ -257,6 +313,15 @@ const exportPI = (row) => {
                 @click="handleDelete(scope.row.id)"
                 >删除</el-button
               >
+              <el-button
+                v-if="!scope.row.status"
+                v-permission="['accomplishPI']"
+                type="primary"
+                size="small"
+                @click="connectUpdate(scope.row)"
+              >
+                完成PI
+              </el-button>
             </template>
           </el-table-column>
         </el-table>

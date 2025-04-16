@@ -37,17 +37,21 @@ export const exportDataPdfPacking = async (inv_no, callback) => {
   const doc = new jsPDF(options)
   doc.addFileToVFS("ok.ttf", myFont)
   doc.addFont("ok.ttf", "myFont", "normal")
-  doc.setFontSize(fontSize)
   // 添加標題
+  doc.setFontSize(fontSize + 4)
+  doc.setFont("helvetica", "bold")
   doc.text(centerTexts[0], setTextCenter(doc, centerTexts[0]), 15)
-  doc.setFont("myFont")
+  doc.setFontSize(fontSize + 1)
+  doc.setFont("myFont", "normal")
   doc.text(centerTexts[1], setTextCenter(doc, centerTexts[1]), 21)
   doc.setFont("helvetica", "italic")
   doc.text(centerTexts[2], setTextCenter(doc, centerTexts[2]), 27)
   doc.text(centerTexts[3], setTextCenter(doc, centerTexts[3]), 33)
-  doc.setFont("helvetica", "normal")
+  doc.setFontSize(fontSize + 4)
+  doc.setFont("helvetica", "bold")
   doc.text(centerTexts[4], setTextCenter(doc, centerTexts[4]), 39)
 
+  doc.setFontSize(fontSize)
   const tableInfo1 = [
     ["TO:", data.to[0], "DATE:", data.date],
     ["", data.to[1], "INVOICE NO.:", data.inv_no],

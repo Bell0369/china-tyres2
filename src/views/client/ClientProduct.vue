@@ -214,12 +214,13 @@ const headersObj = {
   Authorization: `Bearer ${token}`
 }
 const handleProgress = () => {
-  loading.value = true
+  fullscreenLoading.value = true
 }
 
 const uploadRef = ref()
+const fullscreenLoading = ref(false)
 const handleSuccess = (uploadFile) => {
-  loading.value = false
+  fullscreenLoading.value = false
   uploadRef.value.clearFiles()
   if (uploadFile.code !== 200) {
     ElMessage.error(uploadFile.message)
@@ -230,7 +231,7 @@ const handleSuccess = (uploadFile) => {
 }
 
 const handleError = (uploadFile) => {
-  loading.value = false
+  fullscreenLoading.value = false
   console.log(uploadFile)
 }
 
@@ -309,164 +310,166 @@ const svg = `
 </script>
 
 <template>
-  <div v-loading="loading">
-    <div class="m-b">
-      <div class="flex justify-between">
-        <el-text size="large" tag="b">產品信息</el-text>
-        <div>
-          <el-tooltip :disabled="!defaultContact" content="請確定默認聯繫人先" placement="top-start">
-            <el-button
-              v-permission="['editAllClientProductPrice']"
-              type="primary"
-              @click="dialogVisible2 = true"
-              :disabled="defaultContact"
-              >批量調整價格</el-button
+  <div v-loading.fullscreen.lock="fullscreenLoading">
+    <div v-loading="loading">
+      <div class="m-b">
+        <div class="flex justify-between">
+          <el-text size="large" tag="b">產品信息</el-text>
+          <div>
+            <el-tooltip :disabled="!defaultContact" content="請確定默認聯繫人先" placement="top-start">
+              <el-button
+                v-permission="['editAllClientProductPrice']"
+                type="primary"
+                @click="dialogVisible2 = true"
+                :disabled="defaultContact"
+                >批量調整價格</el-button
+              >
+            </el-tooltip>
+            <el-tooltip :disabled="!defaultContact" content="請確定默認聯繫人先" placement="top-start">
+              <el-button
+                v-permission="['addClientProduct']"
+                type="primary"
+                @click="handleUpdate(0)"
+                :disabled="defaultContact"
+                >新增產品</el-button
+              >
+            </el-tooltip>
+          </div>
+        </div>
+        <div class="mt2 flex justify-between">
+          <div>
+            <el-input v-model="keyword" placeholder="請輸入產品名稱" style="width: 280px; margin-right: 10px" />
+            <el-button type="primary" :icon="Search" @click="handleSearch">查詢</el-button>
+            <el-button :icon="Refresh" @click="resetSearch">重置</el-button>
+          </div>
+          <div class="flex">
+            <el-button class="mr3" v-if="isDeldo" type="success" @click="deldoSynchronization">同步</el-button>
+            <el-upload
+              ref="uploadRef"
+              :headers="headersObj"
+              :data="{ client_id: route.query.id }"
+              :action="`${baseUrl}/client/importClientProduct`"
+              :limit="1"
+              :auto-upload="true"
+              :show-file-list="false"
+              accept=".xlsx, .xls"
+              :on-error="handleError"
+              :on-success="handleSuccess"
+              :on-progress="handleProgress"
             >
-          </el-tooltip>
-          <el-tooltip :disabled="!defaultContact" content="請確定默認聯繫人先" placement="top-start">
-            <el-button
-              v-permission="['addClientProduct']"
-              type="primary"
-              @click="handleUpdate(0)"
-              :disabled="defaultContact"
-              >新增產品</el-button
+              <template #trigger>
+                <el-button v-permission="['importClientProduct']" type="success">上傳產品</el-button>
+              </template>
+            </el-upload>
+            <el-button class="ml3" v-permission="['exportClientProduct']" type="success" @click="exportClientProduct"
+              >下載產品</el-button
             >
-          </el-tooltip>
+          </div>
         </div>
       </div>
-      <div class="mt2 flex justify-between">
-        <div>
-          <el-input v-model="keyword" placeholder="請輸入產品名稱" style="width: 280px; margin-right: 10px" />
-          <el-button type="primary" :icon="Search" @click="handleSearch">查詢</el-button>
-          <el-button :icon="Refresh" @click="resetSearch">重置</el-button>
-        </div>
-        <div class="flex">
-          <el-button class="mr3" v-if="isDeldo" type="success" @click="deldoSynchronization">同步</el-button>
-          <el-upload
-            ref="uploadRef"
-            :headers="headersObj"
-            :data="{ client_id: route.query.id }"
-            :action="`${baseUrl}/client/importClientProduct`"
-            :limit="1"
-            :auto-upload="true"
-            :show-file-list="false"
-            accept=".xlsx, .xls"
-            :on-error="handleError"
-            :on-success="handleSuccess"
-            :on-progress="handleProgress"
-          >
-            <template #trigger>
-              <el-button v-permission="['importClientProduct']" type="success">上傳產品</el-button>
+      <div class="m-b">
+        <el-table ref="tableRef" :data="tableData">
+          <el-table-column prop="name" label="產品名稱" align="center" />
+          <el-table-column prop="price" label="價格" align="center">
+            <template #default="scope">
+              <el-text :type="scope.row.price === '0.00' ? 'warning' : ''">{{ scope.row.price }}</el-text>
             </template>
-          </el-upload>
-          <el-button class="ml3" v-permission="['exportClientProduct']" type="success" @click="exportClientProduct"
-            >下載產品</el-button
-          >
-        </div>
+          </el-table-column>
+          <el-table-column prop="cost_price" label="成本價" align="center">
+            <template #default="scope">
+              <el-text>{{ checkPermission(["showCost"]) ? scope.row.cost_price : "---" }}</el-text>
+            </template>
+          </el-table-column>
+          <el-table-column prop="profit" label="毛利" align="center">
+            <template #default="scope">
+              <el-text>{{ checkPermission(["showCost"]) ? scope.row.profit : "---" }}</el-text>
+            </template>
+          </el-table-column>
+          <el-table-column prop="brand_name" label="品牌" align="center" />
+          <el-table-column fixed="right" label="操作" width="150" align="center">
+            <template #default="scope">
+              <el-button
+                v-permission="['addClientProduct']"
+                type="primary"
+                text
+                bg
+                size="small"
+                @click="handleUpdate(scope.row.id)"
+                >編輯</el-button
+              >
+              <el-button
+                v-permission="['deleteClientProduct']"
+                type="danger"
+                text
+                bg
+                size="small"
+                @click="handleDelete(scope.row.id)"
+                >删除</el-button
+              >
+            </template>
+          </el-table-column>
+        </el-table>
       </div>
-    </div>
-    <div class="m-b">
-      <el-table ref="tableRef" :data="tableData">
-        <el-table-column prop="name" label="產品名稱" align="center" />
-        <el-table-column prop="price" label="價格" align="center">
-          <template #default="scope">
-            <el-text :type="scope.row.price === '0.00' ? 'warning' : ''">{{ scope.row.price }}</el-text>
-          </template>
-        </el-table-column>
-        <el-table-column prop="cost_price" label="成本價" align="center">
-          <template #default="scope">
-            <el-text>{{ checkPermission(["showCost"]) ? scope.row.cost_price : "---" }}</el-text>
-          </template>
-        </el-table-column>
-        <el-table-column prop="profit" label="毛利" align="center">
-          <template #default="scope">
-            <el-text>{{ checkPermission(["showCost"]) ? scope.row.profit : "---" }}</el-text>
-          </template>
-        </el-table-column>
-        <el-table-column prop="brand_name" label="品牌" align="center" />
-        <el-table-column fixed="right" label="操作" width="150" align="center">
-          <template #default="scope">
-            <el-button
-              v-permission="['addClientProduct']"
-              type="primary"
-              text
-              bg
-              size="small"
-              @click="handleUpdate(scope.row.id)"
-              >編輯</el-button
+      <div class="pager-wrapper">
+        <el-pagination
+          background
+          :layout="paginationData.layout"
+          :page-sizes="paginationData.pageSizes"
+          :total="paginationData.total"
+          :page-size="paginationData.pageSize"
+          :currentPage="paginationData.currentPage"
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+        />
+      </div>
+      <!-- 產品調整 -->
+      <el-dialog v-model="dialogVisible" title="產品調整" @close="handleClose">
+        <el-form ref="productFormRef" :model="productForm" label-position="left" label-width="100px">
+          <el-form-item label="產品名稱">
+            <el-select
+              v-model="productForm.product_id"
+              filterable
+              remote
+              remote-show-suffix
+              :remote-method="remoteMethod"
+              :loading="loading2"
+              @change="changeProduct($event)"
             >
-            <el-button
-              v-permission="['deleteClientProduct']"
-              type="danger"
-              text
-              bg
-              size="small"
-              @click="handleDelete(scope.row.id)"
-              >删除</el-button
-            >
-          </template>
-        </el-table-column>
-      </el-table>
-    </div>
-    <div class="pager-wrapper">
-      <el-pagination
-        background
-        :layout="paginationData.layout"
-        :page-sizes="paginationData.pageSizes"
-        :total="paginationData.total"
-        :page-size="paginationData.pageSize"
-        :currentPage="paginationData.currentPage"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-      />
-    </div>
-    <!-- 產品調整 -->
-    <el-dialog v-model="dialogVisible" title="產品調整" @close="handleClose">
-      <el-form ref="productFormRef" :model="productForm" label-position="left" label-width="100px">
-        <el-form-item label="產品名稱">
-          <el-select
-            v-model="productForm.product_id"
-            filterable
-            remote
-            remote-show-suffix
-            :remote-method="remoteMethod"
-            :loading="loading2"
-            @change="changeProduct($event)"
-          >
-            <el-option v-for="item in productOptions" :key="item.id" :label="item.name" :value="item.id" />
-          </el-select>
-        </el-form-item>
-        <el-form-item prop="price" label="價格">
-          <el-input v-model="productForm.price" placeholder="請輸入價格" type="number" />
-        </el-form-item>
-        <el-form-item label="品牌">
-          <el-text class="mx-1" size="large">{{ productForm.brand_name }}</el-text>
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <ElButton type="primary" @click="submitProductForm"> 保存 </ElButton>
-        <ElButton @click="dialogVisible = false">關閉</ElButton>
-      </template>
-    </el-dialog>
-    <!-- 調整價格 -->
-    <el-dialog v-model="dialogVisible2" title="批量調整價格">
-      <update-price ref="childRef" />
-      <template #footer>
-        <ElButton type="primary" @click="submitProductSum"> 保存 </ElButton>
-        <ElButton @click="dialogVisible2 = false">關閉</ElButton>
-      </template>
-    </el-dialog>
+              <el-option v-for="item in productOptions" :key="item.id" :label="item.name" :value="item.id" />
+            </el-select>
+          </el-form-item>
+          <el-form-item prop="price" label="價格">
+            <el-input v-model="productForm.price" placeholder="請輸入價格" type="number" />
+          </el-form-item>
+          <el-form-item label="品牌">
+            <el-text class="mx-1" size="large">{{ productForm.brand_name }}</el-text>
+          </el-form-item>
+        </el-form>
+        <template #footer>
+          <ElButton type="primary" @click="submitProductForm"> 保存 </ElButton>
+          <ElButton @click="dialogVisible = false">關閉</ElButton>
+        </template>
+      </el-dialog>
+      <!-- 調整價格 -->
+      <el-dialog v-model="dialogVisible2" title="批量調整價格">
+        <update-price ref="childRef" />
+        <template #footer>
+          <ElButton type="primary" @click="submitProductSum"> 保存 </ElButton>
+          <ElButton @click="dialogVisible2 = false">關閉</ElButton>
+        </template>
+      </el-dialog>
 
-    <!-- 同步數據 -->
-    <el-dialog v-model="isJobDialg" title="數據同步中" width="500" align-center :before-close="handleCloseJob">
-      <div
-        v-loading="isJobDialg"
-        :element-loading-svg="svg"
-        element-loading-svg-view-box="-10, -10, 50, 50"
-        class="py-10"
-      />
-      <p class="c-red">請勿關閉當前窗口，否則無法查看同步狀態</p>
-    </el-dialog>
+      <!-- 同步數據 -->
+      <el-dialog v-model="isJobDialg" title="數據同步中" width="500" align-center :before-close="handleCloseJob">
+        <div
+          v-loading="isJobDialg"
+          :element-loading-svg="svg"
+          element-loading-svg-view-box="-10, -10, 50, 50"
+          class="py-10"
+        />
+        <p class="c-red">請勿關閉當前窗口，否則無法查看同步狀態</p>
+      </el-dialog>
+    </div>
   </div>
 </template>
 

@@ -204,25 +204,34 @@ const deleteClientPayRecord = (id) => {
             <el-table-column prop="remark" label="備註" align="center" v-permission="['editClientPayRecord']">
               <template #default="scope">
                 {{ scope.row.remark || "----" }}
-                <EditPen class="w4 h4 cursor-pointer hover:c-blue" @click="showDialog(scope.row)" />
+                <EditPen class="w4 h4 cursor-pointer hover:c-blue" @click="showDialog(scope.row)" v-if="!row.status" />
               </template>
             </el-table-column>
             <el-table-column prop="fee" label="费用" align="center" v-permission="['editClientPayRecord']">
               <template #default="scope">
                 {{ scope.row.fee }}
-                <EditPen class="w4 h4 cursor-pointer hover:c-blue" @click="showDialog(scope.row)" />
+                <EditPen class="w4 h4 cursor-pointer hover:c-blue" @click="showDialog(scope.row)" v-if="!row.status" />
               </template>
             </el-table-column>
             <el-table-column label="實際到賬" align="center" v-permission="['editClientPayRecord']">
               <template #default="scope">
                 {{ scope.row.reality_price }}
-                <EditPen class="w4 h4 cursor-pointer hover:c-blue" @click="showDialog(scope.row)" />
+                <EditPen class="w4 h4 cursor-pointer hover:c-blue" @click="showDialog(scope.row)" v-if="!row.status" />
               </template>
             </el-table-column>
             <el-table-column prop="created_at" label="添加時間" align="center" />
             <el-table-column fixed="right" label="操作" width="100" align="center">
               <template #default="scope">
-                <el-button type="danger" text bg size="small" @click="handleDelete(scope.row.id)"> 刪除 </el-button>
+                <el-button
+                  type="danger"
+                  text
+                  bg
+                  size="small"
+                  @click="handleDelete(scope.row.id)"
+                  :disabled="row.status"
+                >
+                  刪除
+                </el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -233,7 +242,14 @@ const deleteClientPayRecord = (id) => {
             <el-table-column prop="created_at" label="添加時間" align="center" />
             <el-table-column fixed="right" label="操作" width="100" align="center">
               <template #default="scope">
-                <el-button type="danger" text bg size="small" @click="deleteClientPayRecord(scope.row.id)">
+                <el-button
+                  type="danger"
+                  text
+                  bg
+                  size="small"
+                  @click="deleteClientPayRecord(scope.row.id)"
+                  :disabled="row.status"
+                >
                   刪除
                 </el-button>
               </template>
