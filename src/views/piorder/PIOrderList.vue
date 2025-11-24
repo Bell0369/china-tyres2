@@ -113,7 +113,7 @@ const exportPI = (row) => {
     .then((data) => {
       const downloadLink = document.createElement("a")
       downloadLink.href = URL.createObjectURL(data)
-      downloadLink.download = `${row.pi_no}.xlsx`
+      downloadLink.download = `PI.${row.pi_no}.xlsx`
       downloadLink.click()
     })
     .finally(() => {
@@ -259,10 +259,10 @@ const { userinfo } = useUserStore()
       </div>
       <div class="table-wrapper">
         <el-table border :data="tableData">
-          <el-table-column prop="pi_no" label="PI號" align="center" />
-          <el-table-column prop="order_no" label="訂單號" align="center" />
-          <el-table-column prop="client_code" label="客戶編碼" align="center" />
-          <el-table-column prop="quantity" label="櫃量(40'HQ)" align="center">
+          <el-table-column prop="pi_no" label="PI號" align="center" width="120" />
+          <el-table-column prop="order_no" label="訂單號" align="center" width="120" />
+          <el-table-column prop="client_code" label="客戶編碼" align="center" width="120" />
+          <el-table-column prop="quantity" label="櫃量(40'HQ)" align="center" width="120">
             <template #default="scope">
               {{ scope.row.quantity }}
               <EditPen
@@ -273,25 +273,19 @@ const { userinfo } = useUserStore()
             </template>
           </el-table-column>
           <el-table-column prop="product_total_number" label="PI數量" align="center" />
-          <el-table-column prop="shipped" label="已發貨數" align="center" />
-          <el-table-column prop="not_shipped" label="未發貨數" align="center" />
-          <el-table-column prop="total_price" label="PI總金額" align="center" />
-          <el-table-column prop="status" label="是否完成" align="center" width="100">
-            <template #default="scope">
-              <el-tag :type="scope.row.status ? 'success' : 'danger'">
-                {{ scope.row.status ? "已完成" : "未完成" }}
-              </el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column prop="order_remarks" label="訂單備註" align="center" />
+          <el-table-column prop="shipped" label="已發貨數" align="center" width="100" />
+          <el-table-column prop="not_shipped" label="未發貨數" align="center" width="100" />
+          <el-table-column prop="total_price" label="PI總金額" align="center" width="100" />
+          <el-table-column prop="not_shipped_total_quantity" label="未發貨數總櫃量" align="center" width="130" />
           <el-table-column
             prop="profit_margin"
             label="毛利率"
             align="center"
             v-if="checkPermission(['maolilv']) || userinfo.role_id === 1"
           />
-          <el-table-column prop="created_at" label="创建时间" align="center" sortable />
-          <el-table-column fixed="right" label="操作" width="260" align="center">
+          <el-table-column prop="order_remarks" label="訂單備註" align="center" width="100" />
+          <el-table-column prop="created_at" label="创建时间" align="center" sortable width="120" />
+          <el-table-column fixed="right" label="操作" width="160" align="center">
             <template #default="scope">
               <el-button
                 v-permission="['piBasicDetail']"
@@ -303,7 +297,6 @@ const { userinfo } = useUserStore()
                 :to="`/piorder/piorderitem?id=${scope.row.id}`"
                 >查看</el-button
               >
-              <el-button type="success" text bg size="small" @click="exportPI(scope.row)">下載</el-button>
               <el-button
                 v-permission="['deletePi']"
                 type="danger"
@@ -318,9 +311,13 @@ const { userinfo } = useUserStore()
                 v-permission="['accomplishPI']"
                 type="primary"
                 size="small"
+                class="mt-2 ml-0!"
                 @click="connectUpdate(scope.row)"
               >
                 完成PI
+              </el-button>
+              <el-button type="warning" class="mt-2" size="small" plain @click="exportPI(scope.row)">
+                導出PI
               </el-button>
             </template>
           </el-table-column>

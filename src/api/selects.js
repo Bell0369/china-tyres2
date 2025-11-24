@@ -139,6 +139,108 @@ export function deleteBankConfigApi(data) {
   })
 }
 
+/** 付款方配置 */
+//  查
+export function getPayerListApi(params) {
+  return request({
+    url: "config/payerList",
+    method: "get",
+    params
+  })
+}
+//  加
+export function addPayerApi(data) {
+  return request({
+    url: "config/addPayer",
+    method: "post",
+    data
+  })
+}
+// 刪
+export function deletePayerApi(data) {
+  return request({
+    url: "config/deletePayer",
+    method: "post",
+    data
+  })
+}
+// 狀態
+export function updatePayerStatusApi(data) {
+  return request({
+    url: "config/updatePayerStatus",
+    method: "post",
+    data
+  })
+}
+
+/** 船代配置 */
+//  查
+export function getFreightForwarderListApi(params) {
+  return request({
+    url: "config/freightForwarderList",
+    method: "get",
+    params
+  })
+}
+//  加
+export function addFreightForwarderApi(data) {
+  return request({
+    url: "config/addFreightForwarder",
+    method: "post",
+    data
+  })
+}
+// 刪
+export function deleteFreightForwarderApi(data) {
+  return request({
+    url: "config/deleteFreightForwarder",
+    method: "post",
+    data
+  })
+}
+// 狀態
+export function updateFreightForwarderStatusApi(data) {
+  return request({
+    url: "config/updateFreightForwarderStatus",
+    method: "post",
+    data
+  })
+}
+
+/** 起運港配置 */
+//  查
+export function getOriginatingListApi(params) {
+  return request({
+    url: "config/originatingList",
+    method: "get",
+    params
+  })
+}
+//  加
+export function addOriginatingApi(data) {
+  return request({
+    url: "config/addOriginating",
+    method: "post",
+    data
+  })
+}
+// 刪
+export function deleteOriginatingDetailApi(data) {
+  return request({
+    url: "config/deleteOriginatingDetail",
+    method: "post",
+    data
+  })
+}
+// 狀態
+export function updateOriginatingStatusApi(data) {
+  return request({
+    url: "config/updateOriginatingStatus",
+    method: "post",
+    data
+  })
+}
+
 // 國家地區
 export function getCountriesAreaApi(params) {
   return request({
@@ -370,6 +472,26 @@ export function exportKilogramUnitPriceApi(params) {
 export function exportFourInOneApi(params) {
   return request({
     url: "report/exportFourInOne",
+    method: "post",
+    responseType: "blob",
+    params
+  })
+}
+
+// 導出訂單PI一覽表
+export function exportOrderPiDataApi(params) {
+  return request({
+    url: "report/exportOrderPiData",
+    method: "post",
+    responseType: "blob",
+    params
+  })
+}
+
+// 導出未完成PI规格数量汇总
+export function exportUndonePiNumberApi(params) {
+  return request({
+    url: "report/exportUndonePiNumber",
     method: "post",
     responseType: "blob",
     params

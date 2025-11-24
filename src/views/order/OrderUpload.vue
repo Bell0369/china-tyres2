@@ -2,7 +2,7 @@
 import { ref, reactive } from "vue"
 import { ElButton, ElMessage } from "element-plus"
 import { useRoute, useRouter } from "vue-router"
-import { useBrandSelect, useFactoryCodeSelect } from "@/hooks/useSelectOption"
+import { useBrandSelect, useFactoryCodeSelect, useOriginatingListSelect } from "@/hooks/useSelectOption"
 import { useClientSelect } from "@/hooks/useClientSelect"
 import { useRemarksSelect } from "@/hooks/useOrderRemarksSelect"
 import { uploadOrderApi } from "@/api/order"
@@ -28,6 +28,9 @@ const { loadClient, optionsClient, loadClientData } = useClientSelect()
 // 订单备注
 const { loadRemarks, optionsRemarks, loadRemarksData } = useRemarksSelect()
 
+// 起運港
+const OriginatingOptions = useOriginatingListSelect()
+
 // tag
 const route = useRoute()
 const router = useRouter()
@@ -36,14 +39,14 @@ const ruleFormRef = ref()
 const ruleForm = reactive({
   file: "",
   client_id: "",
-  factory_code: "",
+  factory_id: "",
   brand_id: "",
   remarks_id: ""
 })
 
 const rules = reactive({
   client_id: [{ required: true, message: "請選擇客戶", trigger: "change" }],
-  factory_code: [{ required: true, message: "請選擇工廠代碼", trigger: "change" }],
+  factory_id: [{ required: true, message: "請選擇工廠", trigger: "change" }],
   brand_id: [{ required: true, message: "請選擇品牌", trigger: "change" }]
 })
 
@@ -82,7 +85,7 @@ const submitForm = (Type) => {
       formData.append("file", ruleForm.file)
       formData.append("type", Type)
       formData.append("client_id", ruleForm.client_id)
-      formData.append("factory_code", ruleForm.factory_code)
+      formData.append("factory_id", ruleForm.factory_id)
       formData.append("brand_id", ruleForm.brand_id)
       formData.append("content", ruleForm.remarks_id)
       uploadOrderApi(formData)
@@ -136,51 +139,47 @@ const filterTable = () => {
       <div class="toolbar-wrapper">
         <el-text tag="b" size="large">訂單資料</el-text>
       </div>
-      <el-form ref="ruleFormRef" :model="ruleForm" :rules="rules">
-        <el-row :gutter="20">
-          <el-col :span="6">
-            <el-form-item prop="client_id" label="客戶編碼">
-              <el-select
-                v-model="ruleForm.client_id"
-                filterable
-                remote
-                remote-show-suffix
-                :remote-method="loadClientData"
-                :loading="loadClient"
-              >
-                <el-option v-for="item in optionsClient" :key="item.id" :label="item.client_code" :value="item.id" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="6">
-            <el-form-item prop="factory_code" label="工廠代碼">
-              <el-select v-model="ruleForm.factory_code">
-                <el-option v-for="item in factoryCodeOptions" :key="item.id" :label="item.name" :value="item.code" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="6">
-            <el-form-item label="品牌代碼" prop="brand_id">
-              <el-select v-model="ruleForm.brand_id">
-                <el-option v-for="item in brandOptions" :key="item.id" :label="item.name" :value="item.id" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="6">
-            <el-form-item label="訂單備註">
-              <el-select
-                v-model="ruleForm.remarks_id"
-                filterable
-                remote
-                remote-show-suffix
-                :remote-method="loadRemarksData"
-                :loading="loadRemarks"
-              >
-                <el-option v-for="item in optionsRemarks" :key="item.id" :label="item.content" :value="item.content" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-        </el-row>
+      <el-form ref="ruleFormRef" :model="ruleForm" :rules="rules" :inline="true">
+        <el-form-item prop="client_id" label="客戶編碼">
+          <el-select
+            v-model="ruleForm.client_id"
+            filterable
+            remote
+            remote-show-suffix
+            :remote-method="loadClientData"
+            :loading="loadClient"
+            style="width: 220px"
+          >
+            <el-option v-for="item in optionsClient" :key="item.id" :label="item.client_code" :value="item.id" />
+          </el-select>
+        </el-form-item>
+        <el-form-item prop="factory_id" label="工廠名稱">
+          <el-select v-model="ruleForm.factory_id" style="width: 220px">
+            <el-option v-for="item in factoryCodeOptions" :key="item.id" :label="item.name" :value="item.id" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="品牌代碼" prop="brand_id" style="width: 300px">
+          <el-select v-model="ruleForm.brand_id">
+            <el-option v-for="item in brandOptions" :key="item.id" :label="item.name" :value="item.id" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="訂單備註" style="width: 300px">
+          <el-select
+            v-model="ruleForm.remarks_id"
+            filterable
+            remote
+            remote-show-suffix
+            :remote-method="loadRemarksData"
+            :loading="loadRemarks"
+          >
+            <el-option v-for="item in optionsRemarks" :key="item.id" :label="item.content" :value="item.content" />
+          </el-select>
+        </el-form-item>
+        <el-form-item prop="originating" label="起運港" style="width: 300px">
+          <el-select v-model="ruleForm.originating">
+            <el-option v-for="item in OriginatingOptions" :key="item.id" :label="item.name" :value="item.name" />
+          </el-select>
+        </el-form-item>
       </el-form>
       <div class="flex items-center">
         <div class="w-sm">

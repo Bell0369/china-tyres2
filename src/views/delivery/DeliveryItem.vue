@@ -120,18 +120,20 @@ watch(
           </div>
         </div>
         <el-descriptions :column="3" border>
-          <el-descriptions-item label="訂單號">
+          <el-descriptions-item label="訂單號" min-width="120px">
             <el-text type="primary">
               <router-link :to="`/order/orderitem?id=${orderInfo1.order_id}`">{{ orderInfo1.order_no }}</router-link>
             </el-text>
           </el-descriptions-item>
-          <el-descriptions-item label="PI號">
+          <el-descriptions-item label="PI號" min-width="120px">
             <el-text type="primary">
               <router-link :to="`/piorder/piorderitem?id=${orderInfo1.pi_id}`">{{ orderInfo1.pi_no }}</router-link>
             </el-text>
           </el-descriptions-item>
-          <el-descriptions-item label="發貨計劃號">{{ orderInfo1.delivery_plan_no }}</el-descriptions-item>
-          <el-descriptions-item label="關聯發貨計劃">
+          <el-descriptions-item label="發貨計劃號" min-width="120px">
+            {{ orderInfo1.delivery_plan_no }}
+          </el-descriptions-item>
+          <el-descriptions-item label="關聯發貨計劃" :span="3">
             <el-text
               v-for="item in orderInfo1.join_delivery_plan_no"
               :key="item.id"

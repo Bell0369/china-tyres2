@@ -4,7 +4,13 @@ import { ElMessage, ElMessageBox } from "element-plus"
 import { EditPen, Search, Refresh } from "@element-plus/icons-vue"
 import { useRoute } from "vue-router"
 import ItemInfo from "./components/ItemInfo.vue"
-import { getPiProductDetailApi, getPiBasicDetailApi, updatePiNumberApi, accomplishPApi } from "@/api/order"
+import {
+  getPiProductDetailApi,
+  getPiBasicDetailApi,
+  updatePiNumberApi,
+  accomplishPApi,
+  exportPiNotShippedDetailsApi
+} from "@/api/order"
 import { useTagsViewStore } from "@/store/modules/tags-view"
 
 defineOptions({
@@ -137,6 +143,35 @@ const tagsViewStore = useTagsViewStore()
 const closeTab = () => {
   tagsViewStore.delVisitedView(route)
 }
+
+// 導出未發貨數產品明細
+const handeleExportPiNotShippedDetails = () => {
+  loading.value = true
+  exportPiNotShippedDetailsApi({
+    id: route.query.id
+  })
+    .then((data) => {
+      if (data.type === "application/json") {
+        const reader = new FileReader()
+        reader.onload = () => {
+          const text = reader.result
+          const jsonResponse = JSON.parse(text)
+          ElMessage.error(jsonResponse.message)
+        }
+        reader.readAsText(data)
+      } else {
+        const downloadLink = document.createElement("a")
+        downloadLink.href = URL.createObjectURL(data)
+        downloadLink.download = `PI未發貨數產品明細.${infoData.pi_no}.xlsx`
+        downloadLink.click()
+      }
+    })
+    .finally(() => {
+      setTimeout(() => {
+        loading.value = false
+      }, 500)
+    })
+}
 </script>
 
 <template>
@@ -147,9 +182,12 @@ const closeTab = () => {
       <div class="toolbar-wrapper">
         <div class="flex justify-between">
           <el-text tag="b" size="large">產品信息</el-text>
-          <el-button v-permission="['accomplishPI']" v-if="showContent" type="primary" @click="connectUpdate"
-            >完成PI</el-button
-          >
+          <div>
+            <el-button type="warning" @click="handeleExportPiNotShippedDetails">導出未發貨數產品明細</el-button>
+            <el-button v-permission="['accomplishPI']" v-if="showContent" type="primary" @click="connectUpdate"
+              >完成PI</el-button
+            >
+          </div>
         </div>
       </div>
       <div class="mb">

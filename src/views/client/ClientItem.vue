@@ -62,6 +62,9 @@ const ruleForm = reactive({
   inv_rise_one: "",
   inv_rise_two: "",
   inv_rise_three: "",
+  inv_rise_four: "",
+  inv_rise_five: "",
+  inv_rise_six: "",
   beneficiary: "",
   bank_name: "",
   bank_account: "",
@@ -307,6 +310,21 @@ const updataContact = (value) => {
               <el-col :span="8">
                 <el-form-item label="發票3">
                   <el-input v-model="ruleForm.inv_rise_three" />
+                </el-form-item>
+              </el-col>
+              <el-col :span="8">
+                <el-form-item label="發票4">
+                  <el-input v-model="ruleForm.inv_rise_four" />
+                </el-form-item>
+              </el-col>
+              <el-col :span="8">
+                <el-form-item label="發票5">
+                  <el-input v-model="ruleForm.inv_rise_five" />
+                </el-form-item>
+              </el-col>
+              <el-col :span="8">
+                <el-form-item label="發票6">
+                  <el-input v-model="ruleForm.inv_rise_six" />
                 </el-form-item>
               </el-col>
             </el-row>

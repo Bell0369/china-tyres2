@@ -4,7 +4,10 @@ import {
   getDeliveryListApi,
   getFactoryListApi,
   getDepartmentApi,
-  getPaymentTermsApi
+  getPaymentTermsApi,
+  getPayerListApi,
+  getFreightForwarderListApi,
+  getOriginatingListApi
 } from "@/api/selects"
 
 // 獲取品牌
@@ -92,4 +95,58 @@ export function useDepartmentSelect() {
   return {
     roleOptions
   }
+}
+
+// 獲取付款方
+export function usePayerListSelect() {
+  const payerOptions = ref([])
+  const getDataList = () => {
+    getPayerListApi({
+      page: 1,
+      page_size: 1000
+    }).then(({ data }) => {
+      payerOptions.value = data.data
+    })
+  }
+  onMounted(() => {
+    getDataList()
+  })
+
+  return payerOptions
+}
+
+// 獲取船代
+export function useFreightForwarderListSelect() {
+  const freightForwarderOptions = ref([])
+  const getDataList = () => {
+    getFreightForwarderListApi({
+      page: 1,
+      page_size: 1000
+    }).then(({ data }) => {
+      freightForwarderOptions.value = data.data
+    })
+  }
+  onMounted(() => {
+    getDataList()
+  })
+
+  return freightForwarderOptions
+}
+
+// 獲取起運港
+export function useOriginatingListSelect() {
+  const originatingOptions = ref([])
+  const getDataList = () => {
+    getOriginatingListApi({
+      page: 1,
+      page_size: 1000
+    }).then(({ data }) => {
+      originatingOptions.value = data.data
+    })
+  }
+  onMounted(() => {
+    getDataList()
+  })
+
+  return originatingOptions
 }

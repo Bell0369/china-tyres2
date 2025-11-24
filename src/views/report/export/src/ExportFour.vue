@@ -31,6 +31,9 @@ const FormData = reactive({
 
 // 導出客戶銷售總覽
 const loadingBtn2 = ref(false)
+const FormData2 = reactive({
+  tyre_type: ""
+})
 
 // 選中數據
 const exportData = (Type) => {
@@ -53,7 +56,7 @@ const exportData = (Type) => {
       exportFile(Object.assign(dataJson, FormData), exportOrderGeneralViewApi, loadingBtn1, "訂單發貨狀態總覽")
       break
     case 2:
-      exportFile(dataJson, exportClientSellOverviewApi, loadingBtn2, "客戶銷售規格數量統計")
+      exportFile(Object.assign(dataJson, FormData2), exportClientSellOverviewApi, loadingBtn2, "客戶銷售規格數量統計")
       break
     default:
       break
@@ -97,8 +100,8 @@ const exportFile = (dataJson, api, loadingRef, name) => {
           v-model="monthrangeData"
           type="daterange"
           range-separator="-"
-          start-placeholder="開始日期"
-          end-placeholder="結束日期"
+          start-placeholder="*開始日期*"
+          end-placeholder="*結束日期*"
           value-format="YYYY-MM-DD"
         />
       </el-form-item>
@@ -111,7 +114,7 @@ const exportFile = (dataJson, api, loadingRef, name) => {
           remote-show-suffix
           :remote-method="loadClientData"
           :loading="loadClient"
-          placeholder="客戶"
+          placeholder="*客戶*"
           style="width: 200px"
         >
           <el-option v-for="item in optionsClient" :key="item.id" :label="item.client_code" :value="item" />
@@ -119,7 +122,19 @@ const exportFile = (dataJson, api, loadingRef, name) => {
       </el-form-item>
     </el-form>
     <div class="mt" v-permission="['exportClientSellOverview']">
-      <el-button type="primary" @click="exportData(2)" :loading="loadingBtn2">導出客戶銷售規格數量統計</el-button>
+      <el-form :inline="true">
+        <el-form-item>
+          <el-select v-model="FormData2.tyre_type" placeholder="輪胎類型" style="width: 150px">
+            <el-option label="4S" value="4S" />
+            <el-option label="SUMMER" value="SUMMER" />
+            <el-option label="TBR" value="TBR" />
+            <el-option label="WINTER" value="WINTER" />
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="exportData(2)" :loading="loadingBtn2">導出客戶銷售規格數量統計</el-button>
+        </el-form-item>
+      </el-form>
     </div>
     <div class="mt" v-permission="['exportOrderGeneralView']">
       <el-form :inline="true">

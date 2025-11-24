@@ -1,9 +1,16 @@
 <script setup>
 import { reactive, ref, watch, onActivated } from "vue"
-import { ElButton } from "element-plus"
+import { ElButton, ElMessage, ElMessageBox } from "element-plus"
 import { Search, CirclePlus, Refresh, EditPen } from "@element-plus/icons-vue"
 import { usePagination } from "@/hooks/usePagination"
-import { getOrderListApi, updateQuantityApi, deleteOrderApi } from "@/api/order"
+import {
+  getOrderListApi,
+  updateQuantityApi,
+  deleteOrderApi,
+  updateOrderStatusApi,
+  quickGenerationApi,
+  exportOrderContractApi
+} from "@/api/order"
 import { useBrandSelect, useFactoryCodeSelect } from "@/hooks/useSelectOption"
 import { useClientSelect } from "@/hooks/useClientSelect"
 import { useRemarksSelect } from "@/hooks/useOrderRemarksSelect"
@@ -58,7 +65,8 @@ const searchData = reactive({
   client_code: "",
   brand_code: "",
   factory_code: "",
-  order_remarks: ""
+  order_remarks: "",
+  status: 0
 })
 const getTableData = () => {
   loading.value = true
@@ -99,6 +107,86 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
 onActivated(() => {
   if (handleActivated()) getTableData()
 })
+
+// 切換完成狀態
+const updataOrderStatus = () => {
+  handleSearch()
+}
+
+// 完成订单
+/**完成PI */
+const connectUpdate = (id) => {
+  ElMessageBox.confirm("確定完成訂單？", "提示", {
+    confirmButtonText: "確定",
+    cancelButtonText: "取消",
+    type: "warning"
+  })
+    .then(() => {
+      updateOrderStatusApi({
+        id
+      }).then(() => {
+        ElMessage.success("訂單完成")
+        getTableData()
+      })
+    })
+    .catch(() => {})
+}
+
+// 一鍵生成PI
+const dialogFormVisible = ref(false)
+const dialogFormVisibleLoading = ref(false)
+const quickGenerationForm = reactive({
+  id: 0,
+  date: "",
+  factory_id: ""
+})
+const handelQuickGeneration = () => {
+  dialogFormVisibleLoading.value = true
+  quickGenerationApi(quickGenerationForm)
+    .then(() => {
+      ElMessage.success("成功生成PI")
+      dialogFormVisible.value = false
+    })
+    .finally(() => {
+      dialogFormVisibleLoading.value = false
+    })
+}
+// 打開彈框
+const handleShowDialogFormVisible = (id) => {
+  dialogFormVisible.value = true
+  quickGenerationForm.id = id
+  quickGenerationForm.date = ""
+  quickGenerationForm.factory_id = ""
+}
+
+// 导出導出訂單合同
+const handelExportOrderContract = (row) => {
+  loading.value = true
+  exportOrderContractApi({
+    id: row.id
+  })
+    .then((data) => {
+      if (data.type === "application/json") {
+        const reader = new FileReader()
+        reader.onload = () => {
+          const text = reader.result
+          const jsonResponse = JSON.parse(text)
+          ElMessage.error(jsonResponse.message)
+        }
+        reader.readAsText(data)
+      } else {
+        const downloadLink = document.createElement("a")
+        downloadLink.href = URL.createObjectURL(data)
+        downloadLink.download = `訂單合同.${row.order_no}.xlsx`
+        downloadLink.click()
+      }
+    })
+    .finally(() => {
+      setTimeout(() => {
+        loading.value = false
+      }, 500)
+    })
+}
 </script>
 
 <template>
@@ -175,11 +263,17 @@ onActivated(() => {
           <el-button type="primary" :icon="CirclePlus">上傳訂單</el-button>
         </router-link>
       </div>
+      <div class="mb5">
+        <el-radio-group v-model="searchData.status" fill="#29d" @change="updataOrderStatus">
+          <el-radio-button label="未完成" :value="0" />
+          <el-radio-button label="已完成" :value="1" />
+        </el-radio-group>
+      </div>
       <div class="table-wrapper">
         <el-table :data="tableData" border>
-          <el-table-column prop="order_no" label="訂單號" align="center" />
-          <el-table-column prop="client_code" label="客戶編碼" align="center" />
-          <el-table-column prop="quantity" label="櫃量(40'HQ)" align="center" width="120">
+          <el-table-column prop="order_no" label="訂單號" align="center" width="150" />
+          <el-table-column prop="client_code" label="客戶編碼" align="center" min-width="100" />
+          <el-table-column prop="quantity" label="櫃量(40'HQ)" align="center" min-width="120">
             <template #default="scope">
               {{ scope.row.quantity }}
               <EditPen
@@ -189,15 +283,15 @@ onActivated(() => {
               />
             </template>
           </el-table-column>
-          <el-table-column prop="price" label="訂單金額" align="center" />
-          <el-table-column prop="number" label="訂單數量" align="center" />
-          <el-table-column prop="unproduced" label="未生產數量" align="center" />
+          <el-table-column prop="price" label="訂單金額" align="center" min-width="100" />
+          <el-table-column prop="number" label="訂單數量" align="center" min-width="100" />
+          <el-table-column prop="unproduced" label="未生產數量" align="center" min-width="100" />
           <el-table-column prop="pi_number" label="PI數量" align="center" />
-          <el-table-column prop="pi_shipped_number" label="PI已發貨數量" align="center" />
-          <el-table-column prop="pi_not_shipped_number" label="PI未發貨數量" align="center" />
-          <el-table-column prop="order_remarks" label="訂單備註" align="center" />
-          <el-table-column prop="created_at" label="创建时间" align="center" sortable />
-          <el-table-column fixed="right" label="操作" width="130" align="center">
+          <el-table-column prop="pi_shipped_number" label="PI已發貨數量" align="center" min-width="120" />
+          <el-table-column prop="pi_not_shipped_number" label="PI未發貨數量" align="center" min-width="120" />
+          <el-table-column prop="order_remarks" label="訂單備註" align="center" min-width="100" />
+          <el-table-column prop="created_at" label="创建时间" align="center" sortable width="120" />
+          <el-table-column fixed="right" label="操作" width="240" align="center">
             <template #default="scope">
               <el-button
                 v-permission="['orderDetail']"
@@ -218,6 +312,27 @@ onActivated(() => {
                 @click="handleDelete(scope.row.id)"
                 >删除</el-button
               >
+              <el-button type="primary" size="small" @click="connectUpdate(scope.row.id)" v-if="!searchData.status">
+                完成
+              </el-button>
+              <el-button
+                class="mt-2"
+                type="primary"
+                size="small"
+                @click="handleShowDialogFormVisible(scope.row.id)"
+                v-if="!searchData.status"
+              >
+                一鍵生成PI
+              </el-button>
+              <el-button
+                :class="{ 'mt-2': !searchData.status }"
+                type="warning"
+                size="small"
+                plain
+                @click="handelExportOrderContract(scope.row)"
+              >
+                導出訂單合同
+              </el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -235,6 +350,28 @@ onActivated(() => {
         />
       </div>
     </el-card>
+
+    <!-- 一鍵生成PI彈框 -->
+    <el-dialog v-model="dialogFormVisible" title="一鍵生成PI" width="500">
+      <el-form :model="quickGenerationForm">
+        <el-form-item label="日期">
+          <el-date-picker v-model="quickGenerationForm.date" type="month" style="width: 100%" value-format="YYYY-MM" />
+        </el-form-item>
+        <el-form-item label="工廠">
+          <el-select v-model="quickGenerationForm.factory_id">
+            <el-option v-for="item in factoryCodeOptions" :key="item.id" :label="item.name" :value="item.id" />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="dialogFormVisible = false">取消</el-button>
+          <el-button type="primary" @click="handelQuickGeneration" :loading="dialogFormVisibleLoading">
+            確定
+          </el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 

@@ -78,8 +78,8 @@ const exportFile = (api, loadingRef, name) => {
           v-model="monthrangeData"
           type="daterange"
           range-separator="-"
-          start-placeholder="開始日期"
-          end-placeholder="結束日期"
+          start-placeholder="*開始日期*"
+          end-placeholder="*結束日期*"
           value-format="YYYY-MM-DD"
         />
       </el-form-item>

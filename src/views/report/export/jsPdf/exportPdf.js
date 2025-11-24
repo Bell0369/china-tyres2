@@ -53,7 +53,10 @@ export const exportDataPdf = async (inv_no, callback) => {
   const tableInfo1 = [
     ["TO:", data.to[0], "DATE:", data.date],
     ["", data.to[1], "INVOICE NO.:", data.inv_no],
-    ["", data.to[2], "PO NO.:", data.po_no]
+    ["", data.to[2], "PO NO.:", data.po_no],
+    ["", data.to[3]],
+    ["", data.to[4]],
+    ["", data.to[5]]
   ]
   autoTable(doc, {
     body: tableInfo1,
@@ -71,7 +74,7 @@ export const exportDataPdf = async (inv_no, callback) => {
       3: { cellWidth: cells5 * 2 }
     }
   })
-  let tops1 = 45 + 20
+  let tops1 = 60 + 20
   doc.text(
     "***************************************************************************************************************************************************************************",
     margins.left,

@@ -1,8 +1,15 @@
 <script setup>
 import { reactive, ref, watch, onActivated } from "vue"
-import { getDeliveryPlanListApi, deleteDeliveryPlanApi, createInvApi, exportDeliveryPlanApi } from "@/api/order"
+import {
+  getDeliveryPlanListApi,
+  deleteDeliveryPlanApi,
+  createInvApi,
+  exportDeliveryPlanApi,
+  exportDeliveryPlanListApi,
+  exportShippedProductDetailsApi
+} from "@/api/order"
 import { ElButton, ElMessage } from "element-plus"
-import { Search, CirclePlus, Refresh, FolderAdd } from "@element-plus/icons-vue"
+import { Search, CirclePlus, Refresh, FolderAdd, Upload } from "@element-plus/icons-vue"
 import { useRouter } from "vue-router"
 import { usePagination } from "@/hooks/usePagination"
 import { useBrandSelect, useFactoryCodeSelect } from "@/hooks/useSelectOption"
@@ -70,8 +77,8 @@ const getTableData = () => {
     page: paginationData.currentPage,
     page_size: paginationData.pageSize
   }
-  Object.assign(searchData, page)
-  getDeliveryPlanListApi(searchData)
+  Object.assign(page, searchData)
+  getDeliveryPlanListApi(page)
     .then(({ data }) => {
       paginationData.total = data.total
       tableData.value = data.data
@@ -169,12 +176,41 @@ const selectable = (row) => {
   }
 }
 
-// 導出
+// 導出發貨計劃
 const handleExport = (rows) => {
-  loading.value = true
-  exportDeliveryPlanApi({
+  const name = `${rows.delivery_plan_no}.${rows.brand_code}.${rows.client_code}`
+  const page = {
     id: rows.id
-  })
+  }
+  exportFile(page, exportDeliveryPlanApi, name)
+}
+
+// 導出發貨計劃列表
+const handleExportDeliveryPlan = () => {
+  loading.value = true
+  const page = {
+    start_date: monthrangeData.value[0] || undefined,
+    end_date: monthrangeData.value[1] || undefined
+  }
+  Object.assign(page, searchData)
+  exportFile(page, exportDeliveryPlanListApi, "發貨計劃列表")
+}
+
+// 導出已发货规格明细
+const handleExportShippedProductDetails = () => {
+  const page = {
+    start_date: monthrangeData.value[0] || undefined,
+    end_date: monthrangeData.value[1] || undefined
+  }
+  Object.assign(page, searchData)
+  exportFile(page, exportShippedProductDetailsApi, "已發貨規格明細")
+}
+
+// 導出方法
+const exportFile = (dataJson, api, name) => {
+  loading.value = true
+
+  api(dataJson)
     .then((data) => {
       if (data.type === "application/json") {
         const reader = new FileReader()
@@ -187,7 +223,7 @@ const handleExport = (rows) => {
       } else {
         const downloadLink = document.createElement("a")
         downloadLink.href = URL.createObjectURL(data)
-        downloadLink.download = `${rows.delivery_plan_no}.${rows.brand_code}.${rows.client_code}.xlsx`
+        downloadLink.download = `${name}.xlsx`
         downloadLink.click()
       }
     })
@@ -275,7 +311,7 @@ const handleExport = (rows) => {
     </el-card>
     <el-card v-loading="loading" shadow="never">
       <div class="toolbar-wrapper">
-        <div class="flex justify-between">
+        <div class="flex justify-between items-center">
           <div>
             <router-link class="mr" v-permission="['uploadPackingList']" to="/delivery/deliveryupload">
               <el-button type="primary" :icon="CirclePlus">上傳裝箱單</el-button>
@@ -283,6 +319,10 @@ const handleExport = (rows) => {
             <el-button v-permission="['createInv']" type="primary" :icon="FolderAdd" @click="CreateInvoice"
               >銷售發票生成</el-button
             >
+            <el-button type="warning" :icon="Upload" @click="handleExportDeliveryPlan">導出發貨計劃列表</el-button>
+            <el-button type="warning" :icon="Upload" @click="handleExportShippedProductDetails">
+              導出已發貨規格明細
+            </el-button>
           </div>
           <div>
             <el-text size="large">未發貨總數量：</el-text>
@@ -300,16 +340,16 @@ const handleExport = (rows) => {
       <div class="table-wrapper">
         <!-- @selection-change="handleSelectionChange" -->
         <el-table ref="tableRef" border :data="tableData">
-          <el-table-column type="selection" width="55" align="center" :selectable="selectable" />
-          <el-table-column prop="delivery_plan_no" label="發貨計劃號" align="center" />
-          <el-table-column prop="pi_no" label="PI號" align="center" />
-          <el-table-column prop="client_code" label="客戶編碼" align="center" />
-          <el-table-column prop="number" label="計劃發貨數" align="center" />
-          <el-table-column prop="shipped" label="已發貨數" align="center" />
-          <el-table-column prop="not_shipped" label="未發貨數" align="center" />
-          <el-table-column prop="procurement_invoice_no" label="採購發票號" align="center" />
-          <el-table-column prop="order_remarks" label="訂單備註" align="center" />
-          <el-table-column prop="created_at" label="创建时间" align="center" sortable />
+          <el-table-column type="selection" width="55" align="center" :selectable="selectable" fixed />
+          <el-table-column prop="delivery_plan_no" label="發貨計劃號" align="center" width="150" />
+          <el-table-column prop="pi_no" label="PI號" align="center" width="150" />
+          <el-table-column prop="client_code" label="客戶編碼" align="center" width="100" />
+          <el-table-column prop="number" label="計劃發貨數" align="center" width="100" />
+          <el-table-column prop="shipped" label="已發貨數" align="center" width="100" />
+          <el-table-column prop="not_shipped" label="未發貨數" align="center" width="100" />
+          <el-table-column prop="procurement_invoice_no" label="採購發票號" align="center" width="120" />
+          <el-table-column prop="order_remarks" label="訂單備註" align="center" width="100" />
+          <el-table-column prop="created_at" label="创建时间" align="center" sortable width="120" />
           <el-table-column fixed="right" label="操作" width="190" align="center">
             <template #default="scope">
               <el-button

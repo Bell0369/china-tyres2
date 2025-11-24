@@ -200,7 +200,7 @@ onMounted(() => {
           <el-table-column prop="sex" label="性別" width="100" align="center" />
           <el-table-column prop="phone" label="電話" align="center" />
           <el-table-column prop="email" label="Email" align="center" />
-          <el-table-column prop="user_status" label="状态" width="100" align="center">
+          <el-table-column prop="user_status" label="狀態" width="100" align="center">
             <template #default="scope">
               <el-switch
                 :disabled="scope.row.id === 1 || !checkPermission(['editStatus'])"

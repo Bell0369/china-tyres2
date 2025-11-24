@@ -1,5 +1,5 @@
 <script setup>
-import { ExportOne, ExportTow, ExportThree, ExportFour, ExportFive, ExportSix } from "./export"
+import { ExportOne, ExportTow, ExportThree, ExportFour, ExportFive, ExportSix, ExportSeven } from "./export"
 
 defineOptions({
   name: "Export"
@@ -14,6 +14,7 @@ defineOptions({
     <export-four />
     <export-five />
     <export-six />
+    <export-seven />
   </div>
 </template>
 

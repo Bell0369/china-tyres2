@@ -86,6 +86,8 @@ export const dynamicRoutes: RouteRecordRaw[] = [
     redirect: "/users/userlist",
     name: "User",
     meta: {
+      title: "用戶記錄",
+      svgIcon: "user",
       roles: ["userList"]
     },
     children: [
@@ -95,7 +97,17 @@ export const dynamicRoutes: RouteRecordRaw[] = [
         name: "UserList",
         meta: {
           title: "用戶管理",
-          svgIcon: "user",
+          name: "User",
+          roles: ["userList"],
+          keepAlive: true
+        }
+      },
+      {
+        path: "operationlog",
+        component: () => import("@/views/users/OperationLog.vue"),
+        name: "OperationLog",
+        meta: {
+          title: "操作記錄",
           name: "User",
           keepAlive: true
         }
@@ -334,6 +346,7 @@ export const dynamicRoutes: RouteRecordRaw[] = [
     name: "Invoice",
     meta: {
       title: "銷售發票",
+      svgIcon: "inventory",
       roles: ["invList"]
     },
     children: [
@@ -343,9 +356,9 @@ export const dynamicRoutes: RouteRecordRaw[] = [
         name: "InvoiceList",
         meta: {
           title: "銷售發票",
-          svgIcon: "inventory",
           name: "Invoice",
-          keepAlive: true
+          keepAlive: true,
+          roles: ["invList"]
         }
       },
       {
@@ -357,6 +370,15 @@ export const dynamicRoutes: RouteRecordRaw[] = [
           name: "Invoice",
           hidden: true,
           roles: ["invDetail", "editInv"]
+        }
+      },
+      {
+        path: "inlandfeelist",
+        component: () => import("@/views/invoice/InlandFeeList.vue"),
+        name: "InlandFeeList",
+        meta: {
+          title: "內陸費用",
+          name: "Invoice"
         }
       }
     ]
@@ -495,6 +517,33 @@ export const dynamicRoutes: RouteRecordRaw[] = [
           name: "Configuration",
           title: "銀行管理"
         }
+      },
+      {
+        path: "PayerList",
+        component: () => import("@/views/configuration/PayerList.vue"),
+        name: "PayerList",
+        meta: {
+          name: "Configuration",
+          title: "付款方"
+        }
+      },
+      {
+        path: "FreightForwarderList",
+        component: () => import("@/views/configuration/FreightForwarderList.vue"),
+        name: "FreightForwarderList",
+        meta: {
+          name: "Configuration",
+          title: "船代"
+        }
+      },
+      {
+        path: "OriginatingList",
+        component: () => import("@/views/configuration/OriginatingList.vue"),
+        name: "OriginatingList",
+        meta: {
+          name: "Configuration",
+          title: "起運港"
+        }
       }
     ]
   },
@@ -529,6 +578,15 @@ export const dynamicRoutes: RouteRecordRaw[] = [
           title: "數據導出"
         }
       }
+      // {
+      //   path: "exportDemo",
+      //   component: () => import("@/views/report/export/jsExcel/exportDemo.vue"),
+      //   name: "exportDemo",
+      //   meta: {
+      //     name: "Report",
+      //     title: "數據導出Excel"
+      //   }
+      // }
     ]
   }
 ]

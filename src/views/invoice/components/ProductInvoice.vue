@@ -1,5 +1,6 @@
 <script setup>
 import { ref, defineProps, watch } from "vue"
+import { Search, Refresh } from "@element-plus/icons-vue"
 
 defineOptions({
   name: "ProductInvoice"

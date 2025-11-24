@@ -10,16 +10,6 @@ export function getOrderListApi(params) {
   })
 }
 
-// 導出
-export function exportPIApi(params) {
-  return request({
-    url: "order/exportPI",
-    method: "post",
-    responseType: "blob",
-    params
-  })
-}
-
 // 刪
 export function deleteOrderApi(data) {
   return request({
@@ -103,6 +93,16 @@ export function deletePiListApi(data) {
     url: "order/deletePi",
     method: "post",
     data
+  })
+}
+
+// 導出
+export function exportPIApi(params) {
+  return request({
+    url: "order/exportPI",
+    method: "post",
+    responseType: "blob",
+    params
   })
 }
 
@@ -230,7 +230,7 @@ export function createInvApi(data) {
   })
 }
 
-// 導出销售发票
+// 導出發貨計劃
 export function exportDeliveryPlanApi(data) {
   return request({
     url: "delivery/exportDeliveryPlan",
@@ -493,5 +493,136 @@ export function deleteFactoryPayRecordApi(data) {
     url: "receipt/deleteFactoryPayRecord",
     method: "post",
     data
+  })
+}
+
+// 完成訂單
+export function updateOrderStatusApi(data) {
+  return request({
+    url: "order/updateOrderStatus",
+    method: "post",
+    data
+  })
+}
+
+// 操作記錄
+export function getRecordsListApi(params) {
+  return request({
+    url: "records/list",
+    method: "get",
+    params
+  })
+}
+
+// 操作記錄詳情
+export function getDetailApi(params) {
+  return request({
+    url: "records/detail",
+    method: "get",
+    params
+  })
+}
+
+// 导出PI未发货数产品明细
+export function exportPiNotShippedDetailsApi(params) {
+  return request({
+    url: "order/exportPiNotShippedDetails",
+    method: "post",
+    responseType: "blob",
+    params
+  })
+}
+
+// 一鍵生成PI
+export function quickGenerationApi(data) {
+  return request({
+    url: "order/quickGeneration",
+    method: "post",
+    data
+  })
+}
+
+// 導出訂單合同
+export function exportOrderContractApi(params) {
+  return request({
+    url: "order/exportOrderContract",
+    method: "post",
+    responseType: "blob",
+    params
+  })
+}
+
+// 導出發貨計劃列表
+export function exportDeliveryPlanListApi(params) {
+  return request({
+    url: "delivery/exportDeliveryPlanList",
+    method: "post",
+    responseType: "blob",
+    params
+  })
+}
+
+// 導出已发货规格明细
+export function exportShippedProductDetailsApi(params) {
+  return request({
+    url: "delivery/exportShippedProductDetails",
+    method: "post",
+    responseType: "blob",
+    params
+  })
+}
+
+// 内陸費用列表
+export function getInlandFeeListApi(params) {
+  return request({
+    url: "inv/inlandFeeList",
+    method: "get",
+    params
+  })
+}
+
+// 更新内陸費用狀態
+export function updateInlandStatusApi(data) {
+  return request({
+    url: "inv/updateInlandStatus",
+    method: "post",
+    data
+  })
+}
+
+// 导出内陆费用登记表
+export function exportInlandFeeApi(params) {
+  return request({
+    url: "inv/exportInlandFee",
+    method: "post",
+    responseType: "blob",
+    params
+  })
+}
+
+// 獲取最新成本價
+export function getNewCostPriceApi(data) {
+  return request({
+    url: "delivery/getNewCostPrice",
+    method: "post",
+    data
+  })
+}
+
+// 獲取最新銷售價
+export function getNewSalesPriceApi(data) {
+  return request({
+    url: "delivery/getNewSalesPrice",
+    method: "post",
+    data
+  })
+}
+
+// 獲取目的港
+export function getDestinationApi(params) {
+  return request({
+    url: "delivery/getDestination",
+    method: "get",
+    params
   })
 }

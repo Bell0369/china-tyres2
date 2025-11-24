@@ -206,7 +206,7 @@ const exportFactoryProduct = () => {
     .then((data) => {
       const downloadLink = document.createElement("a")
       downloadLink.href = URL.createObjectURL(data)
-      downloadLink.download = "product.xlsx"
+      downloadLink.download = "工廠產品表.xlsx"
       downloadLink.click()
     })
     .finally(() => {

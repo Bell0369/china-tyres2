@@ -261,7 +261,7 @@ const handleError = (uploadFile) => {
               <el-button type="primary" :icon="FolderAdd">批量新增產品</el-button>
             </template>
           </el-upload>
-          <el-button v-permission="['exportProduct']" type="primary" :icon="Upload" @click="exportProduct"
+          <el-button v-permission="['exportProduct']" type="warning" :icon="Upload" @click="exportProduct"
             >導出產品</el-button
           >
         </div>

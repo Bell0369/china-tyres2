@@ -1,8 +1,8 @@
 <script setup>
 import { reactive, ref, watch } from "vue"
-import { getClientListApi, deleteClientListApi } from "@/api/users"
+import { getClientListApi, deleteClientListApi, exportClientApi } from "@/api/users"
 import { ElButton } from "element-plus"
-import { Search, CirclePlus, Refresh } from "@element-plus/icons-vue"
+import { Search, CirclePlus, Refresh, Upload } from "@element-plus/icons-vue"
 import { usePagination } from "@/hooks/usePagination"
 import { useRouter } from "vue-router"
 import { usePayMentSelect } from "@/hooks/useSelectOption"
@@ -30,7 +30,7 @@ const { paginationData, handleCurrentChange, handleSizeChange } = usePagination(
 // 删除
 const { handleDelete, isDeleted } = useDeleteList({
   api: deleteClientListApi,
-  text: "工廠"
+  text: "客戶"
 })
 
 // 删除 成功
@@ -52,7 +52,7 @@ const getTableData = () => {
     page: paginationData.currentPage,
     page_size: paginationData.pageSize,
     keyword: searchData.keyword || undefined,
-    payment_terms_id: searchData.payment_terms || undefined,
+    payment_terms_id: searchData.payment_terms_id || undefined,
     user_id: searchData.user_id || undefined
   })
     .then(({ data }) => {
@@ -98,6 +98,45 @@ const handleChildEvent = () => {
   dialogVisible.value = false
   getTableData()
 }
+
+// 導出客戶
+const handleExportClient = () => {
+  loading.value = true
+  exportClientApi(searchData)
+    .then((data) => {
+      if (data.type === "application/json") {
+        const reader = new FileReader()
+        reader.onload = () => {
+          const text = reader.result
+          const jsonResponse = JSON.parse(text)
+          ElMessage.error(jsonResponse.message)
+        }
+        reader.readAsText(data)
+      } else {
+        const downloadLink = document.createElement("a")
+        downloadLink.href = URL.createObjectURL(data)
+        downloadLink.download = `客戶列表.xlsx`
+        downloadLink.click()
+      }
+    })
+    .finally(() => {
+      setTimeout(() => {
+        loading.value = false
+      }, 500)
+    })
+}
+
+// 在setup中
+// const selectedLabel = computed(() => {
+//   const selectedId1 = searchData.payment_terms_id
+//   const selectedId2 = searchData.user_id
+//   const selectedOption1 = PayMentOptions.value.find((item) => item.id === selectedId1)
+//   const selectedOption2 = optionsUser.value.find((item) => item.id === selectedId2)
+//   return {
+//     payMentName: selectedOption1 ? selectedOption1.name : "",
+//     userName: selectedOption2 ? selectedOption2.username : ""
+//   }
+// })
 </script>
 
 <template>
@@ -139,23 +178,30 @@ const handleChildEvent = () => {
           <el-button v-permission="['addClient']" @click="dialogVisible = true" type="primary" :icon="CirclePlus">
             新增客戶
           </el-button>
+          <el-button v-permission="['addClient']" @click="handleExportClient" type="warning" :icon="Upload">
+            導出客戶
+          </el-button>
         </div>
       </div>
       <div class="table-wrapper">
         <el-table ref="tableRef" :data="tableData" border>
-          <el-table-column prop="client_name" label="客戶名稱" align="center" />
+          <el-table-column prop="client_name" label="客戶名稱" align="center" width="120" />
           <el-table-column prop="client_code" label="编码" align="center" />
-          <el-table-column prop="payment_terms_name" label="付款條件" align="center" />
-          <el-table-column prop="credit" label="信用額度" align="center" />
+          <el-table-column prop="brand" label="品牌" align="center" />
+          <el-table-column
+            prop="payment_terms_name"
+            label="付款條件"
+            align="center"
+            min-width="150"
+            :show-overflow-tooltip="true"
+          />
+          <el-table-column prop="credit" label="信用額度" align="center" width="100" />
           <el-table-column prop="advance_payment" label="預付款" align="center" />
           <el-table-column prop="client_contact" label="聯繫人" align="center" />
           <el-table-column prop="phone" label="電話" width="150" align="center" />
-          <!-- 
-          <el-table-column prop="email" label="Email" width="150" :show-overflow-tooltip="true" align="center" />
-          <el-table-column prop="address" width="150" :show-overflow-tooltip="true" label="地址" align="center" /> 
-          -->
-          <el-table-column prop="created_at" label="创建时间" align="center" sortable />
-          <el-table-column fixed="right" label="操作" width="100" align="center">
+          <el-table-column prop="last_inv_create_time" label="發票生成時間" align="center" width="120" />
+          <el-table-column prop="created_at" label="创建时间" align="center" width="120" />
+          <el-table-column fixed="right" label="操作" width="80" align="center">
             <template #default="scope">
               <el-button
                 type="primary"

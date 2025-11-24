@@ -2,24 +2,28 @@
 import { ref, reactive } from "vue"
 import { ElMessage } from "element-plus"
 import { useRoute, useRouter } from "vue-router"
-import { getDeliveryPlanNoApi, uploadPackingListApi } from "@/api/order"
+import {
+  getDeliveryPlanNoApi,
+  uploadPackingListApi,
+  getNewCostPriceApi,
+  getNewSalesPriceApi,
+  getDestinationApi
+} from "@/api/order"
 import { useClientSelect } from "@/hooks/useClientSelect"
-import { useeDeliverTypeSelect, useFactoryCodeSelect } from "@/hooks/useSelectOption"
+import { useFactoryCodeSelect } from "@/hooks/useSelectOption"
 import { UploadXlsx } from "@/components/UploadXlsx"
 import UploadInfo from "./components/UploadInfo.vue"
 import { redirectTo } from "@/utils/tagsclose"
+import { debounce } from "lodash-es"
 
 defineOptions({
-  name: "DeliveryUoload"
+  name: "DeliveryUpload"
 })
 
 const loading = ref(false)
 
 //工厂代碼
 const factoryCodeOptions = useFactoryCodeSelect()
-
-// 發貨類型
-const { eDeliverTypeOptions } = useeDeliverTypeSelect()
 
 // 客戶
 const { loadClient, optionsClient, loadClientData } = useClientSelect()
@@ -34,7 +38,7 @@ const ruleForm = reactive({
   factory_code: "1",
   delivery_plan_no: [],
   company_name: "",
-  shipping_type: ""
+  destination: ""
 })
 
 // 上传文件
@@ -91,10 +95,10 @@ const submitForm = (Type) => {
     return
   }
 
-  if (ruleForm.shipping_type === "") {
-    ElMessage.error("請選擇發貨類型")
-    return
-  }
+  // if (ruleForm.originating === "") {
+  //   ElMessage.error("請選擇起運港")
+  //   return
+  // }
 
   const formData = new FormData()
   for (const key in ruleForm) {
@@ -145,6 +149,52 @@ const handleItemList = (row) => {
   itemListData.value = row
   dialogVisible.value = true
 }
+
+// 獲取最新成本/銷售價
+const loadingBtn1 = ref(false)
+const loadingBtn2 = ref(false)
+const handleNewPrice = (type) => {
+  console.log(ruleForm.delivery_plan_no)
+  if (ruleForm.delivery_plan_no.length === 0) {
+    ElMessage.error("未選擇發貨計劃號")
+    return
+  }
+  if (type === 1) {
+    // 獲取最新成本價
+    loadingBtn1.value = true
+    getNewPrice(getNewCostPriceApi)
+  } else {
+    // 獲取最新銷售價
+    loadingBtn2.value = true
+    getNewPrice(getNewSalesPriceApi)
+  }
+}
+const getNewPrice = (api) => {
+  api({
+    delivery_plan_no: ruleForm.delivery_plan_no
+  })
+    .then((data) => {
+      ElMessage.success(data.message)
+    })
+    .finally(() => {
+      loadingBtn1.value = false
+      loadingBtn2.value = false
+    })
+}
+
+// 獲取目的港
+const changeCheckboxGroup = debounce(() => {
+  const selectedValue = []
+  ruleForm.delivery_plan_no.map((item) => {
+    const selectedOption = cities.value.find((city) => city.delivery_plan_no === item)
+    selectedValue.push(selectedOption.order_no)
+  })
+  getDestinationApi({
+    order_no: selectedValue
+  }).then(({ data }) => {
+    ruleForm.destination = data.destination
+  })
+}, 1500)
 </script>
 
 <template>
@@ -186,14 +236,15 @@ const handleItemList = (row) => {
           <el-button type="primary" @click="getDeliveryPlanNo" plain :loading="buttonLoading">查詢發貨計劃</el-button>
         </el-col>
         <el-col :span="24">
-          <el-checkbox-group v-model="ruleForm.delivery_plan_no">
+          <el-checkbox-group v-model="ruleForm.delivery_plan_no" @change="changeCheckboxGroup">
             <el-checkbox
               v-for="city in cities"
               :key="city.id"
               :label="city.delivery_plan_no"
               :value="city.delivery_plan_no"
             >
-              {{ city.delivery_plan_no }} <span style="color: #999">({{ city.order_remarks }})</span>
+              {{ city.delivery_plan_no }}
+              <span style="color: #999" v-show="city.order_remarks">({{ city.order_remarks }})</span>
             </el-checkbox>
           </el-checkbox-group>
         </el-col>
@@ -208,16 +259,14 @@ const handleItemList = (row) => {
       </div>
       <el-row>
         <el-col :span="9">
-          <el-form-item label="集裝箱承運人名稱">
-            <el-input v-model="ruleForm.company_name" placeholder="請輸入船運公司" />
+          <el-form-item label="船運公司名稱">
+            <el-input v-model="ruleForm.company_name" placeholder="請輸入船運公司" style="width: 100%" />
           </el-form-item>
         </el-col>
         <el-col :span="1" />
         <el-col :span="6">
-          <el-form-item label="發貨類型">
-            <el-select v-model="ruleForm.shipping_type">
-              <el-option v-for="item in eDeliverTypeOptions" :label="item.name" :value="item.name" :key="item.id" />
-            </el-select>
+          <el-form-item label="目的港">
+            <el-input v-model="ruleForm.destination" style="min-width: 260px" />
           </el-form-item>
         </el-col>
       </el-row>
@@ -229,7 +278,11 @@ const handleItemList = (row) => {
       <div class="toolbar-wrapper">
         <div class="flex justify-between">
           <el-text tag="b" size="large">信息核對</el-text>
-          <el-button type="primary" @click="submitForm(2)" :disabled="isSubmit">確認提交</el-button>
+          <div>
+            <el-button type="warning" plain @click="handleNewPrice(1)" :loading="loadingBtn1">最新成本價</el-button>
+            <el-button type="warning" plain @click="handleNewPrice(2)" :loading="loadingBtn2">最新銷售價</el-button>
+            <el-button type="primary" @click="submitForm(2)" :disabled="isSubmit">確認提交</el-button>
+          </div>
         </div>
       </div>
       <div class="mb5">
@@ -240,7 +293,7 @@ const handleItemList = (row) => {
         <el-tag effect="dark" type="warning" class="mr" v-permission="['deliveryPlanListCost']"
           >采购成本：{{ infoData.cost_price || "----" }}</el-tag
         >
-        <el-tag effect="dark" type="primary">裝貨數量：{{ infoData.total_number }}</el-tag>
+        <el-tag effect="dark" type="primary">裝貨數量：{{ infoData.total_number || "----" }}</el-tag>
       </div>
       <el-table :data="listInfo" border>
         <el-table-column type="expand">

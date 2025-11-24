@@ -321,3 +321,13 @@ export function monitorJobApi(data) {
     data
   })
 }
+
+// 導出客戶
+export function exportClientApi(params) {
+  return request({
+    url: "client/exportClient",
+    method: "post",
+    responseType: "blob",
+    params
+  })
+}

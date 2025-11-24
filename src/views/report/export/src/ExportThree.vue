@@ -89,7 +89,7 @@ const exportFile = (api, loadingRef, name) => {
           :remote-method="remoteMethod"
           :loading="loading"
           style="width: 200px"
-          placeholder="請選擇訂單號"
+          placeholder="*訂單號*"
         >
           <el-option v-for="item in optionsData" :key="item.id" :label="item.order_no" :value="item" />
         </el-select>
