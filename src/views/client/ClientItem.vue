@@ -338,7 +338,7 @@ const updataContact = (value) => {
             <el-row :gutter="10" v-for="(domain, index) in ruleForm.client_auth_flow_join" :key="domain.key">
               <el-col :span="8">
                 <el-form-item
-                  :label="`員工${index + 1}`"
+                  :label="`${index + 1} 員工`"
                   :prop="`client_auth_flow_join[${index}].user_id`"
                   :rules="{
                     required: true,

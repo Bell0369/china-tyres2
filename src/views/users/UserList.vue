@@ -5,10 +5,11 @@ import { ElButton, ElMessage } from "element-plus"
 import { Search, CirclePlus, Refresh } from "@element-plus/icons-vue"
 import { usePagination } from "@/hooks/usePagination"
 import { Dialog } from "@/components/Dialog"
-import EditUser from "./EditUser.vue"
 import { useDeleteList } from "@/hooks/useDeleteList"
 import { useDepartmentSelect } from "@/hooks/useSelectOption"
 import { checkPermission } from "@/utils/permission"
+import EditUser from "./EditUser.vue"
+import UserDetail from "./UserDetail.vue"
 
 defineOptions({
   name: "UserList"
@@ -123,8 +124,8 @@ const handleUpdate = (row) => {
 
 // 子組件調用父組件方法
 const handleChildEvent = () => {
-  // console.log("Received event from child:", payload)
   dialogVisible.value = false
+  dialogUserDetail.value = false
   getTableData()
 }
 
@@ -154,6 +155,13 @@ const getAuthAllTree = () => {
 onMounted(() => {
   getAuthAllTree()
 })
+
+// 用戶管理
+const dialogUserDetail = ref(false)
+// const handleUpdate = (row) => {
+//   userId.value = row
+//   dialogUserDetail.value = true
+// }
 </script>
 
 <template>
@@ -196,8 +204,7 @@ onMounted(() => {
           <!-- <el-table-column type="selection" width="50" /> -->
           <el-table-column prop="username" label="用戶名稱" align="center" />
           <el-table-column prop="account" label="登錄號" align="center" />
-          <el-table-column prop="role_name" label="部門" align="center" />
-          <el-table-column prop="sex" label="性別" width="100" align="center" />
+          <el-table-column prop="role_name" label="所屬部門" align="center" />
           <el-table-column prop="phone" label="電話" align="center" />
           <el-table-column prop="email" label="Email" align="center" />
           <el-table-column prop="user_status" label="狀態" width="100" align="center">
@@ -214,7 +221,7 @@ onMounted(() => {
             </template>
           </el-table-column>
           <el-table-column prop="created_at" label="创建时间" align="center" sortable />
-          <el-table-column fixed="right" label="操作" width="100" align="center">
+          <el-table-column fixed="right" label="操作" width="180" align="center">
             <template #default="scope">
               <el-button
                 :disabled="scope.row.id === 1"
@@ -236,6 +243,15 @@ onMounted(() => {
                 @click="handleDelete(scope.row.id)"
                 >删除</el-button
               >
+              <el-button
+                :disabled="scope.row.id === 1"
+                type="warning"
+                text
+                bg
+                size="small"
+                @click="(dialogUserDetail = true), (userId = scope.row.id)"
+                >管理客戶/工廠</el-button
+              >
             </template>
           </el-table-column>
         </el-table>
@@ -256,6 +272,11 @@ onMounted(() => {
 
     <Dialog v-model="dialogVisible" :title="dialogTitle" width="800px">
       <EditUser :authAllTree="authAllTree" :rowId="userId" @childEvent="handleChildEvent" />
+    </Dialog>
+
+    <!-- 管理客戶 -->
+    <Dialog v-model="dialogUserDetail" title="員工所對接的客戶與工廠" width="800px">
+      <UserDetail :rowId="userId" @userDetail="handleChildEvent" />
     </Dialog>
   </div>
 </template>

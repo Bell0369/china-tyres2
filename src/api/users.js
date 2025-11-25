@@ -331,3 +331,21 @@ export function exportClientApi(params) {
     params
   })
 }
+
+// 用戶管理客戶詳情
+export function getUserDetailApi(params) {
+  return request({
+    url: "user/userDetail",
+    method: "get",
+    params
+  })
+}
+
+// 修改用戶管理關係
+export function editUserManagementRelationshipsApi(data) {
+  return request({
+    url: "user/editUserManagementRelationships",
+    method: "post",
+    data
+  })
+}

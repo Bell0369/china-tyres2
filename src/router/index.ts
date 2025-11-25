@@ -152,7 +152,7 @@ export const dynamicRoutes: RouteRecordRaw[] = [
     path: "/foreman",
     component: Layouts,
     redirect: "/foreman/foremanlist",
-    name: "Foreman",
+    name: "foreman",
     meta: {
       title: "工廠管理",
       roles: ["factoryList"]
@@ -164,7 +164,7 @@ export const dynamicRoutes: RouteRecordRaw[] = [
         name: "ForemanList",
         meta: {
           title: "工廠管理",
-          svgIcon: "factory",
+          svgIcon: "Factory",
           name: "Foreman",
           keepAlive: true
         }
@@ -415,6 +415,57 @@ export const dynamicRoutes: RouteRecordRaw[] = [
           name: "Payment",
           keepAlive: true,
           roles: ["clientAdvancePayment"]
+        }
+      }
+    ]
+  },
+  {
+    path: "/production-allocation",
+    component: Layouts,
+    redirect: "/production-allocation/productionscheduling",
+    name: "ProductionAllocation",
+    meta: {
+      title: "排產分貨",
+      svgIcon: "ScaleToOriginal"
+    },
+    children: [
+      {
+        path: "productionscheduling",
+        component: () => import("@/views/production-allocation/ProductionScheduling.vue"),
+        name: "ProductionScheduling",
+        meta: {
+          title: "排產管理",
+          name: "ProductionAllocation",
+          keepAlive: true
+        }
+      },
+      {
+        path: "uploadproductionscheduling",
+        component: () => import("@/views/production-allocation/UploadProductionScheduling.vue"),
+        name: "UploadProductionScheduling",
+        meta: {
+          title: "上傳排產",
+          name: "ProductionAllocation",
+          hidden: true
+        }
+      },
+      {
+        path: "sortinggoods",
+        component: () => import("@/views/production-allocation/SortingGoods.vue"),
+        name: "SortingGoods",
+        meta: {
+          title: "分貨管理",
+          name: "ProductionAllocation"
+        }
+      },
+      {
+        path: "uploadsortinggoods",
+        component: () => import("@/views/production-allocation/UploadSortingGoods.vue"),
+        name: "UploadSortingGoods",
+        meta: {
+          title: "上傳分貨",
+          name: "ProductionAllocation",
+          hidden: true
         }
       }
     ]

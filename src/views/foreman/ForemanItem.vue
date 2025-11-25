@@ -201,40 +201,42 @@ const updataContact = (value) => {
               <el-text tag="b">管理員工</el-text>
               <el-button type="success" @click="addDomain" plain>添加</el-button>
             </div>
-            <el-row :gutter="10" v-for="(domain, index) in ruleForm.factory_user" :key="domain.key">
-              <el-col :span="8">
-                <el-form-item
-                  :label="`員工${index + 1}`"
-                  :prop="`factory_user[${index}].user_id`"
-                  :rules="{
-                    required: true,
-                    message: '請選擇員工',
-                    trigger: 'blur'
-                  }"
-                >
-                  <el-select
-                    v-model="domain.user_id"
-                    filterable
-                    remote
-                    remote-show-suffix
-                    :remote-method="loadUserData"
-                    :loading="loadUser"
+            <el-scrollbar max-height="400px">
+              <el-row :gutter="10" v-for="(domain, index) in ruleForm.factory_user" :key="domain.key">
+                <el-col :span="8">
+                  <el-form-item
+                    :label="`${index + 1} 員工`"
+                    :prop="`factory_user[${index}].user_id`"
+                    :rules="{
+                      required: true,
+                      message: '請選擇員工',
+                      trigger: 'blur'
+                    }"
                   >
-                    <el-option v-for="item in optionsUser" :key="item.id" :label="item.username" :value="item.id" />
-                  </el-select>
-                </el-form-item>
-              </el-col>
-              <el-col :span="6">
-                <el-form-item label="品牌">
-                  <el-select v-model="domain.brand_id">
-                    <el-option v-for="item in brandOptions" :key="item.id" :label="item.name" :value="item.id" />
-                  </el-select>
-                </el-form-item>
-              </el-col>
-              <el-col :span="2">
-                <el-button type="primary" @click.prevent="removeDomain(domain)" :icon="Delete" plain />
-              </el-col>
-            </el-row>
+                    <el-select
+                      v-model="domain.user_id"
+                      filterable
+                      remote
+                      remote-show-suffix
+                      :remote-method="loadUserData"
+                      :loading="loadUser"
+                    >
+                      <el-option v-for="item in optionsUser" :key="item.id" :label="item.username" :value="item.id" />
+                    </el-select>
+                  </el-form-item>
+                </el-col>
+                <el-col :span="6">
+                  <el-form-item label="品牌">
+                    <el-select v-model="domain.brand_id">
+                      <el-option v-for="item in brandOptions" :key="item.id" :label="item.name" :value="item.id" />
+                    </el-select>
+                  </el-form-item>
+                </el-col>
+                <el-col :span="2">
+                  <el-button type="primary" @click.prevent="removeDomain(domain)" :icon="Delete" plain />
+                </el-col>
+              </el-row>
+            </el-scrollbar>
           </el-col>
         </el-row>
       </el-form>
