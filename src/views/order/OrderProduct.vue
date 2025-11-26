@@ -95,7 +95,7 @@ const getEtdList = () => {
     <div class="toolbar-wrapper">
       <el-text tag="b" size="large">產品信息</el-text>
     </div>
-    <div class="mb">
+    <div class="">
       <el-form ref="searchFormRef" :inline="true" :model="searchData">
         <el-form-item prop="product_name" label="產品名稱">
           <el-input v-model="searchData.product_name" placeholder="請輸入產品名稱" style="width: 200px" />

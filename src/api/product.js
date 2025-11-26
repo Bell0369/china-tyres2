@@ -79,6 +79,15 @@ export function submitProductionSchedulingApi(data) {
   })
 }
 
+// 排產詳請
+export function getProductionSchedulingDetailApi(params) {
+  return request({
+    url: "user/userList",
+    method: "get",
+    params
+  })
+}
+
 // 上傳分貨
 export function uploadSortingGoodsApi(data) {
   return request({

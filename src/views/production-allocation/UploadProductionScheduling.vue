@@ -95,12 +95,22 @@ const submitForm = () => {
         <el-table-column prop="brand_name" label="品牌" align="center" />
         <el-table-column prop="inventory_number" label="庫存" align="center" width="140px">
           <template #default="scope">
-            <el-input v-model="scope.row.inventory_number" type="number" input-style="text-align: center" />
+            <el-input-number
+              v-model="scope.row.inventory_number"
+              :min="0"
+              controls-position="right"
+              style="width: 100%"
+            />
           </template>
         </el-table-column>
         <el-table-column prop="production_number" label="生產" align="center" width="140px">
           <template #default="scope">
-            <el-input v-model="scope.row.production_number" type="number" input-style="text-align: center" />
+            <el-input-number
+              v-model="scope.row.production_number"
+              :min="0"
+              controls-position="right"
+              style="width: 100%"
+            />
           </template>
         </el-table-column>
         <el-table-column label="操作" width="90" align="center">

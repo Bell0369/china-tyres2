@@ -45,7 +45,7 @@ const rules = reactive({
   type: [{ required: true, message: "請輸入類型", trigger: "blur" }],
   spout: [{ required: true, message: "請輸入寸口", trigger: "blur" }],
   decorative_design: [{ required: true, message: "請輸入花紋", trigger: "blur" }],
-  factory_id: [{ required: true, message: "請选择工厂 ", trigger: "blur" }]
+  factory_id: [{ required: true, message: "請选择工廠 ", trigger: "blur" }]
 })
 
 // 品牌
@@ -174,7 +174,7 @@ const submitForm = (formEl) => {
             </el-form-item>
           </el-col>
           <el-col :span="6">
-            <el-form-item label="工厂" prop="factory_id">
+            <el-form-item label="工廠" prop="factory_id">
               <el-select
                 v-model="ruleForm.factory_id"
                 filterable

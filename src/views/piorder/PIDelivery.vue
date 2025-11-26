@@ -223,15 +223,19 @@ const PiNumber = computed(() => {
           </div>
         </div>
       </div>
-      <el-table ref="tableRef" :data="tableData" @selection-change="handleSelectionChange">
+      <el-table ref="tableRef" :data="tableData" @selection-change="handleSelectionChange" :max-height="500">
         <el-table-column type="selection" width="55" />
         <el-table-column type="index" label="序號" width="80" align="center" />
         <el-table-column prop="product_name" label="產品名稱" align="center" />
         <el-table-column prop="unproduced" label="PI未分配發貨計劃數" align="center" />
         <el-table-column prop="not_shipped_number" label="發貨數量" align="center" width="200">
           <template #default="scope">
-            <el-input-number v-model.number="scope.row.not_shipped_number" :min="0" :max="scope.row.unproduced" />
-            <!-- <el-input v-model.number="scope.row.not_shipped_number" type="number" /> -->
+            <el-input-number
+              v-model.number="scope.row.not_shipped_number"
+              :min="0"
+              :max="scope.row.unproduced"
+              controls-position="right"
+            />
           </template>
         </el-table-column>
       </el-table>

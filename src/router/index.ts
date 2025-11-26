@@ -450,6 +450,16 @@ export const dynamicRoutes: RouteRecordRaw[] = [
         }
       },
       {
+        path: "productionschedulingitem",
+        component: () => import("@/views/production-allocation/ProductionSchedulingItem.vue"),
+        name: "ProductionSchedulingItem",
+        meta: {
+          title: "排產詳情",
+          name: "ProductionAllocation",
+          hidden: true
+        }
+      },
+      {
         path: "sortinggoods",
         component: () => import("@/views/production-allocation/SortingGoods.vue"),
         name: "SortingGoods",
@@ -464,6 +474,16 @@ export const dynamicRoutes: RouteRecordRaw[] = [
         name: "UploadSortingGoods",
         meta: {
           title: "上傳分貨",
+          name: "ProductionAllocation",
+          hidden: true
+        }
+      },
+      {
+        path: "sortinggoodsitem",
+        component: () => import("@/views/production-allocation/SortingGoodsItem.vue"),
+        name: "SortingGoodsItem",
+        meta: {
+          title: "分貨詳情",
           name: "ProductionAllocation",
           hidden: true
         }

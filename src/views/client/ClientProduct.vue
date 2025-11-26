@@ -80,16 +80,18 @@ const resetSearch = () => {
 }
 
 // 增 / 改
+const fullscreenLoading = ref(false)
 const dialogVisible = ref(false)
 const handleUpdate = (row) => {
-  dialogVisible.value = true
   if (row) {
+    fullscreenLoading.value = true
     getProductShow(row)
   } else {
     Object.keys(productForm).forEach((key) => {
       productForm[key] = undefined
     })
-    productForm.id = 0
+    productForm.id = undefined
+    dialogVisible.value = true
   }
 }
 
@@ -97,20 +99,30 @@ const handleUpdate = (row) => {
 const productFormRef = ref(null)
 const productForm = reactive({
   product_id: 1,
-  price: "",
-  brand_name: ""
+  price: ""
 })
 const getProductShow = (pid) => {
   viewProductShowApi({
     id: pid
-  }).then(({ data }) => {
-    Object.assign(productForm, data)
-    const obj = {
-      name: data.name,
-      id: data.product_id
-    }
-    productOptions.value.push(obj)
   })
+    .then(({ data }) => {
+      productForm.price = data.price
+      productForm.product_id = data.product_id
+      productForm.id = data.id
+      textSelected.factory_id = data.factory_id
+
+      textSelected.brand_name = data.brand_name
+      textSelected.factory_name = data.factory_name
+      const obj = {
+        name: data.name,
+        id: data.product_id
+      }
+      productOptions.value.push(obj)
+      dialogVisible.value = true
+    })
+    .finally(() => {
+      fullscreenLoading.value = false
+    })
 }
 
 // 產品名稱
@@ -135,21 +147,35 @@ const remoteMethod = (query) => {
 }
 
 // 切換產品
+const textSelected = reactive({
+  brand_name: "",
+  factory_name: "",
+  factory_id: ""
+})
 const changeProduct = (e) => {
-  const proNum = productOptions.value.findIndex((item) => {
-    return item.id == e
-  })
-  productForm.brand_name = productOptions.value[proNum].brand
+  // const proNum = productOptions.value.findIndex((item) => {
+  //   return item.id == e
+  // })
+  const selectedProduct = productOptions.value.find((item) => item.id == e)
+  if (selectedProduct) {
+    textSelected.brand_name = selectedProduct.brand
+    textSelected.factory_name = selectedProduct.factory[0]?.name || "----"
+    textSelected.factory_id = selectedProduct.factory[0].factory_id
+  }
 }
 
 // 關閉調整產品彈框 - 清空option數據
 const handleClose = () => {
   productOptions.value = []
+  textSelected.brand_name = "----"
+  textSelected.factory_name = "----"
+  textSelected.factory_id = ""
 }
 
 // 提交產品更改
 const submitProductForm = () => {
   productForm.client_id = route.query.id
+  productForm.factory_id = textSelected.factory_id
   updateClientProductApi(productForm).then(() => {
     ElMessage.success("操作成功")
     dialogVisible.value = false
@@ -218,7 +244,6 @@ const handleProgress = () => {
 }
 
 const uploadRef = ref()
-const fullscreenLoading = ref(false)
 const handleSuccess = (uploadFile) => {
   fullscreenLoading.value = false
   uploadRef.value.clearFiles()
@@ -389,6 +414,7 @@ const svg = `
           <el-table-column fixed="right" label="操作" width="150" align="center">
             <template #default="scope">
               <el-button
+                v-loading.fullscreen.lock="fullscreenLoading"
                 v-permission="['addClientProduct']"
                 type="primary"
                 text
@@ -442,7 +468,10 @@ const svg = `
             <el-input v-model="productForm.price" placeholder="請輸入價格" type="number" />
           </el-form-item>
           <el-form-item label="品牌">
-            <el-text class="mx-1" size="large">{{ productForm.brand_name }}</el-text>
+            <el-text class="mx-1" size="large">{{ textSelected.brand_name || "----" }}</el-text>
+          </el-form-item>
+          <el-form-item label="工廠">
+            <el-text class="mx-1" size="large">{{ textSelected.factory_name || "----" }}</el-text>
           </el-form-item>
         </el-form>
         <template #footer>

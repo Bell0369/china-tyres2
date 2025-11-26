@@ -102,7 +102,16 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
           <el-table-column prop="created_at" label="创建时间" align="center" sortable />
           <el-table-column fixed="right" label="操作" width="180" align="center">
             <template #default="scope">
-              <el-button type="success" text bg size="small">查看</el-button>
+              <el-button
+                type="success"
+                text
+                bg
+                size="small"
+                tag="router-link"
+                :to="`/production-allocation/sortinggoodsitem?id=${scope.row.id}`"
+              >
+                查看
+              </el-button>
               <el-button type="primary" size="small" @click="handleUpdate(scope.row.id)">一鍵生成PI</el-button>
             </template>
           </el-table-column>

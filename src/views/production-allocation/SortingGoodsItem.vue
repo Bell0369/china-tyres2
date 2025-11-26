@@ -2,10 +2,9 @@
 import { ref, reactive } from "vue"
 import { useRoute, useRouter } from "vue-router"
 import { ElMessage } from "element-plus"
-import { UploadXlsx } from "@/components/UploadXlsx"
 import { Search, Refresh } from "@element-plus/icons-vue"
 // import { getOrderDetailProductApi } from "@/api/order" // 詳情
-import { uploadSortingGoodsApi, submitSortingGoodsApi } from "@/api/product"
+import { submitSortingGoodsApi } from "@/api/product"
 import { redirectTo } from "@/utils/tagsclose"
 import { useBrandSelect, useFactoryCodeSelect } from "@/hooks/useSelectOption"
 
@@ -25,41 +24,12 @@ const loading = ref(false)
 const route = useRoute()
 const router = useRouter()
 
-// 上传文件
-const setUploadXlsx = (value) => {
-  FileForm.value = value
-}
-
-// 上傳排產
-const FileForm = ref("") // 文件
-const tableDataOrders = ref([])
-const tableData = ref([])
-const isSubmit = ref(true)
-const uploadForm = () => {
-  if (FileForm.value === "") {
-    ElMessage.error("請上傳文件先")
-    return
-  }
-
-  loading.value = true
-  const formData = new FormData()
-  formData.append("file", FileForm.value)
-  uploadSortingGoodsApi(formData)
-    .then(({ data }) => {
-      isSubmit.value = false
-      tableDataOrders.value = data.orders
-      tableData.value = data.unmatched_products
-    })
-    .finally(() => {
-      loading.value = false
-    })
-}
-
-// 提交排產
+// 提交分貨
 const submitForm = () => {
   loading.value = true
   submitSortingGoodsApi(tableData.value)
     .then(() => {
+      ElMessage.success("分貨提交成功", route.query.id)
       redirectTo(router, route, "/production-allocation/sortinggoods")
     })
     .finally(() => {
@@ -90,24 +60,11 @@ const handleSearch = () => {
   <div class="app-container">
     <el-card shadow="never" class="search-wrapper">
       <div class="toolbar-wrapper">
-        <el-text tag="b" size="large">上傳分貨文件</el-text>
-      </div>
-      <div class="flex items-center">
-        <div class="w-sm">
-          <UploadXlsx @setUploadXlsx="setUploadXlsx" />
-        </div>
-        <div class="ml-10">
-          <el-button type="success" @click="uploadForm()">確認上傳</el-button>
-        </div>
-      </div>
-    </el-card>
-
-    <el-card shadow="never" class="search-wrapper">
-      <div class="toolbar-wrapper">
         <div class="flex justify-between">
-          <el-text tag="b" size="large">附件信息</el-text>
+          <el-text tag="b" size="large">分貨詳情</el-text>
           <div>
-            <el-button type="primary" @click="submitForm()" :disabled="isSubmit">提交</el-button>
+            <el-button type="warning">導出無訂單庫存</el-button>
+            <el-button type="primary" @click="submitForm()">提交</el-button>
           </div>
         </div>
       </div>
@@ -137,12 +94,11 @@ const handleSearch = () => {
           </el-form-item>
         </el-form>
       </div>
-      <!-- :show-header="false" -->
       <el-table v-loading="loading" :data="tableDataOrders" border row-key="id" row-class-name="warning-row">
         <el-table-column type="expand">
           <template #default="props">
             <div class="px">
-              <el-table :data="props.row.item" :max-height="450">
+              <el-table :data="props.row.item" :max-height="450" border header-row-class-name="header-warning-row">
                 <el-table-column label="客戶編碼" prop="client_code" align="center" />
                 <el-table-column label="產品名稱" prop="product_name" align="center" />
                 <el-table-column label="品牌" prop="brand_code" align="center" />
@@ -163,15 +119,12 @@ const handleSearch = () => {
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="訂單號" prop="order_no">
+        <el-table-column label="訂單號" prop="order_no" width="260">
           <template #default="scope">
-            <div>
-              <el-text>{{ scope.row.order_no }}</el-text>
-            </div>
+            <div>{{ scope.row.order_no }}</div>
             <el-text size="small">訂單備注：{{ scope.row.order_remarks || "----" }}</el-text>
           </template>
         </el-table-column>
-        <el-table-column label="匯總量" prop="total_number" width="120" />
         <el-table-column label="數量匯總">
           <template #default="scope">
             <div class="table-header-li">
@@ -188,6 +141,12 @@ const handleSearch = () => {
                 <li>未分貨櫃量匯總：{{ scope.row.not_quantity_total_number }}</li>
               </ul>
             </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="215">
+          <template>
+            <el-button type="success" plain @click="submitForm()">添加規格</el-button>
+            <el-button type="warning" plain>導出明細</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -214,4 +173,7 @@ const handleSearch = () => {
 :deep(.el-table .warning-row) {
   --el-table-tr-bg-color: var(--el-color-info-light-9);
 }
+/* .header-warning-row th.el-table__cell {
+  background-color: var(--el-color-info-light-9);
+} */
 </style>

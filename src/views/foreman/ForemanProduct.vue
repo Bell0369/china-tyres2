@@ -351,7 +351,7 @@ const handleError = (uploadFile) => {
         />
       </div>
       <!-- 產品調整 -->
-      <el-dialog v-model="dialogVisible" title="產品信息" width="60%" destroy-on-close>
+      <el-dialog v-model="dialogVisible" title="產品信息" width="850" destroy-on-close>
         <el-form ref="productFormRef" :model="productForm" :rules="rules">
           <el-row>
             <el-col :span="11">
