@@ -1,12 +1,12 @@
 <script setup>
-import { ref, reactive } from "vue"
-import { useRoute, useRouter } from "vue-router"
+import { ref, reactive, onMounted } from "vue"
+import { useRoute } from "vue-router"
 import { ElMessage } from "element-plus"
 import { Search, Refresh } from "@element-plus/icons-vue"
-// import { getOrderDetailProductApi } from "@/api/order" // 詳情
 import { submitSortingGoodsApi } from "@/api/product"
-import { redirectTo } from "@/utils/tagsclose"
 import { useBrandSelect, useFactoryCodeSelect } from "@/hooks/useSelectOption"
+
+import myData from "./storingGoodsDetail.json"
 
 defineOptions({
   name: "UploadSortingGoods"
@@ -22,18 +22,32 @@ const loading = ref(false)
 
 // // tag
 const route = useRoute()
-const router = useRouter()
+
+const tableRawDataOrders = ref([]) // 原始數據
+const tableDataOrders = ref([])
+const tableData = ref([])
+onMounted(() => {
+  // 模拟数据加载
+  tableRawDataOrders.value = myData.data.orders
+  tableDataOrders.value = myData.data.orders
+  tableData.value = myData.data.unmatched_products
+})
 
 // 提交分貨
+const isSubmit = ref(false)
 const submitForm = () => {
   loading.value = true
-  submitSortingGoodsApi(tableData.value)
+  isSubmit.value = true
+  submitSortingGoodsApi({
+    data: tableDataOrders.value,
+    not_order: tableData.value
+  })
     .then(() => {
       ElMessage.success("分貨提交成功", route.query.id)
-      redirectTo(router, route, "/production-allocation/sortinggoods")
     })
     .finally(() => {
       loading.value = false
+      isSubmit.value = false
     })
 }
 
@@ -47,12 +61,13 @@ const searchData = reactive({
 // 重置
 const resetSearch = () => {
   searchFormRef.value?.resetFields()
-  handleSearch()
+  tableDataOrders.value = tableRawDataOrders.value
 }
 
 // 查詢
 const handleSearch = () => {
-  console.log("查詢")
+  const usersWithWang = tableDataOrders.value.filter((item) => item.order_no.includes(searchData.order_no))
+  tableDataOrders.value = usersWithWang
 }
 </script>
 
@@ -64,7 +79,7 @@ const handleSearch = () => {
           <el-text tag="b" size="large">分貨詳情</el-text>
           <div>
             <el-button type="warning">導出無訂單庫存</el-button>
-            <el-button type="primary" @click="submitForm()">提交</el-button>
+            <el-button type="primary" @click="submitForm()" :disabled="isSubmit">提交</el-button>
           </div>
         </div>
       </div>
@@ -97,13 +112,13 @@ const handleSearch = () => {
       <el-table v-loading="loading" :data="tableDataOrders" border row-key="id" row-class-name="warning-row">
         <el-table-column type="expand">
           <template #default="props">
-            <div class="px">
-              <el-table :data="props.row.item" :max-height="450" border header-row-class-name="header-warning-row">
-                <el-table-column label="客戶編碼" prop="client_code" align="center" />
-                <el-table-column label="產品名稱" prop="product_name" align="center" />
-                <el-table-column label="品牌" prop="brand_code" align="center" />
-                <el-table-column label="訂單數量" prop="unproduced" align="center" />
-                <el-table-column label="已分貨數量" prop="already_sorting_goods_number" align="center" width="140">
+            <div class="px-2">
+              <el-table :data="props.row.item" :max-height="450" size="small">
+                <el-table-column label="產品名稱" prop="product_name" min-width="150" />
+                <el-table-column label="客戶編碼" prop="client_code" />
+                <el-table-column label="品牌" prop="brand_code" />
+                <el-table-column label="訂單數量" prop="unproduced" />
+                <el-table-column label="已分貨數量" prop="already_sorting_goods_number" width="140" align="center">
                   <template #default="scope">
                     <el-input-number
                       v-model="scope.row.already_sorting_goods_number"
@@ -119,13 +134,13 @@ const handleSearch = () => {
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="訂單號" prop="order_no" width="260">
+        <el-table-column label="訂單號" prop="order_no" min-width="220">
           <template #default="scope">
             <div>{{ scope.row.order_no }}</div>
-            <el-text size="small">訂單備注：{{ scope.row.order_remarks || "----" }}</el-text>
+            <el-text size="small">備注：{{ scope.row.order_remarks || "----" }}</el-text>
           </template>
         </el-table-column>
-        <el-table-column label="數量匯總">
+        <el-table-column label="數量匯總" min-width="570">
           <template #default="scope">
             <div class="table-header-li">
               <ul>
@@ -143,10 +158,14 @@ const handleSearch = () => {
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="215">
-          <template>
-            <el-button type="success" plain @click="submitForm()">添加規格</el-button>
-            <el-button type="warning" plain>導出明細</el-button>
+        <el-table-column label="操作" width="180" fixed="right">
+          <template #default>
+            <div style="display: inline-block; width: 80px">
+              <el-upload action="*" :limit="1" :show-file-list="false">
+                <el-button type="primary" plain size="small">添加規格</el-button>
+              </el-upload>
+            </div>
+            <el-button type="warning" plain size="small">導出明細</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -160,9 +179,12 @@ const handleSearch = () => {
         <el-table v-loading="loading" border :data="tableData" :max-height="400">
           <el-table-column prop="product_name" label="產品名稱" align="center" />
           <el-table-column prop="brand_code" label="品牌" align="center" />
+          <el-table-column prop="factory_code" label="工廠" align="center" />
           <el-table-column prop="inventory_number" label="庫存" align="center" />
           <el-table-column prop="production_number" label="生產" align="center" />
-          <el-table-column prop="interval_date" label="生產時間" align="center" />
+          <el-table-column prop="production_date" label="生產時間" align="center" />
+          <el-table-column prop="no_order_number" label="無訂單數量" align="center" />
+          <el-table-column prop="remaining_number" label="剩餘數量" align="center" />
         </el-table>
       </div>
     </el-card>
@@ -173,7 +195,4 @@ const handleSearch = () => {
 :deep(.el-table .warning-row) {
   --el-table-tr-bg-color: var(--el-color-info-light-9);
 }
-/* .header-warning-row th.el-table__cell {
-  background-color: var(--el-color-info-light-9);
-} */
 </style>

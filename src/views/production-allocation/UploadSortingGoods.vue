@@ -4,10 +4,10 @@ import { useRoute, useRouter } from "vue-router"
 import { ElMessage } from "element-plus"
 import { UploadXlsx } from "@/components/UploadXlsx"
 import { Search, Refresh } from "@element-plus/icons-vue"
-// import { getOrderDetailProductApi } from "@/api/order" // 詳情
 import { uploadSortingGoodsApi, submitSortingGoodsApi } from "@/api/product"
 import { redirectTo } from "@/utils/tagsclose"
 import { useBrandSelect, useFactoryCodeSelect } from "@/hooks/useSelectOption"
+import { debounce } from "lodash-es"
 
 defineOptions({
   name: "UploadSortingGoods"
@@ -30,10 +30,11 @@ const setUploadXlsx = (value) => {
   FileForm.value = value
 }
 
-// 上傳排產
-const FileForm = ref("") // 文件
+// 上傳分貨
 const tableDataOrders = ref([])
 const tableData = ref([])
+
+const FileForm = ref("") // 文件
 const isSubmit = ref(true)
 const uploadForm = () => {
   if (FileForm.value === "") {
@@ -42,6 +43,10 @@ const uploadForm = () => {
   }
 
   loading.value = true
+  uploadSortingGoods()
+}
+// 防抖處理
+const uploadSortingGoods = debounce(() => {
   const formData = new FormData()
   formData.append("file", FileForm.value)
   uploadSortingGoodsApi(formData)
@@ -53,20 +58,27 @@ const uploadForm = () => {
     .finally(() => {
       loading.value = false
     })
-}
+}, 1000)
 
 // 提交排產
 const submitForm = () => {
   loading.value = true
-  submitSortingGoodsApi(tableData.value)
+  isSubmit.value = true
+  submitSortingGoodsApi({
+    data: tableDataOrders.value,
+    not_order: tableData.value
+  })
     .then(() => {
+      ElMessage.success("提交成功")
       redirectTo(router, route, "/production-allocation/sortinggoods")
     })
     .finally(() => {
       loading.value = false
+      isSubmit.value = false
     })
 }
 
+// 篩選
 const searchFormRef = ref()
 const searchData = reactive({
   order_no: "",
@@ -141,13 +153,13 @@ const handleSearch = () => {
       <el-table v-loading="loading" :data="tableDataOrders" border row-key="id" row-class-name="warning-row">
         <el-table-column type="expand">
           <template #default="props">
-            <div class="px">
-              <el-table :data="props.row.item" :max-height="450">
-                <el-table-column label="客戶編碼" prop="client_code" align="center" />
-                <el-table-column label="產品名稱" prop="product_name" align="center" />
-                <el-table-column label="品牌" prop="brand_code" align="center" />
-                <el-table-column label="訂單數量" prop="unproduced" align="center" />
-                <el-table-column label="已分貨數量" prop="already_sorting_goods_number" align="center" width="140">
+            <div class="px-2">
+              <el-table :data="props.row.item" :max-height="450" size="small">
+                <el-table-column label="產品名稱" prop="product_name" min-width="150" />
+                <el-table-column label="客戶編碼" prop="client_code" />
+                <el-table-column label="品牌" prop="brand_code" />
+                <el-table-column label="訂單數量" prop="unproduced" />
+                <el-table-column label="已分貨數量" prop="already_sorting_goods_number" width="140" align="center">
                   <template #default="scope">
                     <el-input-number
                       v-model="scope.row.already_sorting_goods_number"
@@ -163,16 +175,15 @@ const handleSearch = () => {
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="訂單號" prop="order_no">
+        <el-table-column label="訂單號" prop="order_no" min-width="220">
           <template #default="scope">
             <div>
               <el-text>{{ scope.row.order_no }}</el-text>
             </div>
-            <el-text size="small">訂單備注：{{ scope.row.order_remarks || "----" }}</el-text>
+            <el-text size="small">備注：{{ scope.row.order_remarks || "----" }}</el-text>
           </template>
         </el-table-column>
-        <el-table-column label="匯總量" prop="total_number" width="120" />
-        <el-table-column label="數量匯總">
+        <el-table-column label="數量&櫃量匯總" min-width="570">
           <template #default="scope">
             <div class="table-header-li">
               <ul>
@@ -201,9 +212,12 @@ const handleSearch = () => {
         <el-table v-loading="loading" border :data="tableData" :max-height="400">
           <el-table-column prop="product_name" label="產品名稱" align="center" />
           <el-table-column prop="brand_code" label="品牌" align="center" />
+          <el-table-column prop="factory_code" label="工廠" align="center" />
           <el-table-column prop="inventory_number" label="庫存" align="center" />
           <el-table-column prop="production_number" label="生產" align="center" />
-          <el-table-column prop="interval_date" label="生產時間" align="center" />
+          <el-table-column prop="production_date" label="生產時間" align="center" />
+          <el-table-column prop="no_order_number" label="無訂單數量" align="center" />
+          <el-table-column prop="remaining_number" label="剩餘數量" align="center" />
         </el-table>
       </div>
     </el-card>

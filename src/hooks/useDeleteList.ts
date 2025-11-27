@@ -12,7 +12,7 @@ export function useDeleteList(props: FetchSelectProps) {
   const { api, text } = props
 
   const handleDelete = (id: number) => {
-    console.log(id)
+    // console.log(id)
     ElMessageBox.confirm(`確認刪除该${text}`, "提示", {
       confirmButtonText: "确定",
       cancelButtonText: "取消",

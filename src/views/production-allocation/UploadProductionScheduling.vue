@@ -1,10 +1,11 @@
 <script setup>
 import { ref } from "vue"
 import { useRoute, useRouter } from "vue-router"
-import { ElMessage } from "element-plus"
+import { ElMessage, ElMessageBox } from "element-plus"
 import { UploadXlsx } from "@/components/UploadXlsx"
 import { uploadProductionSchedulingApi, submitProductionSchedulingApi } from "@/api/product"
 import { redirectTo } from "@/utils/tagsclose"
+import { debounce } from "lodash-es"
 
 defineOptions({
   name: "UploadProductionScheduling"
@@ -34,6 +35,10 @@ const uploadForm = () => {
   }
 
   loading.value = true
+  uploadProductionScheduling()
+}
+// 防抖處理
+const uploadProductionScheduling = debounce(() => {
   const formData = new FormData()
   formData.append("file", FileForm.value)
   uploadProductionSchedulingApi(formData)
@@ -44,23 +49,32 @@ const uploadForm = () => {
     .finally(() => {
       loading.value = false
     })
-}
+}, 1000)
 
 // 移除
 const handleDelete = (index) => {
-  tableData.value.splice(index, 1)
+  ElMessageBox.confirm("確認移除该行产品", "提示", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning"
+  }).then(() => {
+    ElMessage.success("移除成功")
+    tableData.value.splice(index, 1)
+  })
 }
 
 // 提交排產
 const submitForm = () => {
   loading.value = true
+  isSubmit.value = true
   submitProductionSchedulingApi(tableData.value)
     .then(() => {
-      // redirectTo(router, route, "/piorder/piorderlist")
+      ElMessage.success("提交成功")
       redirectTo(router, route, "/production-allocation/productionscheduling")
     })
     .finally(() => {
       loading.value = false
+      isSubmit.value = false
     })
 }
 </script>

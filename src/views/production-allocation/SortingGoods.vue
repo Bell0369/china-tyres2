@@ -1,38 +1,36 @@
 <script setup>
 import { reactive, ref, watch } from "vue"
-import { getUserListApi } from "@/api/users"
+import { getSortingGoodsListApi, createPiDataApi, submitCreatePiDataApi } from "@/api/product"
 import { ElButton } from "element-plus"
 import { Search, CirclePlus, Refresh } from "@element-plus/icons-vue"
 import { usePagination } from "@/hooks/usePagination"
-import { useDepartmentSelect } from "@/hooks/useSelectOption"
 
 defineOptions({
-  name: "UserList"
+  name: "SortingGoods"
 })
 
 const loading = ref(false)
 
 const { paginationData, handleCurrentChange, handleSizeChange } = usePagination()
 
-// 部門
-const { roleOptions } = useDepartmentSelect()
-
 //#region 查
 const tableData = ref([])
 const searchFormRef = ref(null)
 const searchData = reactive({
-  username: "",
-  state: "",
-  role_name: ""
+  monthrangeData: ""
 })
 const getTableData = () => {
+  const monthrangeData = {}
+  if (searchData.monthrangeData) {
+    monthrangeData.start_date = searchData.monthrangeData[0]
+    monthrangeData.end_date = searchData.monthrangeData[1]
+  }
+
   loading.value = true
-  getUserListApi({
+  getSortingGoodsListApi({
     page: paginationData.currentPage,
     page_size: paginationData.pageSize,
-    keyword: searchData.username || undefined,
-    status: searchData.state || undefined,
-    role_name: searchData.role_name || undefined
+    ...monthrangeData
   })
     .then(({ data }) => {
       paginationData.total = data.total
@@ -58,27 +56,68 @@ const resetSearch = () => {
 
 /** 监听分页参数的变化 */
 watch([() => paginationData.currentPage, () => paginationData.pageSize], getTableData, { immediate: true })
+
+//  一鍵生成PI彈窗的列表
+const dialogPiTableVisible = ref(false)
+const dialogPiTableLoading = ref(false)
+const PiTableData = ref([])
+const handleCreatePiData = (id) => {
+  dialogPiTableLoading.value = true
+  dialogPiTableVisible.value = true
+  createPiDataApi({
+    id
+  })
+    .then(({ data }) => {
+      PiTableData.value = data.data
+    })
+    .finally(() => {
+      dialogPiTableLoading.value = false
+    })
+}
+
+// 是否可选
+const tableRef = ref(null)
+const selectable = (row) => {
+  if (row.status) {
+    return false
+  } else {
+    return true
+  }
+}
+
+// 提交生成PI
+const submitCreatePiBtnLoading = ref(false)
+const submitCreatePiData = () => {
+  submitCreatePiBtnLoading.value = true
+  const selectedIds = tableRef.value.getSelectionRows().map((item) => item.id)
+  submitCreatePiDataApi({
+    sorting_goods_order_ids: selectedIds
+  })
+    .then(() => {
+      ElMessage.success("PI生成成功")
+      dialogPiTableVisible.value = false
+    })
+    .finally(() => {
+      setTimeout(() => {
+        submitCreatePiBtnLoading.value = false
+      }, 1000)
+    })
+}
 </script>
 
 <template>
   <div class="app-container">
     <el-card shadow="never" class="search-wrapper">
       <el-form ref="searchFormRef" :inline="true" :model="searchData">
-        <el-form-item prop="username" label="用户名">
-          <el-input v-model="searchData.username" placeholder="請輸入用戶名稱、登錄賬號、Email" style="width: 300px" />
-        </el-form-item>
-        <el-form-item prop="state" label="狀態">
-          <el-select v-model="searchData.state" style="width: 100px">
-            <el-option label="全部" value="" />
-            <el-option label="已開啟" value="1" />
-            <el-option label="已關閉" value="0" />
-          </el-select>
-        </el-form-item>
-        <el-form-item prop="role_name" label="部门">
-          <el-select v-model="searchData.role_name" style="width: 100px">
-            <el-option label="全部" value="" />
-            <el-option v-for="item in roleOptions" :key="item.id" :label="item.name" :value="item.name" />
-          </el-select>
+        <el-form-item prop="monthrangeData" label="日期范围">
+          <el-date-picker
+            v-model="searchData.monthrangeData"
+            type="daterange"
+            range-separator="-"
+            start-placeholder="開始日期"
+            end-placeholder="結束日期"
+            value-format="YYYY-MM-DD"
+          />
         </el-form-item>
         <el-form-item>
           <el-button type="primary" :icon="Search" @click="handleSearch">查詢</el-button>
@@ -112,7 +151,7 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
               >
                 查看
               </el-button>
-              <el-button type="primary" size="small" @click="handleUpdate(scope.row.id)">一鍵生成PI</el-button>
+              <el-button type="primary" size="small" @click="handleCreatePiData(scope.row.id)">一鍵生成PI</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -130,6 +169,19 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
         />
       </div>
     </el-card>
+
+    <el-dialog v-model="dialogPiTableVisible" title="一鍵生成PI" width="700">
+      <div v-loading="dialogPiTableLoading">
+        <el-table :data="PiTableData" ref="tableRef" max-height="500">
+          <el-table-column property="id" type="selection" width="55" align="center" :selectable="selectable" />
+          <el-table-column property="created_at" label="訂單號" />
+          <el-table-column property="email" label="訂單備註" />
+        </el-table>
+      </div>
+      <template #footer>
+        <el-button type="primary" @click="submitCreatePiData" :loading="submitCreatePiBtnLoading"> 生成PI </el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 

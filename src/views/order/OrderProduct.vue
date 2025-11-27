@@ -136,10 +136,10 @@ const getEtdList = () => {
     <el-table v-loading="loading" :data="tableData" border row-key="pi_no" row-class-name="warning-row">
       <el-table-column type="expand">
         <template #default="props">
-          <div class="px">
-            <el-table :data="props.row.list" :max-height="450">
+          <div class="px-2">
+            <el-table :data="props.row.list" :max-height="450" size="small">
               <el-table-column type="index" label="序號" width="80px" align="center" />
-              <el-table-column label="產品名稱" prop="product_name" />
+              <el-table-column label="產品名稱" prop="product_name" min-width="200" />
               <el-table-column label="訂單數量" prop="order_product_number" />
               <el-table-column :label="props.row.pi_no ? 'PI數量' : '未分配PI数量'" prop="number" />
               <el-table-column label="PI已發貨數量" prop="shipped_number" />

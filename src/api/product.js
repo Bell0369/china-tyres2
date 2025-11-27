@@ -48,6 +48,15 @@ export function deleteProductApi(data) {
 }
 
 /* 排產分貨 **/
+// 排產列表
+export function getProductionSchedulingListApi(params) {
+  return request({
+    url: "production_scheduling/productionSchedulingList",
+    method: "get",
+    params
+  })
+}
+
 // 導出排產
 export function exportProductionSchedulingApi(params) {
   return request({
@@ -82,9 +91,47 @@ export function submitProductionSchedulingApi(data) {
 // 排產詳請
 export function getProductionSchedulingDetailApi(params) {
   return request({
+    url: "production_scheduling/productionSchedulingDetail",
+    method: "get",
+    params
+  })
+}
+
+// 详情产品移除
+export function productionSchedulingProductDeleteApi(data) {
+  return request({
+    url: "production_scheduling/productionSchedulingProductDelete",
+    method: "post",
+    data
+  })
+}
+
+/* 分货 **/
+// 分货列表
+export function getSortingGoodsListApi(params) {
+  return request({
+    // url: "sorting_goods/sortingGoodsList",
     url: "user/userList",
     method: "get",
     params
+  })
+}
+
+// 一鍵生成PI彈窗的列表
+export function createPiDataApi(params) {
+  return request({
+    url: "sorting_goods/createPiData",
+    method: "get",
+    params
+  })
+}
+
+// 提交生成PI
+export function submitCreatePiDataApi(data) {
+  return request({
+    url: "sorting_goods/submitCreatePiData",
+    method: "post",
+    data
   })
 }
 

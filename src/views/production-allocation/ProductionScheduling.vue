@@ -1,39 +1,36 @@
 <script setup>
 import { reactive, ref, watch } from "vue"
-import { getUserListApi } from "@/api/users"
+import { getProductionSchedulingListApi, exportProductionSchedulingApi } from "@/api/product"
 import { ElButton } from "element-plus"
 import { Search, CirclePlus, Refresh } from "@element-plus/icons-vue"
 import { usePagination } from "@/hooks/usePagination"
-import { useDepartmentSelect } from "@/hooks/useSelectOption"
-import { exportProductionSchedulingApi } from "@/api/product"
 
 defineOptions({
-  name: "UserList"
+  name: "ProductionScheduling"
 })
 
 const loading = ref(false)
 
 const { paginationData, handleCurrentChange, handleSizeChange } = usePagination()
 
-// 部門
-const { roleOptions } = useDepartmentSelect()
-
 //#region 查
 const tableData = ref([])
 const searchFormRef = ref(null)
 const searchData = reactive({
-  username: "",
-  state: "",
-  role_name: ""
+  monthrangeData: ""
 })
 const getTableData = () => {
+  const monthrangeData = {}
+  if (searchData.monthrangeData) {
+    monthrangeData.start_date = searchData.monthrangeData[0]
+    monthrangeData.end_date = searchData.monthrangeData[1]
+  }
+
   loading.value = true
-  getUserListApi({
+  getProductionSchedulingListApi({
     page: paginationData.currentPage,
     page_size: paginationData.pageSize,
-    keyword: searchData.username || undefined,
-    status: searchData.state || undefined,
-    role_name: searchData.role_name || undefined
+    ...monthrangeData
   })
     .then(({ data }) => {
       paginationData.total = data.total
@@ -67,7 +64,7 @@ const handleExport = (row) => {
     .then((data) => {
       const downloadLink = document.createElement("a")
       downloadLink.href = URL.createObjectURL(data)
-      downloadLink.download = `排產.${row.pi_no}.xlsx`
+      downloadLink.download = `排產.${row.no}.xlsx`
       downloadLink.click()
     })
     .finally(() => {
@@ -82,21 +79,15 @@ const handleExport = (row) => {
   <div class="app-container">
     <el-card shadow="never" class="search-wrapper">
       <el-form ref="searchFormRef" :inline="true" :model="searchData">
-        <el-form-item prop="username" label="用户名">
-          <el-input v-model="searchData.username" placeholder="請輸入用戶名稱、登錄賬號、Email" style="width: 300px" />
-        </el-form-item>
-        <el-form-item prop="state" label="狀態">
-          <el-select v-model="searchData.state" style="width: 100px">
-            <el-option label="全部" value="" />
-            <el-option label="已開啟" value="1" />
-            <el-option label="已關閉" value="0" />
-          </el-select>
-        </el-form-item>
-        <el-form-item prop="role_name" label="部门">
-          <el-select v-model="searchData.role_name" style="width: 100px">
-            <el-option label="全部" value="" />
-            <el-option v-for="item in roleOptions" :key="item.id" :label="item.name" :value="item.name" />
-          </el-select>
+        <el-form-item prop="monthrangeData" label="日期范围">
+          <el-date-picker
+            v-model="searchData.monthrangeData"
+            type="daterange"
+            range-separator="-"
+            start-placeholder="開始日期"
+            end-placeholder="結束日期"
+            value-format="YYYY-MM-DD"
+          />
         </el-form-item>
         <el-form-item>
           <el-button type="primary" :icon="Search" @click="handleSearch">查詢</el-button>
@@ -114,9 +105,9 @@ const handleExport = (row) => {
       </div>
       <div class="table-wrapper">
         <el-table border :data="tableData">
-          <el-table-column prop="username" label="排產編號" align="center" />
-          <el-table-column prop="account" label="庫存總數" align="center" />
-          <el-table-column prop="role_name" label="生產總數" align="center" />
+          <el-table-column prop="no" label="排產編號" align="center" />
+          <el-table-column prop="inventory_total_number" label="庫存總數" align="center" />
+          <el-table-column prop="production_total_number" label="生產總數" align="center" />
           <el-table-column prop="created_at" label="创建时间" align="center" sortable />
           <el-table-column fixed="right" label="操作" width="130" align="center">
             <template #default="scope">

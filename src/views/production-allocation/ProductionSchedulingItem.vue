@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from "vue"
 import { useRoute } from "vue-router"
-import { ElMessage } from "element-plus"
+import { ElMessage, ElMessageBox } from "element-plus"
 import { getProductionSchedulingDetailApi, submitProductionSchedulingApi } from "@/api/product"
 
 defineOptions({
@@ -19,11 +19,10 @@ onMounted(() => {
 const tableData = ref([])
 const getTableData = () => {
   getProductionSchedulingDetailApi({
-    id: route.query.id,
-    page_size: 30
+    id: route.query.id
   })
     .then(({ data }) => {
-      tableData.value = data.data
+      tableData.value = data
     })
     .finally(() => {
       loading.value = false
@@ -31,15 +30,33 @@ const getTableData = () => {
 }
 
 // 提交排產
+const isSubmit = ref(false)
 const submitForm = () => {
   loading.value = true
-  submitProductionSchedulingApi(tableData.value)
+  isSubmit.value = true
+  submitProductionSchedulingApi({
+    data: tableData.value,
+    id: route.query.id
+  })
     .then(() => {
       ElMessage.success("修改成功", route.query.id)
     })
     .finally(() => {
       loading.value = false
+      isSubmit.value = false
     })
+}
+
+// 移除
+const handleDelete = (index) => {
+  ElMessageBox.confirm("確認移除该行产品", "提示", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning"
+  }).then(() => {
+    ElMessage.success("移除成功")
+    tableData.value.splice(index, 1)
+  })
 }
 </script>
 
@@ -50,7 +67,7 @@ const submitForm = () => {
         <div class="flex justify-between">
           <el-text tag="b" size="large">排產詳情</el-text>
           <div>
-            <el-button type="primary" @click="submitForm()">提交</el-button>
+            <el-button type="primary" @click="submitForm()" :disabled="isSubmit">保存修改</el-button>
           </div>
         </div>
       </div>
@@ -65,6 +82,11 @@ const submitForm = () => {
         <el-table-column prop="production_number" label="生產" align="center" width="140px">
           <template #default="scope">
             <el-input v-model="scope.row.production_number" type="number" input-style="text-align: center" />
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="90" align="center">
+          <template #default="scope">
+            <el-button type="danger" text bg size="small" @click="handleDelete(scope.$index)"> 移除 </el-button>
           </template>
         </el-table-column>
       </el-table>
