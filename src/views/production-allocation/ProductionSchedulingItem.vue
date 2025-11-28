@@ -9,6 +9,7 @@ defineOptions({
 })
 
 const loading = ref(true)
+const fullscreenLoading = ref(false)
 
 const route = useRoute()
 
@@ -33,7 +34,7 @@ const getTableData = () => {
 const isSubmit = ref(false)
 const submitForm = () => {
   loading.value = true
-  isSubmit.value = true
+  fullscreenLoading.value = true
   submitProductionSchedulingApi({
     data: tableData.value,
     id: route.query.id
@@ -42,7 +43,7 @@ const submitForm = () => {
       ElMessage.success("修改成功", route.query.id)
     })
     .finally(() => {
-      loading.value = false
+      fullscreenLoading.value = false
       isSubmit.value = false
     })
 }
@@ -61,7 +62,7 @@ const handleDelete = (index) => {
 </script>
 
 <template>
-  <div class="app-container">
+  <div class="app-container" v-loading.fullscreen.lock="fullscreenLoading">
     <el-card shadow="never" class="search-wrapper">
       <div class="toolbar-wrapper">
         <div class="flex justify-between">

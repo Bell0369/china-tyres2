@@ -110,8 +110,8 @@ export function productionSchedulingProductDeleteApi(data) {
 // 分货列表
 export function getSortingGoodsListApi(params) {
   return request({
-    // url: "sorting_goods/sortingGoodsList",
-    url: "user/userList",
+    url: "sorting_goods/sortingGoodsList",
+    // url: "user/userList",
     method: "get",
     params
   })
@@ -153,5 +153,15 @@ export function submitSortingGoodsApi(data) {
     url: "sorting_goods/submitSortingGoods",
     method: "post",
     data
+  })
+}
+
+// 分货详情
+
+export function getSortingGoodsDetailApi(params) {
+  return request({
+    url: "sorting_goods/sortingGoodsDetail",
+    method: "get",
+    params
   })
 }

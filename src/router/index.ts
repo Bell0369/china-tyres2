@@ -465,7 +465,8 @@ export const dynamicRoutes: RouteRecordRaw[] = [
         name: "SortingGoods",
         meta: {
           title: "分貨管理",
-          name: "ProductionAllocation"
+          name: "ProductionAllocation",
+          keepAlive: true
         }
       },
       {

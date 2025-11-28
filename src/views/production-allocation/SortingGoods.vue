@@ -68,7 +68,7 @@ const handleCreatePiData = (id) => {
     id
   })
     .then(({ data }) => {
-      PiTableData.value = data.data
+      PiTableData.value = data
     })
     .finally(() => {
       dialogPiTableLoading.value = false
@@ -78,11 +78,8 @@ const handleCreatePiData = (id) => {
 // 是否可选
 const tableRef = ref(null)
 const selectable = (row) => {
-  if (row.status) {
-    return false
-  } else {
-    return true
-  }
+  if (row.status || !row.already_sorting_goods_total_number) return false
+  else return true
 }
 
 // 提交生成PI
@@ -135,9 +132,11 @@ const submitCreatePiData = () => {
       </div>
       <div class="table-wrapper">
         <el-table border :data="tableData">
-          <el-table-column prop="username" label="分貨編號" align="center" />
-          <el-table-column prop="account" label="已分貨總數" align="center" />
-          <el-table-column prop="role_name" label="未分貨總數" align="center" />
+          <el-table-column prop="no" label="分貨編號" align="center" />
+          <el-table-column prop="already_total_number" label="已分貨總數" align="center" />
+          <el-table-column prop="already_total_quantity" label="已分貨櫃量" align="center" />
+          <el-table-column prop="not_total_number" label="未分貨總數" align="center" />
+          <el-table-column prop="not_total_quantity" label="未分貨櫃量" align="center" />
           <el-table-column prop="created_at" label="创建时间" align="center" sortable />
           <el-table-column fixed="right" label="操作" width="180" align="center">
             <template #default="scope">
@@ -170,12 +169,28 @@ const submitCreatePiData = () => {
       </div>
     </el-card>
 
-    <el-dialog v-model="dialogPiTableVisible" title="一鍵生成PI" width="700">
+    <el-dialog v-model="dialogPiTableVisible" title="一鍵生成PI" width="95%">
       <div v-loading="dialogPiTableLoading">
         <el-table :data="PiTableData" ref="tableRef" max-height="500">
           <el-table-column property="id" type="selection" width="55" align="center" :selectable="selectable" />
-          <el-table-column property="created_at" label="訂單號" />
-          <el-table-column property="email" label="訂單備註" />
+          <el-table-column property="order_no" label="訂單號" />
+          <el-table-column property="order_remarks" label="訂單備註">
+            <template #default="scope">
+              <div>{{ scope.row.order_remarks || "----" }}</div>
+            </template>
+          </el-table-column>
+          <el-table-column property="total_number" label="訂單總數" />
+          <el-table-column property="already_sorting_goods_total_number" label="已分貨數量" />
+          <el-table-column property="not_sorting_goods_total_number" label="未分貨數量" />
+          <el-table-column property="already_quantity_total_number" label="已分貨櫃量" />
+          <el-table-column property="not_quantity_total_number" label="未分貨櫃量" />
+          <el-table-column property="status" label="PI狀態">
+            <template #default="scope">
+              <el-tag :type="scope.row.status ? 'success' : 'danger'">
+                {{ scope.row.status ? "已生成PI" : "未生成PI" }}
+              </el-tag>
+            </template>
+          </el-table-column>
         </el-table>
       </div>
       <template #footer>

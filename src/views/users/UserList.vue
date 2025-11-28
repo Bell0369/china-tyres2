@@ -115,7 +115,7 @@ const handleUpdate = (row) => {
   dialogVisible.value = true
   if (row) {
     // 改
-    dialogTitle.value = "編輯用戶"
+    dialogTitle.value = "編輯用戶信息"
   } else {
     // 增
     dialogTitle.value = "新增用戶"
@@ -221,7 +221,7 @@ const dialogUserDetail = ref(false)
             </template>
           </el-table-column>
           <el-table-column prop="created_at" label="创建时间" align="center" sortable />
-          <el-table-column fixed="right" label="操作" width="180" align="center">
+          <el-table-column fixed="right" label="操作" width="190" align="center">
             <template #default="scope">
               <el-button
                 :disabled="scope.row.id === 1"
@@ -231,7 +231,7 @@ const dialogUserDetail = ref(false)
                 bg
                 size="small"
                 @click="handleUpdate(scope.row.id)"
-                >查看</el-button
+                >權限/信息</el-button
               >
               <el-button
                 :disabled="scope.row.id === 1"
@@ -250,7 +250,7 @@ const dialogUserDetail = ref(false)
                 bg
                 size="small"
                 @click="(dialogUserDetail = true), (userId = scope.row.id)"
-                >管理客戶/工廠</el-button
+                >客戶/工廠</el-button
               >
             </template>
           </el-table-column>

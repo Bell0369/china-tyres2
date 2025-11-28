@@ -20,6 +20,7 @@ const { brandOptions } = useBrandSelect()
 const factoryCodeOptions = useFactoryCodeSelect()
 
 const loading = ref(false)
+const fullscreenLoading = ref(false)
 
 // // tag
 const route = useRoute()
@@ -62,7 +63,7 @@ const uploadSortingGoods = debounce(() => {
 
 // 提交排產
 const submitForm = () => {
-  loading.value = true
+  fullscreenLoading.value = true
   isSubmit.value = true
   submitSortingGoodsApi({
     data: tableDataOrders.value,
@@ -73,7 +74,7 @@ const submitForm = () => {
       redirectTo(router, route, "/production-allocation/sortinggoods")
     })
     .finally(() => {
-      loading.value = false
+      fullscreenLoading.value = false
       isSubmit.value = false
     })
 }
@@ -99,7 +100,7 @@ const handleSearch = () => {
 </script>
 
 <template>
-  <div class="app-container">
+  <div class="app-container" v-loading.fullscreen.lock="fullscreenLoading">
     <el-card shadow="never" class="search-wrapper">
       <div class="toolbar-wrapper">
         <el-text tag="b" size="large">上傳分貨文件</el-text>

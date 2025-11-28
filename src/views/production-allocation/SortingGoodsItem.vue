@@ -3,10 +3,8 @@ import { ref, reactive, onMounted } from "vue"
 import { useRoute } from "vue-router"
 import { ElMessage } from "element-plus"
 import { Search, Refresh } from "@element-plus/icons-vue"
-import { submitSortingGoodsApi } from "@/api/product"
+import { submitSortingGoodsApi, getSortingGoodsDetailApi } from "@/api/product"
 import { useBrandSelect, useFactoryCodeSelect } from "@/hooks/useSelectOption"
-
-import myData from "./storingGoodsDetail.json"
 
 defineOptions({
   name: "UploadSortingGoods"
@@ -19,6 +17,7 @@ const { brandOptions } = useBrandSelect()
 const factoryCodeOptions = useFactoryCodeSelect()
 
 const loading = ref(false)
+const fullscreenLoading = ref(false)
 
 // // tag
 const route = useRoute()
@@ -27,26 +26,33 @@ const tableRawDataOrders = ref([]) // 原始數據
 const tableDataOrders = ref([])
 const tableData = ref([])
 onMounted(() => {
-  // 模拟数据加载
-  tableRawDataOrders.value = myData.data.orders
-  tableDataOrders.value = myData.data.orders
-  tableData.value = myData.data.unmatched_products
+  loading.value = true
+  getSortingGoodsDetailApi({ id: route.query.id })
+    .then(({ data }) => {
+      tableRawDataOrders.value = data.data
+      tableDataOrders.value = data.data
+      tableData.value = data.not_order
+    })
+    .finally(() => {
+      loading.value = false
+    })
 })
 
 // 提交分貨
 const isSubmit = ref(false)
 const submitForm = () => {
-  loading.value = true
+  fullscreenLoading.value = true
   isSubmit.value = true
   submitSortingGoodsApi({
+    id: route.query.id,
     data: tableDataOrders.value,
     not_order: tableData.value
   })
     .then(() => {
-      ElMessage.success("分貨提交成功", route.query.id)
+      ElMessage.success("分貨提交成功")
     })
     .finally(() => {
-      loading.value = false
+      fullscreenLoading.value = false
       isSubmit.value = false
     })
 }
@@ -69,10 +75,34 @@ const handleSearch = () => {
   const usersWithWang = tableDataOrders.value.filter((item) => item.order_no.includes(searchData.order_no))
   tableDataOrders.value = usersWithWang
 }
+
+// 修改數量
+const RawData_already_sorting_goods_number = ref(0)
+// const RawData_no_order_number = ref(0)
+const InputNumberFocus = (value) => {
+  RawData_already_sorting_goods_number.value = value
+}
+const InputNumberBlur = (row) => {
+  // 計算出當前行數據
+  const not_sorting_goods_number = row.unproduced - row.already_sorting_goods_number
+  row.not_sorting_goods_number = not_sorting_goods_number
+  const num = RawData_already_sorting_goods_number.value - row.already_sorting_goods_number
+  row.no_order_number += num
+
+  // 查找其他訂單產品，修改無訂單庫存數據
+  tableRawDataOrders.value.forEach((subArray, rowIndex) => {
+    subArray.item.forEach((value, colIndex) => {
+      if (value.product_id === row.product_id) {
+        console.log(rowIndex, colIndex)
+        tableRawDataOrders.value[rowIndex].item[colIndex].no_order_number = row.no_order_number
+      }
+    })
+  })
+}
 </script>
 
 <template>
-  <div class="app-container">
+  <div class="app-container" v-loading.fullscreen.lock="fullscreenLoading">
     <el-card shadow="never" class="search-wrapper">
       <div class="toolbar-wrapper">
         <div class="flex justify-between">
@@ -117,14 +147,19 @@ const handleSearch = () => {
                 <el-table-column label="產品名稱" prop="product_name" min-width="150" />
                 <el-table-column label="客戶編碼" prop="client_code" />
                 <el-table-column label="品牌" prop="brand_code" />
+                <el-table-column label="工廠" prop="factory_name" />
                 <el-table-column label="訂單數量" prop="unproduced" />
                 <el-table-column label="已分貨數量" prop="already_sorting_goods_number" width="140" align="center">
                   <template #default="scope">
                     <el-input-number
                       v-model="scope.row.already_sorting_goods_number"
                       :min="0"
+                      :max="scope.row.unproduced"
                       controls-position="right"
                       style="width: 100%"
+                      @blur="InputNumberBlur(scope.row)"
+                      @focus="InputNumberFocus(scope.row.already_sorting_goods_number)"
+                      :controls="false"
                     />
                   </template>
                 </el-table-column>
@@ -162,7 +197,7 @@ const handleSearch = () => {
           <template #default>
             <div style="display: inline-block; width: 80px">
               <el-upload action="*" :limit="1" :show-file-list="false">
-                <el-button type="primary" plain size="small">添加規格</el-button>
+                <el-button type="primary" plain size="small">追加規格</el-button>
               </el-upload>
             </div>
             <el-button type="warning" plain size="small">導出明細</el-button>

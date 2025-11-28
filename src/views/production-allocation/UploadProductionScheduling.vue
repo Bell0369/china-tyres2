@@ -12,6 +12,7 @@ defineOptions({
 })
 
 const loading = ref(false)
+const fullscreenLoading = ref(false)
 
 // // tag
 const route = useRoute()
@@ -65,7 +66,7 @@ const handleDelete = (index) => {
 
 // 提交排產
 const submitForm = () => {
-  loading.value = true
+  fullscreenLoading.value = true
   isSubmit.value = true
   submitProductionSchedulingApi(tableData.value)
     .then(() => {
@@ -73,14 +74,14 @@ const submitForm = () => {
       redirectTo(router, route, "/production-allocation/productionscheduling")
     })
     .finally(() => {
-      loading.value = false
+      fullscreenLoading.value = false
       isSubmit.value = false
     })
 }
 </script>
 
 <template>
-  <div class="app-container">
+  <div class="app-container" v-loading.fullscreen.lock="fullscreenLoading">
     <el-card shadow="never" class="search-wrapper">
       <div class="toolbar-wrapper">
         <el-text tag="b" size="large">上傳排產文件</el-text>
