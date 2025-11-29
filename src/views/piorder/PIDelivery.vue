@@ -131,7 +131,10 @@ const sendFormData = () => {
       id: item.id,
       product_name: item.product_name,
       brand_code: item.brand_code,
-      number: item.not_shipped_number
+      number: item.not_shipped_number,
+      product_id: item.product_id,
+      brand_id: item.brand_id,
+      factory_id: item.factory_id
     }
     ruleForm.data_arr.push(data_arr)
   })

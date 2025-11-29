@@ -67,6 +67,15 @@ export function exportProductionSchedulingApi(params) {
   })
 }
 
+// 刪除排產
+export function deleteProduApictionSchedulingApi(data) {
+  return request({
+    url: "production_scheduling/deleteProductionScheduling",
+    method: "post",
+    data
+  })
+}
+
 // 上傳排產
 export function uploadProductionSchedulingApi(data) {
   return request({
@@ -111,7 +120,6 @@ export function productionSchedulingProductDeleteApi(data) {
 export function getSortingGoodsListApi(params) {
   return request({
     url: "sorting_goods/sortingGoodsList",
-    // url: "user/userList",
     method: "get",
     params
   })
@@ -157,11 +165,42 @@ export function submitSortingGoodsApi(data) {
 }
 
 // 分货详情
-
 export function getSortingGoodsDetailApi(params) {
   return request({
     url: "sorting_goods/sortingGoodsDetail",
     method: "get",
     params
+  })
+}
+
+// 無訂單庫存導出
+export function exportNoOrderDetailApi(params) {
+  return request({
+    url: "sorting_goods/exportNoOrderDetail",
+    method: "post",
+    responseType: "blob",
+    params
+  })
+}
+
+// 下載明細
+export function exportSortingGoodsProductDetailApi(params) {
+  return request({
+    url: "sorting_goods/exportSortingGoodsProductDetail",
+    method: "post",
+    responseType: "blob",
+    params
+  })
+}
+
+// 追加规格
+export function additionProductApi(data) {
+  return request({
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    url: "sorting_goods/additionProduct",
+    method: "post",
+    data
   })
 }

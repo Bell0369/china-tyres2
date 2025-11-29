@@ -1,9 +1,15 @@
 <script setup>
-import { ref, reactive, onMounted } from "vue"
+import { ref, reactive, onMounted, computed } from "vue"
 import { useRoute } from "vue-router"
 import { ElMessage } from "element-plus"
 import { Search, Refresh } from "@element-plus/icons-vue"
-import { submitSortingGoodsApi, getSortingGoodsDetailApi } from "@/api/product"
+import {
+  submitSortingGoodsApi,
+  getSortingGoodsDetailApi,
+  exportNoOrderDetailApi,
+  exportSortingGoodsProductDetailApi,
+  additionProductApi
+} from "@/api/product"
 import { useBrandSelect, useFactoryCodeSelect } from "@/hooks/useSelectOption"
 
 defineOptions({
@@ -61,8 +67,8 @@ const searchFormRef = ref()
 const searchData = reactive({
   order_no: "",
   product_name: "",
-  brand_id: "0",
-  factory_id: "0"
+  brand_id: 0,
+  factory_id: 0
 })
 // 重置
 const resetSearch = () => {
@@ -71,14 +77,59 @@ const resetSearch = () => {
 }
 
 // 查詢
+const orderMatch = ref([])
 const handleSearch = () => {
-  const usersWithWang = tableDataOrders.value.filter((item) => item.order_no.includes(searchData.order_no))
-  tableDataOrders.value = usersWithWang
+  const usersWithWang = tableRawDataOrders.value.filter((item) =>
+    item.order_no.toLowerCase().includes(searchData.order_no.toLowerCase())
+  )
+  orderMatch.value = usersWithWang
+
+  loading.value = true
+  setTimeout(() => {
+    // console.log(displayResults.value)
+
+    tableDataOrders.value = displayResults.value
+    loading.value = false
+  }, 1000)
 }
+
+// 过滤数据 - 保持订单结构，只过滤产品
+const filteredData = computed(() => {
+  // console.log(orderMatch.value)
+
+  return orderMatch.value.map((order) => {
+    // 复制订单信息
+    const filteredOrder = { ...order }
+    // 过滤产品数组
+    filteredOrder.item = order.item.filter((product) => {
+      const nameMatch =
+        !searchData.product_name || product.product_name.toLowerCase().includes(searchData.product_name.toLowerCase())
+
+      const brandMatch = !searchData.brand_id || product.brand_id === searchData.brand_id
+
+      const factoryMatch = !searchData.factory_id || product.factory_id === searchData.factory_id
+
+      return nameMatch && brandMatch && factoryMatch
+    })
+    return filteredOrder
+  })
+})
+
+// 统一处理显示结果
+const displayResults = computed(() => {
+  const ordersWithProducts = filteredData.value.filter((order) => order.item.length > 0)
+
+  if (ordersWithProducts.length === 0) return []
+
+  // 处理订单显示数据
+  const orders = ordersWithProducts.map((order) => {
+    return order
+  })
+  return orders
+})
 
 // 修改數量
 const RawData_already_sorting_goods_number = ref(0)
-// const RawData_no_order_number = ref(0)
 const InputNumberFocus = (value) => {
   RawData_already_sorting_goods_number.value = value
 }
@@ -90,6 +141,7 @@ const InputNumberBlur = (row) => {
   row.no_order_number += num
 
   // 查找其他訂單產品，修改無訂單庫存數據
+  console.log("----")
   tableRawDataOrders.value.forEach((subArray, rowIndex) => {
     subArray.item.forEach((value, colIndex) => {
       if (value.product_id === row.product_id) {
@@ -98,6 +150,65 @@ const InputNumberBlur = (row) => {
       }
     })
   })
+}
+
+// 導出
+const exportData = (tyep, id) => {
+  if (tyep) {
+    const dataJson = {
+      sorting_goods_order_id: id
+    }
+    exportFile(dataJson, exportSortingGoodsProductDetailApi, "訂單產品明細")
+  } else {
+    const dataJson = {
+      sorting_goods_id: route.query.id
+    }
+    exportFile(dataJson, exportNoOrderDetailApi, "無訂單庫存明細")
+  }
+}
+
+// 導出方法
+const exportFile = (dataJson, api, name) => {
+  loading.value = true
+
+  api(dataJson)
+    .then((data) => {
+      if (data.type === "application/json") {
+        const reader = new FileReader()
+        reader.onload = () => {
+          const text = reader.result
+          const jsonResponse = JSON.parse(text)
+          ElMessage.error(jsonResponse.message)
+        }
+        reader.readAsText(data)
+      } else {
+        const downloadLink = document.createElement("a")
+        downloadLink.href = URL.createObjectURL(data)
+        downloadLink.download = `${name}.xlsx`
+        downloadLink.click()
+      }
+    })
+    .finally(() => {
+      setTimeout(() => {
+        loading.value = false
+      }, 500)
+    })
+}
+
+// 追加規格
+const customUpload = (options) => {
+  const { file } = options
+  const formData = new FormData()
+  formData.append("file", file)
+
+  fullscreenLoading.value = true
+  additionProductApi(formData)
+    .then(() => {
+      ElMessage.success("追加規格上傳成功")
+    })
+    .finally(() => {
+      fullscreenLoading.value = false
+    })
 }
 </script>
 
@@ -108,7 +219,7 @@ const InputNumberBlur = (row) => {
         <div class="flex justify-between">
           <el-text tag="b" size="large">分貨詳情</el-text>
           <div>
-            <el-button type="warning">導出無訂單庫存</el-button>
+            <el-button type="warning" @click="exportData(0, 0)">導出無訂單庫存</el-button>
             <el-button type="primary" @click="submitForm()" :disabled="isSubmit">提交</el-button>
           </div>
         </div>
@@ -123,13 +234,13 @@ const InputNumberBlur = (row) => {
           </el-form-item>
           <el-form-item prop="brand_id" label="品牌代碼">
             <el-select v-model="searchData.brand_id" style="width: 150px">
-              <el-option label="全部" value="0" />
+              <el-option label="全部" :value="0" />
               <el-option v-for="item in brandOptions" :key="item.id" :label="item.name" :value="item.id" />
             </el-select>
           </el-form-item>
           <el-form-item prop="factory_id" label="工廠代碼">
             <el-select v-model="searchData.factory_id" style="width: 150px">
-              <el-option label="全部" value="0" />
+              <el-option label="全部" :value="0" />
               <el-option v-for="item in factoryCodeOptions" :key="item.id" :label="item.name" :value="item.id" />
             </el-select>
           </el-form-item>
@@ -194,13 +305,13 @@ const InputNumberBlur = (row) => {
           </template>
         </el-table-column>
         <el-table-column label="操作" width="180" fixed="right">
-          <template #default>
+          <template #default="scope">
             <div style="display: inline-block; width: 80px">
-              <el-upload action="*" :limit="1" :show-file-list="false">
+              <el-upload accept=".xlsx, .xls" :limit="1" :show-file-list="false" :http-request="customUpload">
                 <el-button type="primary" plain size="small">追加規格</el-button>
               </el-upload>
             </div>
-            <el-button type="warning" plain size="small">導出明細</el-button>
+            <el-button type="warning" plain size="small" @click="exportData(1, scope.row.id)">導出明細</el-button>
           </template>
         </el-table-column>
       </el-table>

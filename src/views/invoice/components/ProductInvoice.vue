@@ -64,16 +64,16 @@ const resetSearch = () => {
     <el-table :data="tableData" border row-class-name="warning-row">
       <el-table-column type="expand">
         <template #default="props">
-          <div class="px">
-            <el-table :data="props.row.item" :max-height="450">
-              <el-table-column label="序號" type="index" width="80" align="center" />
-              <el-table-column label="產品名稱" prop="product_name" align="center" />
-              <el-table-column label="數量" prop="number" align="center" />
-              <el-table-column label="價格" prop="unit_price" align="center" />
-              <el-table-column label="金額" prop="total_prices" align="center" />
-              <el-table-column label="櫃號" prop="container_no" align="center" />
-              <el-table-column label="鉛封號" prop="seal_no" align="center" />
-              <el-table-column label="采購發票號" prop="procurement_invoice_no" align="center" />
+          <div class="px-2">
+            <el-table :data="props.row.item" :max-height="450" size="small">
+              <el-table-column label="序號" type="index" width="50" />
+              <el-table-column label="產品名稱" prop="product_name" :min-width="200" />
+              <el-table-column label="數量" prop="number" />
+              <el-table-column label="價格" prop="unit_price" />
+              <el-table-column label="金額" prop="total_prices" />
+              <el-table-column label="櫃號" prop="container_no" />
+              <el-table-column label="鉛封號" prop="seal_no" />
+              <el-table-column label="采購發票號" prop="procurement_invoice_no" />
             </el-table>
           </div>
         </template>

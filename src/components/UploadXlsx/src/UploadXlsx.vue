@@ -37,7 +37,6 @@ const handleExceed = (files) => {
     class="upload-demo"
     drag
     action="/"
-    multiple
     accept=".xlsx"
     :limit="1"
     :auto-upload="false"

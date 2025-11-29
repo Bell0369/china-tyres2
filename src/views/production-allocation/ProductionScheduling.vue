@@ -1,9 +1,14 @@
 <script setup>
 import { reactive, ref, watch } from "vue"
-import { getProductionSchedulingListApi, exportProductionSchedulingApi } from "@/api/product"
+import {
+  getProductionSchedulingListApi,
+  exportProductionSchedulingApi,
+  deleteProduApictionSchedulingApi
+} from "@/api/product"
 import { ElButton } from "element-plus"
 import { Search, CirclePlus, Refresh } from "@element-plus/icons-vue"
 import { usePagination } from "@/hooks/usePagination"
+import { useDeleteList } from "@/hooks/useDeleteList"
 
 defineOptions({
   name: "ProductionScheduling"
@@ -73,6 +78,17 @@ const handleExport = (row) => {
       }, 500)
     })
 }
+
+// 删除
+const { handleDelete, isDeleted } = useDeleteList({
+  api: deleteProduApictionSchedulingApi,
+  text: "排产订单"
+})
+
+// 成功
+watch([isDeleted], () => {
+  handleSearch()
+})
 </script>
 
 <template>
@@ -109,7 +125,7 @@ const handleExport = (row) => {
           <el-table-column prop="inventory_total_number" label="庫存總數" align="center" />
           <el-table-column prop="production_total_number" label="生產總數" align="center" />
           <el-table-column prop="created_at" label="创建时间" align="center" sortable />
-          <el-table-column fixed="right" label="操作" width="130" align="center">
+          <el-table-column fixed="right" label="操作" width="190" align="center">
             <template #default="scope">
               <el-button
                 type="success"
@@ -121,6 +137,7 @@ const handleExport = (row) => {
               >
                 查看
               </el-button>
+              <el-button type="danger" text bg size="small" @click="handleDelete(scope.row.id)">删除</el-button>
               <el-button type="warning" text bg size="small" @click="handleExport(scope.row)">導出</el-button>
             </template>
           </el-table-column>

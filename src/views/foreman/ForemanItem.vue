@@ -173,7 +173,7 @@ const updataContact = (value) => {
           <el-col :span="6">
             <el-form-item label="工廠代碼" prop="factory_code">
               <el-select v-model="ruleForm.factory_code">
-                <el-option v-for="item in factoryCodeOptions" :label="item.code" :value="item.code" :key="item.id" />
+                <el-option v-for="item in factoryCodeOptions" :label="item.name" :value="item.code" :key="item.id" />
               </el-select>
             </el-form-item>
           </el-col>
