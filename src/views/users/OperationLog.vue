@@ -17,19 +17,23 @@ const { paginationData, handleCurrentChange, handleSizeChange } = usePagination(
 //# 查
 const tableData = ref([])
 
-const monthrangeData = ref(["", ""])
-
-const searchFormRef = ref()
+const searchFormRef = ref(null)
 const searchData = reactive({
-  name: ""
+  name: "",
+  monthrangeData: ""
 })
 const getTableData = () => {
   loading.value = true
+
+  const monthrangeData = {}
+  if (searchData.monthrangeData) {
+    monthrangeData.start_date = searchData.monthrangeData[0]
+    monthrangeData.end_date = searchData.monthrangeData[1]
+  }
   const page = {
-    start_date: monthrangeData.value[0],
-    end_date: monthrangeData.value[1],
     page: paginationData.currentPage,
-    page_size: paginationData.pageSize
+    page_size: paginationData.pageSize,
+    ...monthrangeData
   }
   Object.assign(searchData, page)
   getRecordsListApi(searchData)
@@ -52,7 +56,6 @@ const handleSearch = () => {
 // 重置
 const resetSearch = () => {
   searchFormRef.value?.resetFields()
-  monthrangeData.value = ["", ""]
   handleSearch()
 }
 
@@ -85,9 +88,9 @@ const openDetail = (id) => {
         <el-form-item prop="name" label="操作用戶">
           <el-input v-model="searchData.name" placeholder="請輸入用戶名稱" style="width: 300px" />
         </el-form-item>
-        <el-form-item>
+        <el-form-item prop="monthrangeData" label="日期範圍">
           <el-date-picker
-            v-model="monthrangeData"
+            v-model="searchData.monthrangeData"
             type="daterange"
             range-separator="-"
             start-placeholder="開始日期"

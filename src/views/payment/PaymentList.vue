@@ -11,7 +11,8 @@ import addPayRecord from "./components/addPayRecord.vue"
 import primitivePriceClient from "./components/primitivePriceClient.vue"
 import primitivePriceFactory from "./components/primitivePriceFactory.vue"
 import PrepayMents from "@/views/componrnts/prepayments/PrepayMents.vue"
-import { useUserStore } from "@/store/modules/user"
+// import { useUserStore } from "@/store/modules/user"
+import { checkPermission } from "@/utils/permission"
 
 defineOptions({
   name: "PaymentList"
@@ -27,10 +28,12 @@ const { loadFactory, optionsFactory, loadFactoryData } = useFactorySelect()
 // 客户
 const { loadClient, optionsClient, loadClientData } = useClientSelect()
 
-const { userinfo } = useUserStore()
+// const { userinfo } = useUserStore()
+
+console.log(checkPermission(["clientProceedsYS"]), checkPermission(["factoryCope"]))
 
 // 修改查詢狀態
-const orderType = ref(0)
+const orderType = ref(checkPermission(["clientProceedsYS"]) ? 0 : 1)
 const updataOrderType = () => {
   if (orderType.value) {
     searchData.client_id = undefined
@@ -230,10 +233,11 @@ const handleListPayment = () => {
     <el-card v-loading="loading" shadow="never">
       <div class="toolbar-wrapper">
         <div class="flex justify-between">
-          <div v-if="userinfo.id === 1 || userinfo.role_id === 1">
+          <!-- v-if="userinfo.id === 1 || userinfo.role_id === 1" -->
+          <div>
             <el-radio-group v-model="orderType" fill="#29d" @change="updataOrderType">
-              <el-radio-button label="應收" :value="0" />
-              <el-radio-button label="應付" :value="1" />
+              <el-radio-button label="應收" :value="0" :disabled="!checkPermission(['clientProceedsYS'])" />
+              <el-radio-button label="應付" :value="1" :disabled="!checkPermission(['factoryCope'])" />
             </el-radio-group>
           </div>
           <div>
@@ -384,7 +388,7 @@ const handleListPayment = () => {
       </div>
     </el-card>
 
-    <Dialog v-model="dialogVisible" :title="prepayId.status ? '查看记录' : '添加金額'" :width="900">
+    <Dialog v-model="dialogVisible" :title="prepayId.status ? '查看记录' : '添加金額'" width="80%">
       <add-payRecord :isType="prepayType" :row="prepayId" @handle-listPayment="handleListPayment" />
     </Dialog>
 

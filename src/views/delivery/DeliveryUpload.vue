@@ -279,8 +279,24 @@ const changeCheckboxGroup = debounce(() => {
         <div class="flex justify-between">
           <el-text tag="b" size="large">信息核對</el-text>
           <div>
-            <el-button type="warning" plain @click="handleNewPrice(1)" :loading="loadingBtn1">最新成本價</el-button>
-            <el-button type="warning" plain @click="handleNewPrice(2)" :loading="loadingBtn2">最新銷售價</el-button>
+            <el-button
+              v-permission="['getNewCostPrice']"
+              type="warning"
+              plain
+              @click="handleNewPrice(1)"
+              :loading="loadingBtn1"
+            >
+              獲取最新成本價
+            </el-button>
+            <el-button
+              v-permission="['getNewSalesPrice']"
+              type="warning"
+              plain
+              @click="handleNewPrice(2)"
+              :loading="loadingBtn2"
+            >
+              獲取最新銷售價
+            </el-button>
             <el-button type="primary" @click="submitForm(2)" :disabled="isSubmit">確認提交</el-button>
           </div>
         </div>

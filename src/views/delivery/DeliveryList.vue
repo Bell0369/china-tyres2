@@ -320,7 +320,12 @@ const exportFile = (dataJson, api, name) => {
               >銷售發票生成</el-button
             >
             <el-button type="warning" :icon="Upload" @click="handleExportDeliveryPlan">導出發貨計劃列表</el-button>
-            <el-button type="warning" :icon="Upload" @click="handleExportShippedProductDetails">
+            <el-button
+              type="warning"
+              v-permission="['exportShippedProductDetails']"
+              :icon="Upload"
+              @click="handleExportShippedProductDetails"
+            >
               導出已發貨規格明細
             </el-button>
           </div>

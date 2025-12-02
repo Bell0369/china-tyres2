@@ -1,9 +1,10 @@
 <script setup>
-import { reactive, ref, watch } from "vue"
+import { reactive, ref, watch, onActivated } from "vue"
 import { getSortingGoodsListApi, createPiDataApi, submitCreatePiDataApi } from "@/api/product"
 import { ElButton } from "element-plus"
 import { Search, CirclePlus, Refresh } from "@element-plus/icons-vue"
 import { usePagination } from "@/hooks/usePagination"
+import { handleActivated } from "@/utils/tagsclose"
 
 defineOptions({
   name: "SortingGoods"
@@ -47,6 +48,11 @@ const handleSearch = () => {
   paginationData.currentPage === 1 ? getTableData() : (paginationData.currentPage = 1)
 }
 //#endregion
+
+// 激活
+onActivated(() => {
+  if (handleActivated()) getTableData()
+})
 
 // 重置
 const resetSearch = () => {

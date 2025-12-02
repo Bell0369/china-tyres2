@@ -11,6 +11,7 @@ import {
   additionProductApi
 } from "@/api/product"
 import { useBrandSelect, useFactoryCodeSelect } from "@/hooks/useSelectOption"
+import UnmatchedProducts from "./components/UnmatchedProducts.vue"
 
 defineOptions({
   name: "UploadSortingGoods"
@@ -28,21 +29,26 @@ const fullscreenLoading = ref(false)
 // // tag
 const route = useRoute()
 
+onMounted(() => {
+  getSortingGoodsDetail()
+})
+
+// 詳情
 const tableRawDataOrders = ref([]) // 原始數據
 const tableDataOrders = ref([])
-const tableData = ref([])
-onMounted(() => {
+const unmatchedProductsData = ref([])
+const getSortingGoodsDetail = () => {
   loading.value = true
   getSortingGoodsDetailApi({ id: route.query.id })
     .then(({ data }) => {
-      tableRawDataOrders.value = data.data
-      tableDataOrders.value = data.data
-      tableData.value = data.not_order
+      tableRawDataOrders.value = data.orders
+      tableDataOrders.value = data.orders
+      unmatchedProductsData.value = data.unmatched_products
     })
     .finally(() => {
       loading.value = false
     })
-})
+}
 
 // 提交分貨
 const isSubmit = ref(false)
@@ -51,8 +57,8 @@ const submitForm = () => {
   isSubmit.value = true
   submitSortingGoodsApi({
     id: route.query.id,
-    data: tableDataOrders.value,
-    not_order: tableData.value
+    data: tableRawDataOrders.value,
+    not_order: unmatchedProductsData.value
   })
     .then(() => {
       ElMessage.success("分貨提交成功")
@@ -73,24 +79,29 @@ const searchData = reactive({
 // 重置
 const resetSearch = () => {
   searchFormRef.value?.resetFields()
+  currentPage.value = 1
   tableDataOrders.value = tableRawDataOrders.value
 }
 
 // 查詢
 const orderMatch = ref([])
 const handleSearch = () => {
+  currentPage.value = 1
   const usersWithWang = tableRawDataOrders.value.filter((item) =>
     item.order_no.toLowerCase().includes(searchData.order_no.toLowerCase())
   )
-  orderMatch.value = usersWithWang
-
-  loading.value = true
-  setTimeout(() => {
-    // console.log(displayResults.value)
-
-    tableDataOrders.value = displayResults.value
-    loading.value = false
-  }, 1000)
+  if (usersWithWang.length === 0) {
+    tableDataOrders.value = []
+    return
+  } else {
+    orderMatch.value = usersWithWang
+    loading.value = true
+    setTimeout(() => {
+      // console.log(displayResults.value)
+      tableDataOrders.value = displayResults.value
+      loading.value = false
+    }, 1000)
+  }
 }
 
 // 过滤数据 - 保持订单结构，只过滤产品
@@ -118,34 +129,62 @@ const filteredData = computed(() => {
 // 统一处理显示结果
 const displayResults = computed(() => {
   const ordersWithProducts = filteredData.value.filter((order) => order.item.length > 0)
+  // if (ordersWithProducts.length === 0) return []
 
-  if (ordersWithProducts.length === 0) return []
-
-  // 处理订单显示数据
-  const orders = ordersWithProducts.map((order) => {
-    return order
-  })
-  return orders
+  // // 处理订单显示数据
+  // const orders = ordersWithProducts.map((order) => {
+  //   return order
+  // })
+  return ordersWithProducts
 })
+
+// 分页状态
+const currentPage = ref(1)
+const paginatedData = (data) => {
+  const start = (currentPage.value - 1) * 10
+  const end = start + 10
+  return data.slice(start, end)
+}
+
+const handlePageChange = (page) => {
+  currentPage.value = page
+}
 
 // 修改數量
 const RawData_already_sorting_goods_number = ref(0)
 const InputNumberFocus = (value) => {
   RawData_already_sorting_goods_number.value = value
 }
-const InputNumberBlur = (row) => {
+const InputNumberBlur = (row, index) => {
   // 計算出當前行數據
   const not_sorting_goods_number = row.unproduced - row.already_sorting_goods_number
+  // 未分货数
   row.not_sorting_goods_number = not_sorting_goods_number
   const num = RawData_already_sorting_goods_number.value - row.already_sorting_goods_number
+  // 無訂單庫存數據變化
   row.no_order_number += num
 
+  // 订单已分货/未分货总数、柜量变化
+  const quantityProduct = row.quantity * num
+  // console.log(num, quantityProduct)
+  const indexData = paginatedData(tableDataOrders.value)[index]
+  const factor = 10000000
+  // 已分货
+  indexData.already_sorting_goods_total_number += -num
+  const already_quantity = Number(indexData.already_quantity_total_number) + -quantityProduct
+  indexData.already_quantity_total_number = Math.round(already_quantity * factor) / factor
+
+  // 未分货
+  indexData.not_sorting_goods_total_number += num
+  const not_quantity = Number(indexData.not_quantity_total_number) + quantityProduct
+  indexData.not_quantity_total_number = Math.round(not_quantity * factor) / factor
+
   // 查找其他訂單產品，修改無訂單庫存數據
-  console.log("----")
+  // console.log("----")
   tableRawDataOrders.value.forEach((subArray, rowIndex) => {
     subArray.item.forEach((value, colIndex) => {
       if (value.product_id === row.product_id) {
-        console.log(rowIndex, colIndex)
+        // console.log(rowIndex, colIndex)
         tableRawDataOrders.value[rowIndex].item[colIndex].no_order_number = row.no_order_number
       }
     })
@@ -197,18 +236,37 @@ const exportFile = (dataJson, api, name) => {
 
 // 追加規格
 const customUpload = (options) => {
-  const { file } = options
+  const { file, data } = options
   const formData = new FormData()
   formData.append("file", file)
+  formData.append("order_id", data.order_id)
+  formData.append("sorting_goods_id", route.query.id)
+  formData.append("sorting_goods_order_id", data.sorting_goods_order_id)
 
   fullscreenLoading.value = true
   additionProductApi(formData)
     .then(() => {
       ElMessage.success("追加規格上傳成功")
+      getSortingGoodsDetail()
+    })
+    .catch((error) => {
+      console.log(error)
     })
     .finally(() => {
       fullscreenLoading.value = false
     })
+}
+
+// 覆蓋上傳
+const handleExceed = (files, uploadFiles, row) => {
+  const options = {
+    file: files[0],
+    data: {
+      order_id: row.order_id,
+      sorting_goods_order_id: row.id
+    }
+  }
+  customUpload(options)
 }
 </script>
 
@@ -250,7 +308,14 @@ const customUpload = (options) => {
           </el-form-item>
         </el-form>
       </div>
-      <el-table v-loading="loading" :data="tableDataOrders" border row-key="id" row-class-name="warning-row">
+      <el-table
+        v-loading="loading"
+        :data="paginatedData(tableDataOrders)"
+        border
+        row-key="id"
+        :expand-row-keys="[]"
+        row-class-name="warning-row"
+      >
         <el-table-column type="expand">
           <template #default="props">
             <div class="px-2">
@@ -268,7 +333,7 @@ const customUpload = (options) => {
                       :max="scope.row.unproduced"
                       controls-position="right"
                       style="width: 100%"
-                      @blur="InputNumberBlur(scope.row)"
+                      @blur="InputNumberBlur(scope.row, props.$index)"
                       @focus="InputNumberFocus(scope.row.already_sorting_goods_number)"
                       :controls="false"
                     />
@@ -307,7 +372,18 @@ const customUpload = (options) => {
         <el-table-column label="操作" width="180" fixed="right">
           <template #default="scope">
             <div style="display: inline-block; width: 80px">
-              <el-upload accept=".xlsx, .xls" :limit="1" :show-file-list="false" :http-request="customUpload">
+              <el-upload
+                accept=".xlsx, .xls"
+                :limit="1"
+                :show-file-list="false"
+                :http-request="customUpload"
+                :data="{
+                  order_id: scope.row.order_id,
+                  sorting_goods_order_id: scope.row.id
+                }"
+                :on-exceed="(files, fileList) => handleExceed(files, fileList, scope.row)"
+                :key="scope.row.id"
+              >
                 <el-button type="primary" plain size="small">追加規格</el-button>
               </el-upload>
             </div>
@@ -315,6 +391,15 @@ const customUpload = (options) => {
           </template>
         </el-table-column>
       </el-table>
+      <!-- 分页 -->
+      <div class="pager-wrapper mt-4 flex justify-end">
+        <el-pagination
+          layout="total, prev, pager, next"
+          :total="tableDataOrders.length"
+          :current-page="currentPage"
+          @current-change="handlePageChange"
+        />
+      </div>
     </el-card>
     <!-- 無訂單產品 -->
     <el-card>
@@ -322,16 +407,15 @@ const customUpload = (options) => {
         <div class="mb">
           <el-text tag="b" size="large">無訂單產品</el-text>
         </div>
-        <el-table v-loading="loading" border :data="tableData" :max-height="400">
+        <!-- <el-table v-loading="loading" border :data="unmatchedProductsData" :max-height="400">
           <el-table-column prop="product_name" label="產品名稱" align="center" />
           <el-table-column prop="brand_code" label="品牌" align="center" />
           <el-table-column prop="factory_code" label="工廠" align="center" />
           <el-table-column prop="inventory_number" label="庫存" align="center" />
           <el-table-column prop="production_number" label="生產" align="center" />
           <el-table-column prop="production_date" label="生產時間" align="center" />
-          <el-table-column prop="no_order_number" label="無訂單數量" align="center" />
-          <el-table-column prop="remaining_number" label="剩餘數量" align="center" />
-        </el-table>
+        </el-table> -->
+        <unmatched-products :tableData="unmatchedProductsData" />
       </div>
     </el-card>
   </div>

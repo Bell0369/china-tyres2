@@ -1,5 +1,5 @@
 <script setup>
-import { reactive, ref, watch } from "vue"
+import { reactive, ref, watch, onActivated } from "vue"
 import {
   getProductionSchedulingListApi,
   exportProductionSchedulingApi,
@@ -9,6 +9,7 @@ import { ElButton } from "element-plus"
 import { Search, CirclePlus, Refresh } from "@element-plus/icons-vue"
 import { usePagination } from "@/hooks/usePagination"
 import { useDeleteList } from "@/hooks/useDeleteList"
+import { handleActivated } from "@/utils/tagsclose"
 
 defineOptions({
   name: "ProductionScheduling"
@@ -52,6 +53,11 @@ const handleSearch = () => {
   paginationData.currentPage === 1 ? getTableData() : (paginationData.currentPage = 1)
 }
 //#endregion
+
+// 激活
+onActivated(() => {
+  if (handleActivated()) getTableData()
+})
 
 // 重置
 const resetSearch = () => {

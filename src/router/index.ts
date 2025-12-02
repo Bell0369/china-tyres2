@@ -88,6 +88,7 @@ export const dynamicRoutes: RouteRecordRaw[] = [
     meta: {
       title: "用戶記錄",
       svgIcon: "user",
+      alwaysShow: true,
       roles: ["userList"]
     },
     children: [
@@ -228,6 +229,82 @@ export const dynamicRoutes: RouteRecordRaw[] = [
     ]
   },
   {
+    path: "/production-allocation",
+    component: Layouts,
+    redirect: "/production-allocation/productionscheduling",
+    name: "ProductionAllocation",
+    meta: {
+      title: "排產分貨",
+      alwaysShow: true,
+      svgIcon: "ScaleToOriginal",
+      roles: ["uploadProductionScheduling", "uploadSortingGoods"]
+    },
+    children: [
+      {
+        path: "productionscheduling",
+        component: () => import("@/views/production-allocation/ProductionScheduling.vue"),
+        name: "ProductionScheduling",
+        meta: {
+          title: "排產管理",
+          name: "ProductionAllocation",
+          keepAlive: true,
+          roles: ["uploadProductionScheduling"]
+        }
+      },
+      {
+        path: "uploadproductionscheduling",
+        component: () => import("@/views/production-allocation/UploadProductionScheduling.vue"),
+        name: "UploadProductionScheduling",
+        meta: {
+          title: "上傳排產",
+          name: "ProductionAllocation",
+          hidden: true
+        }
+      },
+      {
+        path: "productionschedulingitem",
+        component: () => import("@/views/production-allocation/ProductionSchedulingItem.vue"),
+        name: "ProductionSchedulingItem",
+        meta: {
+          title: "排產詳情",
+          name: "ProductionAllocation",
+          hidden: true
+        }
+      },
+      {
+        path: "sortinggoods",
+        component: () => import("@/views/production-allocation/SortingGoods.vue"),
+        name: "SortingGoods",
+        meta: {
+          title: "分貨管理",
+          name: "ProductionAllocation",
+          keepAlive: true,
+          roles: ["uploadSortingGoods"]
+        }
+      },
+      {
+        path: "uploadsortinggoods",
+        component: () => import("@/views/production-allocation/UploadSortingGoods.vue"),
+        name: "UploadSortingGoods",
+        meta: {
+          title: "上傳分貨",
+          name: "ProductionAllocation",
+          hidden: true
+        }
+      },
+      {
+        path: "sortinggoodsitem",
+        component: () => import("@/views/production-allocation/SortingGoodsItem.vue"),
+        name: "SortingGoodsItem",
+        meta: {
+          title: "分貨詳情",
+          name: "ProductionAllocation",
+          hidden: true
+        }
+      }
+    ]
+  },
+  {
     path: "/piorder",
     component: Layouts,
     redirect: "/piorder/piorderlist",
@@ -347,6 +424,7 @@ export const dynamicRoutes: RouteRecordRaw[] = [
     meta: {
       title: "銷售發票",
       svgIcon: "inventory",
+      alwaysShow: true,
       roles: ["invList"]
     },
     children: [
@@ -392,7 +470,7 @@ export const dynamicRoutes: RouteRecordRaw[] = [
       title: "應收應付",
       svgIcon: "payment",
       alwaysShow: true,
-      roles: ["clientProceeds", "clientAdvancePayment"]
+      roles: ["clientProceedsYS", "factoryCope"]
     },
     children: [
       {
@@ -403,7 +481,7 @@ export const dynamicRoutes: RouteRecordRaw[] = [
           title: "應收應付",
           name: "Payment",
           keepAlive: true,
-          roles: ["clientProceeds"]
+          roles: ["clientProceedsYS", "factoryCope"]
         }
       },
       {
@@ -415,78 +493,6 @@ export const dynamicRoutes: RouteRecordRaw[] = [
           name: "Payment",
           keepAlive: true,
           roles: ["clientAdvancePayment"]
-        }
-      }
-    ]
-  },
-  {
-    path: "/production-allocation",
-    component: Layouts,
-    redirect: "/production-allocation/productionscheduling",
-    name: "ProductionAllocation",
-    meta: {
-      title: "排產分貨",
-      svgIcon: "ScaleToOriginal"
-    },
-    children: [
-      {
-        path: "productionscheduling",
-        component: () => import("@/views/production-allocation/ProductionScheduling.vue"),
-        name: "ProductionScheduling",
-        meta: {
-          title: "排產管理",
-          name: "ProductionAllocation",
-          keepAlive: true
-        }
-      },
-      {
-        path: "uploadproductionscheduling",
-        component: () => import("@/views/production-allocation/UploadProductionScheduling.vue"),
-        name: "UploadProductionScheduling",
-        meta: {
-          title: "上傳排產",
-          name: "ProductionAllocation",
-          hidden: true
-        }
-      },
-      {
-        path: "productionschedulingitem",
-        component: () => import("@/views/production-allocation/ProductionSchedulingItem.vue"),
-        name: "ProductionSchedulingItem",
-        meta: {
-          title: "排產詳情",
-          name: "ProductionAllocation",
-          hidden: true
-        }
-      },
-      {
-        path: "sortinggoods",
-        component: () => import("@/views/production-allocation/SortingGoods.vue"),
-        name: "SortingGoods",
-        meta: {
-          title: "分貨管理",
-          name: "ProductionAllocation",
-          keepAlive: true
-        }
-      },
-      {
-        path: "uploadsortinggoods",
-        component: () => import("@/views/production-allocation/UploadSortingGoods.vue"),
-        name: "UploadSortingGoods",
-        meta: {
-          title: "上傳分貨",
-          name: "ProductionAllocation",
-          hidden: true
-        }
-      },
-      {
-        path: "sortinggoodsitem",
-        component: () => import("@/views/production-allocation/SortingGoodsItem.vue"),
-        name: "SortingGoodsItem",
-        meta: {
-          title: "分貨詳情",
-          name: "ProductionAllocation",
-          hidden: true
         }
       }
     ]
@@ -627,6 +633,7 @@ export const dynamicRoutes: RouteRecordRaw[] = [
     meta: {
       title: "統計報表",
       svgIcon: "report",
+      alwaysShow: true,
       roles: ["report"]
     },
     children: [

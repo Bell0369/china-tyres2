@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive } from "vue"
+import { ref, reactive, computed } from "vue"
 import { useRoute, useRouter } from "vue-router"
 import { ElMessage } from "element-plus"
 import { UploadXlsx } from "@/components/UploadXlsx"
@@ -8,6 +8,7 @@ import { uploadSortingGoodsApi, submitSortingGoodsApi } from "@/api/product"
 import { redirectTo } from "@/utils/tagsclose"
 import { useBrandSelect, useFactoryCodeSelect } from "@/hooks/useSelectOption"
 import { debounce } from "lodash-es"
+import UnmatchedProducts from "./components/UnmatchedProducts.vue"
 
 defineOptions({
   name: "UploadSortingGoods"
@@ -32,8 +33,9 @@ const setUploadXlsx = (value) => {
 }
 
 // 上傳分貨
+const tableRawDataOrders = ref([]) // 原始數據
 const tableDataOrders = ref([])
-const tableData = ref([])
+const unmatchedProductsData = ref([])
 
 const FileForm = ref("") // 文件
 const isSubmit = ref(true)
@@ -53,8 +55,9 @@ const uploadSortingGoods = debounce(() => {
   uploadSortingGoodsApi(formData)
     .then(({ data }) => {
       isSubmit.value = false
+      tableRawDataOrders.value = data.orders
       tableDataOrders.value = data.orders
-      tableData.value = data.unmatched_products
+      unmatchedProductsData.value = data.unmatched_products
     })
     .finally(() => {
       loading.value = false
@@ -66,8 +69,8 @@ const submitForm = () => {
   fullscreenLoading.value = true
   isSubmit.value = true
   submitSortingGoodsApi({
-    data: tableDataOrders.value,
-    not_order: tableData.value
+    data: tableRawDataOrders.value,
+    not_order: unmatchedProductsData.value
   })
     .then(() => {
       ElMessage.success("提交成功")
@@ -84,18 +87,112 @@ const searchFormRef = ref()
 const searchData = reactive({
   order_no: "",
   product_name: "",
-  brand_id: "0",
-  factory_id: "0"
+  brand_id: 0,
+  factory_id: 0
 })
 // 重置
 const resetSearch = () => {
   searchFormRef.value?.resetFields()
-  handleSearch()
+  currentPage.value = 1
+  tableDataOrders.value = tableRawDataOrders.value
 }
 
 // 查詢
+const orderMatch = ref([])
 const handleSearch = () => {
-  console.log("查詢")
+  currentPage.value = 1
+  const usersWithWang = tableRawDataOrders.value.filter((item) =>
+    item.order_no.toLowerCase().includes(searchData.order_no.toLowerCase())
+  )
+  if (usersWithWang.length === 0) {
+    tableDataOrders.value = []
+    return
+  } else {
+    orderMatch.value = usersWithWang
+    loading.value = true
+    setTimeout(() => {
+      // console.log(displayResults.value)
+      tableDataOrders.value = displayResults.value
+      loading.value = false
+    }, 1000)
+  }
+}
+
+// 过滤数据 - 保持订单结构，只过滤产品
+const filteredData = computed(() => {
+  // console.log(orderMatch.value)
+
+  return orderMatch.value.map((order) => {
+    // 复制订单信息
+    const filteredOrder = { ...order }
+    // 过滤产品数组
+    filteredOrder.item = order.item.filter((product) => {
+      const nameMatch =
+        !searchData.product_name || product.product_name.toLowerCase().includes(searchData.product_name.toLowerCase())
+
+      const brandMatch = !searchData.brand_id || product.brand_id === searchData.brand_id
+
+      const factoryMatch = !searchData.factory_id || product.factory_id === searchData.factory_id
+
+      return nameMatch && brandMatch && factoryMatch
+    })
+    return filteredOrder
+  })
+})
+
+// 统一处理显示结果
+const displayResults = computed(() => {
+  const ordersWithProducts = filteredData.value.filter((order) => order.item.length > 0)
+  return ordersWithProducts
+})
+
+// 分页状态
+const currentPage = ref(1)
+const paginatedData = (data) => {
+  const start = (currentPage.value - 1) * 10
+  const end = start + 10
+  return data.slice(start, end)
+}
+
+const handlePageChange = (page) => {
+  currentPage.value = page
+}
+
+// 修改數量
+const RawData_already_sorting_goods_number = ref(0)
+const InputNumberFocus = (value) => {
+  RawData_already_sorting_goods_number.value = value
+}
+const InputNumberBlur = (row, index) => {
+  // 計算出當前行數據
+  const not_sorting_goods_number = row.unproduced - row.already_sorting_goods_number
+  row.not_sorting_goods_number = not_sorting_goods_number
+  const num = RawData_already_sorting_goods_number.value - row.already_sorting_goods_number
+  row.no_order_number += num
+
+  // 订单已分货/未分货总数、柜量变化
+  const quantityProduct = row.quantity * num
+  // console.log(num, quantityProduct)
+  const indexData = paginatedData(tableDataOrders.value)[index]
+  const factor = 10000000
+  // 已分货
+  indexData.already_sorting_goods_total_number += -num
+  const already_quantity = Number(indexData.already_quantity_total_number) + -quantityProduct
+  indexData.already_quantity_total_number = Math.round(already_quantity * factor) / factor
+
+  // 未分货
+  indexData.not_sorting_goods_total_number += num
+  const not_quantity = Number(indexData.not_quantity_total_number) + quantityProduct
+  indexData.not_quantity_total_number = Math.round(not_quantity * factor) / factor
+
+  // 查找其他訂單產品，修改無訂單庫存數據
+  tableRawDataOrders.value.forEach((subArray, rowIndex) => {
+    subArray.item.forEach((value, colIndex) => {
+      if (value.product_id === row.product_id) {
+        tableRawDataOrders.value[rowIndex].item[colIndex].no_order_number = row.no_order_number
+      }
+    })
+  })
 }
 </script>
 
@@ -134,13 +231,13 @@ const handleSearch = () => {
           </el-form-item>
           <el-form-item prop="brand_id" label="品牌代碼">
             <el-select v-model="searchData.brand_id" style="width: 150px">
-              <el-option label="全部" value="0" />
+              <el-option label="全部" :value="0" />
               <el-option v-for="item in brandOptions" :key="item.id" :label="item.name" :value="item.id" />
             </el-select>
           </el-form-item>
           <el-form-item prop="factory_id" label="工廠代碼">
             <el-select v-model="searchData.factory_id" style="width: 150px">
-              <el-option label="全部" value="0" />
+              <el-option label="全部" :value="0" />
               <el-option v-for="item in factoryCodeOptions" :key="item.id" :label="item.name" :value="item.id" />
             </el-select>
           </el-form-item>
@@ -151,7 +248,14 @@ const handleSearch = () => {
         </el-form>
       </div>
       <!-- :show-header="false" -->
-      <el-table v-loading="loading" :data="tableDataOrders" border row-key="id" row-class-name="warning-row">
+      <el-table
+        v-loading="loading"
+        :data="paginatedData(tableDataOrders)"
+        border
+        row-key="order_no"
+        :expand-row-keys="[]"
+        row-class-name="warning-row"
+      >
         <el-table-column type="expand">
           <template #default="props">
             <div class="px-2">
@@ -159,14 +263,19 @@ const handleSearch = () => {
                 <el-table-column label="產品名稱" prop="product_name" min-width="150" />
                 <el-table-column label="客戶編碼" prop="client_code" />
                 <el-table-column label="品牌" prop="brand_code" />
+                <el-table-column label="工廠" prop="factory_name" />
                 <el-table-column label="訂單數量" prop="unproduced" />
                 <el-table-column label="已分貨數量" prop="already_sorting_goods_number" width="140" align="center">
                   <template #default="scope">
                     <el-input-number
                       v-model="scope.row.already_sorting_goods_number"
                       :min="0"
+                      :max="scope.row.unproduced"
                       controls-position="right"
                       style="width: 100%"
+                      @blur="InputNumberBlur(scope.row, props.$index)"
+                      @focus="InputNumberFocus(scope.row.already_sorting_goods_number)"
+                      :controls="false"
                     />
                   </template>
                 </el-table-column>
@@ -203,6 +312,15 @@ const handleSearch = () => {
           </template>
         </el-table-column>
       </el-table>
+      <!-- 分页 -->
+      <div class="pager-wrapper mt-4 flex justify-end">
+        <el-pagination
+          layout="total, prev, pager, next"
+          :total="tableDataOrders.length"
+          :current-page="currentPage"
+          @current-change="handlePageChange"
+        />
+      </div>
     </el-card>
     <!-- 無訂單產品 -->
     <el-card>
@@ -210,16 +328,15 @@ const handleSearch = () => {
         <div class="mb">
           <el-text tag="b" size="large">無訂單產品</el-text>
         </div>
-        <el-table v-loading="loading" border :data="tableData" :max-height="400">
+        <!-- <el-table v-loading="loading" border :data="unmatchedProductsData" :max-height="400">
           <el-table-column prop="product_name" label="產品名稱" align="center" />
           <el-table-column prop="brand_code" label="品牌" align="center" />
           <el-table-column prop="factory_code" label="工廠" align="center" />
           <el-table-column prop="inventory_number" label="庫存" align="center" />
           <el-table-column prop="production_number" label="生產" align="center" />
           <el-table-column prop="production_date" label="生產時間" align="center" />
-          <el-table-column prop="no_order_number" label="無訂單數量" align="center" />
-          <el-table-column prop="remaining_number" label="剩餘數量" align="center" />
-        </el-table>
+        </el-table> -->
+        <unmatched-products :tableData="unmatchedProductsData" />
       </div>
     </el-card>
   </div>
