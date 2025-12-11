@@ -41,7 +41,8 @@ const ruleForm = reactive({
   client_id: "",
   factory_id: "",
   brand_id: "",
-  remarks_id: ""
+  remarks_id: "",
+  originating: ""
 })
 
 const rules = reactive({
@@ -88,6 +89,7 @@ const submitForm = (Type) => {
       formData.append("factory_id", ruleForm.factory_id)
       formData.append("brand_id", ruleForm.brand_id)
       formData.append("content", ruleForm.remarks_id)
+      formData.append("originating", ruleForm.originating)
       uploadOrderApi(formData)
         .then(({ data }) => {
           if (Type === 1) {

@@ -169,7 +169,7 @@ const handleListPayment = () => {
     <el-card shadow="never" class="search-wrapper">
       <el-form ref="searchFormRef" :inline="true" :model="searchData">
         <el-form-item prop="keyword" label="發票號">
-          <el-input v-model="searchData.keyword" placeholder="" style="width: 300px" />
+          <el-input v-model="searchData.keyword" placeholder="請輸入發發票號" style="width: 300px" />
         </el-form-item>
         <el-form-item>
           <el-date-picker
@@ -250,9 +250,9 @@ const handleListPayment = () => {
       <div class="table-wrapper">
         <div v-show="orderType === 0">
           <el-table :data="tableData" border>
-            <el-table-column prop="client_name" label="客戶名稱" align="center" />
-            <el-table-column prop="inv_no" label="銷售發票" align="center" />
-            <el-table-column prop="primitive_price" label="初始金額" align="center">
+            <el-table-column prop="client_name" label="客戶名稱" align="center" min-width="150" />
+            <el-table-column prop="inv_no" label="銷售發票" align="center" min-width="130" />
+            <el-table-column prop="primitive_price" label="初始金額" align="center" min-width="100">
               <template #default="scope">
                 <span class="inline-block align-mid">{{ scope.row.primitive_price }}</span>
                 <Tickets
@@ -261,8 +261,8 @@ const handleListPayment = () => {
                 />
               </template>
             </el-table-column>
-            <el-table-column prop="receivable_price" label="應收金額" align="center" />
-            <el-table-column prop="paicl_price" label="實收金額" align="center">
+            <el-table-column prop="receivable_price" label="應收金額" align="center" min-width="100" />
+            <el-table-column prop="paicl_price" label="實收金額" align="center" min-width="100">
               <template #default="scope">
                 <span class="inline-block align-mid">{{ scope.row.paicl_price }}</span>
                 <!-- <Tickets
@@ -272,16 +272,16 @@ const handleListPayment = () => {
                 /> -->
               </template>
             </el-table-column>
-            <el-table-column prop="updated_at" label="確認金額日期" align="center" />
-            <el-table-column prop="uncollected_price" label="未收金額" align="center" />
-            <el-table-column prop="balance" label="預收金額" align="center" />
-            <el-table-column prop="status" label="應收狀態" align="center">
+            <el-table-column prop="updated_at" label="確認金額日期" align="center" min-width="120" />
+            <el-table-column prop="uncollected_price" label="未收金額" align="center" min-width="100" />
+            <el-table-column prop="balance" label="預收金額" align="center" min-width="100" />
+            <el-table-column prop="status" label="應收狀態" align="center" min-width="100">
               <template #default="scope">
                 <el-tag type="success" v-if="scope.row.status">已收款</el-tag>
                 <el-tag type="danger" v-else>未收款</el-tag>
               </template>
             </el-table-column>
-            <el-table-column prop="created_at" label="创建时间" align="center" sortable />
+            <el-table-column prop="created_at" label="创建时间" align="center" min-width="120" sortable />
             <el-table-column fixed="right" label="操作" width="180" align="center">
               <template #default="scope">
                 <el-button
@@ -311,8 +311,8 @@ const handleListPayment = () => {
         </div>
         <div v-show="orderType === 1">
           <el-table :data="tableData" border>
-            <el-table-column prop="factory_name" label="工廠名稱" align="center" />
-            <el-table-column prop="procurement_invoice_no" label="採購發票" align="center">
+            <el-table-column prop="factory_name" label="工廠名稱" align="center" min-width="70" />
+            <el-table-column prop="procurement_invoice_no" label="採購發票" align="center" min-width="130">
               <template #default="scope">
                 <span v-for="item in scope.row.procurement_invoice_no" :key="item">{{ item }}</span>
               </template>
@@ -337,7 +337,7 @@ const handleListPayment = () => {
                 /> -->
               </template>
             </el-table-column>
-            <el-table-column prop="updated_at" label="確認金額日期" align="center" />
+            <el-table-column prop="updated_at" label="確認金額日期" align="center" min-width="100" />
             <el-table-column prop="unpaid_price" label="未付金額" align="center" />
             <el-table-column prop="balance" label="預付金額" align="center" />
             <el-table-column prop="status" label="應付狀態" align="center">
@@ -346,7 +346,7 @@ const handleListPayment = () => {
                 <el-tag type="danger" v-else>未付款</el-tag>
               </template>
             </el-table-column>
-            <el-table-column prop="created_at" label="创建时间" align="center" sortable />
+            <el-table-column prop="created_at" label="创建时间" align="center" sortable min-width="100" />
             <el-table-column fixed="right" label="操作" width="180" align="center">
               <template #default="scope">
                 <el-button

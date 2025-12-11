@@ -626,3 +626,15 @@ export function getDestinationApi(params) {
     params
   })
 }
+
+// 批量生成發貨計劃
+export function createDeliveryPlanBatchApi(data) {
+  return request({
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    url: "order/createDeliveryPlanBatch",
+    method: "post",
+    data
+  })
+}

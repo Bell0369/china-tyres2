@@ -237,7 +237,7 @@ export const dynamicRoutes: RouteRecordRaw[] = [
       title: "排產分貨",
       alwaysShow: true,
       svgIcon: "ScaleToOriginal",
-      roles: ["uploadProductionScheduling", "uploadSortingGoods"]
+      roles: ["productionSchedulingList", "sortingGoodsList"]
     },
     children: [
       {
@@ -248,7 +248,7 @@ export const dynamicRoutes: RouteRecordRaw[] = [
           title: "排產管理",
           name: "ProductionAllocation",
           keepAlive: true,
-          roles: ["uploadProductionScheduling"]
+          roles: ["productionSchedulingList"]
         }
       },
       {
@@ -279,7 +279,7 @@ export const dynamicRoutes: RouteRecordRaw[] = [
           title: "分貨管理",
           name: "ProductionAllocation",
           keepAlive: true,
-          roles: ["uploadSortingGoods"]
+          roles: ["sortingGoodsList"]
         }
       },
       {
@@ -367,6 +367,16 @@ export const dynamicRoutes: RouteRecordRaw[] = [
           name: "PIOrder",
           hidden: true,
           roles: ["uploadDeliveryPlan"]
+        }
+      },
+      {
+        path: "create-delivery-plan",
+        component: () => import("@/views/piorder/CreateDeliveryPlanBatch.vue"),
+        name: "CreateDeliveryPlanBatch",
+        meta: {
+          title: "批量生成發貨計劃",
+          name: "PIOrder",
+          hidden: true
         }
       }
     ]

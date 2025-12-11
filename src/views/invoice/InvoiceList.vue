@@ -117,11 +117,18 @@ const userList = (list) => {
     <el-card v-loading="loading" shadow="never">
       <div class="table-wrapper">
         <el-table :data="tableData" border>
-          <el-table-column prop="inv_no" label="銷售發票號" align="center" />
-          <el-table-column prop="client_code" label="客戶編碼" align="center" />
-          <el-table-column prop="original_product_total_price" label="FOB 金額" align="center" />
-          <el-table-column prop="inv_fee" label="附加金額" align="center" />
-          <el-table-column prop="other_fee_price" label="其他費用" align="center" />
+          <el-table-column prop="inv_no" label="銷售發票號" align="center" min-width="140" />
+          <el-table-column prop="client_code" label="客戶編碼" align="center" min-width="110" />
+          <el-table-column prop="original_product_total_price" label="FOB 金額" align="center" min-width="110" />
+          <el-table-column prop="inv_fee" label="附加金額" align="center" min-width="100" />
+          <el-table-column prop="other_fee_price" label="其他費用" align="center" min-width="100" />
+          <el-table-column prop="inland_status" label="內陸費用狀態" align="center" width="120">
+            <template #default="scope">
+              <el-tag :type="scope.row.inland_status === 0 ? 'danger' : 'success'">
+                {{ scope.row.inland_status === 0 ? "未收" : "已收" }}
+              </el-tag>
+            </template>
+          </el-table-column>
           <!-- <el-table-column prop="status" label="應收狀態" align="center">
             <template #default="scope">
               <el-tag type="danger" v-if="scope.row.status === 0"> 未收 </el-tag>
@@ -139,7 +146,7 @@ const userList = (list) => {
               <el-text>{{ userList(scope.row.delivery_plan_no) }}</el-text>
             </template>
           </el-table-column>
-          <el-table-column prop="created_at" label="创建时间" align="center" sortable />
+          <el-table-column prop="created_at" label="创建时间" align="center" sortable width="120" />
           <el-table-column fixed="right" label="操作" width="130" align="center">
             <template #default="scope">
               <el-button

@@ -268,14 +268,14 @@ const handleError = (uploadFile) => {
       </div>
       <div class="table-wrapper">
         <el-table :data="tableData" border>
-          <el-table-column prop="sort" label="排序值" align="center" />
-          <el-table-column prop="name" label="產品名稱" align="center" />
-          <el-table-column prop="brand" label="品牌" align="center" />
-          <el-table-column prop="art" label="產品代碼" align="center" />
-          <el-table-column prop="tyre_type" label="輪胎類型" align="center" />
-          <el-table-column prop="customs_code" label="海關編碼" align="center" />
-          <el-table-column prop="quantity" label="40'HQ裝櫃量" align="center" />
-          <el-table-column prop="standard_quantity" label="40'HQ標準櫃量" align="center" />
+          <el-table-column prop="sort" label="排序值" align="center" width="70" />
+          <el-table-column prop="name" label="產品名稱" align="center" min-width="140" />
+          <el-table-column prop="brand" label="品牌" align="center" min-width="100" />
+          <el-table-column prop="art" label="產品代碼" align="center" min-width="100" />
+          <el-table-column prop="tyre_type" label="輪胎類型" align="center" min-width="100" />
+          <el-table-column prop="customs_code" label="海關編碼" align="center" min-width="120" />
+          <el-table-column prop="quantity" label="40'HQ裝櫃量" align="center" min-width="110" />
+          <el-table-column prop="standard_quantity" label="40'HQ標準櫃量" align="center" min-width="130" />
           <el-table-column prop="piece_weight" label="單重" align="center" />
           <!-- 
           <el-table-column prop="client" label="客戶" align="center" width="150" :show-overflow-tooltip="true">
@@ -290,7 +290,7 @@ const handleError = (uploadFile) => {
             </template>
           </el-table-column>
           <el-table-column prop="cost_price" label="採購價" align="center" />
-          <el-table-column prop="created_at" label="创建时间" align="center" sortable />
+          <el-table-column prop="created_at" label="创建时间" align="center" sortable min-width="120" />
           <el-table-column fixed="right" label="操作" width="190" align="center">
             <template #default="scope">
               <el-button

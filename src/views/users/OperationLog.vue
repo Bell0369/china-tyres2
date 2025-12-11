@@ -85,7 +85,7 @@ const openDetail = (id) => {
   <div class="app-container">
     <el-card shadow="never" class="search-wrapper">
       <el-form ref="searchFormRef" :inline="true" :model="searchData">
-        <el-form-item prop="name" label="操作用戶">
+        <el-form-item prop="name" label="用戶名稱">
           <el-input v-model="searchData.name" placeholder="請輸入用戶名稱" style="width: 300px" />
         </el-form-item>
         <el-form-item prop="monthrangeData" label="日期範圍">

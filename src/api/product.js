@@ -204,3 +204,12 @@ export function additionProductApi(data) {
     data
   })
 }
+
+// 使用手冊
+export function getDownloadSysDocApi(params) {
+  return request({
+    url: "common/downloadSysDoc",
+    method: "get",
+    params
+  })
+}

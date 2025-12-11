@@ -51,8 +51,8 @@ setTimeout(() => {
           <router-link :to="`/order/orderitem?id=${infoData.order_id}`">{{ infoData.order_no }}</router-link>
         </el-text>
       </el-descriptions-item>
-      <el-descriptions-item label="PI號">{{ infoData.pi_no }}</el-descriptions-item>
-      <el-descriptions-item label="發貨計劃號">
+      <el-descriptions-item label="PI號" :span="2">{{ infoData.pi_no }}</el-descriptions-item>
+      <el-descriptions-item label="發貨計劃號" :span="3">
         <el-text
           v-for="item in infoData.delivery_plan_no"
           :key="item.id"
@@ -63,13 +63,7 @@ setTimeout(() => {
         </el-text>
       </el-descriptions-item>
       <el-descriptions-item label="訂單總數量">{{ infoData.order_number }}</el-descriptions-item>
-      <el-descriptions-item label="PI數量">{{ infoData.product_total_number }}</el-descriptions-item>
-      <el-descriptions-item label="PI已發貨數">{{ infoData.shipped }}</el-descriptions-item>
-      <el-descriptions-item label="PI未發貨數">{{ infoData.not_shipped }}</el-descriptions-item>
-      <el-descriptions-item label="PI未發貨數櫃量(40'HQ)">
-        {{ infoData.not_shipped_total_quantity }}
-      </el-descriptions-item>
-      <el-descriptions-item label="PI總金額">{{ infoData.total_price }}</el-descriptions-item>
+      <el-descriptions-item label="訂單總金額">{{ infoData.order_total_price }}</el-descriptions-item>
       <el-descriptions-item label="櫃量(40'HQ)">
         {{ infoData.quantity }}
         <EditPen
@@ -78,10 +72,16 @@ setTimeout(() => {
           class="w4 h4 cursor-pointer hover:c-blue"
         />
       </el-descriptions-item>
-      <el-descriptions-item label="訂單總金額">{{ infoData.order_total_price }}</el-descriptions-item>
+      <el-descriptions-item label="PI數量">{{ infoData.product_total_number }}</el-descriptions-item>
+      <el-descriptions-item label="PI總金額">{{ infoData.total_price }}</el-descriptions-item>
+      <el-descriptions-item label="PI已發貨數">{{ infoData.shipped }}</el-descriptions-item>
+      <el-descriptions-item label="PI未發貨數">{{ infoData.not_shipped }}</el-descriptions-item>
+      <el-descriptions-item label="PI未發貨數櫃量(40'HQ)">
+        {{ infoData.not_shipped_total_quantity }}
+      </el-descriptions-item>
       <el-descriptions-item label="訂單備註">{{ infoData.order_remarks || "----" }}</el-descriptions-item>
-      <el-descriptions-item label="目的港">{{ infoData.destination }}</el-descriptions-item>
       <el-descriptions-item label="Remarks">{{ infoData.remarks }}</el-descriptions-item>
+      <el-descriptions-item label="目的港">{{ infoData.destination }}</el-descriptions-item>
       <el-descriptions-item label="Terms of Pay ment">{{ infoData.terms_of_payment }}</el-descriptions-item>
     </el-descriptions>
   </el-card>

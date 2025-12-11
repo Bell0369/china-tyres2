@@ -59,11 +59,11 @@ watch(
       </div>
     </div>
     <div class="m-b">
-      <el-table :data="tableData" :max-height="800">
+      <el-table :data="tableData" :max-height="500">
         <el-table-column type="index" label="序号" align="center" width="80" />
-        <el-table-column prop="product_name" label="產品名稱" align="center" />
-        <el-table-column prop="reality_number" label="实际装货数" align="center" />
-        <el-table-column prop="plan_number" label="计划装货数" align="center" />
+        <el-table-column prop="product_name" label="產品名稱" align="center" min-width="180" />
+        <el-table-column prop="reality_number" label="实际装货数" align="center" min-width="100" />
+        <el-table-column prop="plan_number" label="计划装货数" align="center" min-width="100" />
         <el-table-column prop="container_no" label="柜号" align="center" />
         <el-table-column prop="seal_no" label="铅封号" align="center" />
       </el-table>

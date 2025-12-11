@@ -346,15 +346,15 @@ const exportFile = (dataJson, api, name) => {
         <!-- @selection-change="handleSelectionChange" -->
         <el-table ref="tableRef" border :data="tableData">
           <el-table-column type="selection" width="55" align="center" :selectable="selectable" fixed />
-          <el-table-column prop="delivery_plan_no" label="發貨計劃號" align="center" width="150" />
-          <el-table-column prop="pi_no" label="PI號" align="center" width="150" />
+          <el-table-column prop="delivery_plan_no" label="發貨計劃號" align="center" min-width="150" />
+          <el-table-column prop="pi_no" label="PI號" align="center" min-width="150" />
           <el-table-column prop="client_code" label="客戶編碼" align="center" width="100" />
           <el-table-column prop="number" label="計劃發貨數" align="center" width="100" />
           <el-table-column prop="shipped" label="已發貨數" align="center" width="100" />
           <el-table-column prop="not_shipped" label="未發貨數" align="center" width="100" />
-          <el-table-column prop="procurement_invoice_no" label="採購發票號" align="center" width="120" />
-          <el-table-column prop="order_remarks" label="訂單備註" align="center" width="100" />
-          <el-table-column prop="created_at" label="创建时间" align="center" sortable width="120" />
+          <el-table-column prop="procurement_invoice_no" label="採購發票號" align="center" min-width="120" />
+          <el-table-column prop="order_remarks" label="訂單備註" align="center" min-width="100" />
+          <el-table-column prop="created_at" label="创建时间" align="center" sortable min-width="120" />
           <el-table-column fixed="right" label="操作" width="190" align="center">
             <template #default="scope">
               <el-button

@@ -8,6 +8,7 @@ import { UserFilled } from "@element-plus/icons-vue"
 import Hamburger from "../Hamburger/index.vue"
 import Breadcrumb from "../Breadcrumb/index.vue"
 import Sidebar from "../Sidebar/index.vue"
+import UserManual from "../UserManual/index.vue"
 // import Notify from "@/components/Notify/index.vue"
 // import ThemeSwitch from "@/components/ThemeSwitch/index.vue"
 import Screenfull from "@/components/Screenfull/index.vue"
@@ -53,6 +54,7 @@ const updatePaw = () => {
     <Breadcrumb v-if="!isTop || isMobile" class="breadcrumb" />
     <Sidebar v-if="isTop && !isMobile" class="sidebar" />
     <div class="right-menu">
+      <UserManual class="right-menu-item" />
       <!-- <SearchMenu v-if="showSearchMenu" class="right-menu-item" /> -->
       <Screenfull v-if="showScreenfull" class="right-menu-item" />
       <!-- <ThemeSwitch v-if="showThemeSwitch" class="right-menu-item" /> -->

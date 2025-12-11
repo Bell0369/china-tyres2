@@ -28,7 +28,7 @@ watch([isQuantity], () => {
         <el-text tag="b" size="large">訂單基本信息</el-text>
       </div>
       <el-descriptions :column="3" border>
-        <el-descriptions-item label="訂單號" width="200px">{{ orderInfo.order_no }}</el-descriptions-item>
+        <el-descriptions-item label="訂單號">{{ orderInfo.order_no }}</el-descriptions-item>
         <el-descriptions-item label="PI號" :span="2">
           <el-text
             v-for="item in orderInfo.pi_info"

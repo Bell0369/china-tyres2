@@ -1,6 +1,6 @@
 <script setup>
 import { reactive, ref, watch, onActivated } from "vue"
-import { Search, CirclePlus, Refresh, EditPen } from "@element-plus/icons-vue"
+import { Search, CirclePlus, Refresh, EditPen, FolderAdd } from "@element-plus/icons-vue"
 import { getPiListApi, deletePiListApi, updatePiQuantityApi, exportPIApi, accomplishPApi } from "@/api/order"
 import { usePagination } from "@/hooks/usePagination"
 import { useDeleteList } from "@/hooks/useDeleteList"
@@ -244,6 +244,9 @@ const { userinfo } = useUserStore()
               to="/piorder/piorderupload"
               >上傳PI</el-button
             >
+            <el-button type="primary" :icon="FolderAdd" tag="router-link" to="/piorder/create-delivery-plan">
+              批量生成發貨計劃
+            </el-button>
           </div>
           <div>
             <el-text>未發貨PI總數量：</el-text>
@@ -259,8 +262,8 @@ const { userinfo } = useUserStore()
       </div>
       <div class="table-wrapper">
         <el-table border :data="tableData">
-          <el-table-column prop="pi_no" label="PI號" align="center" width="120" />
-          <el-table-column prop="order_no" label="訂單號" align="center" width="120" />
+          <el-table-column prop="pi_no" label="PI號" align="center" min-width="140" />
+          <el-table-column prop="order_no" label="訂單號" align="center" min-width="140" />
           <el-table-column prop="client_code" label="客戶編碼" align="center" width="120" />
           <el-table-column prop="quantity" label="櫃量(40'HQ)" align="center" width="120">
             <template #default="scope">

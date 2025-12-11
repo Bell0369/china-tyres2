@@ -90,17 +90,27 @@ const handleListPayment = () => {
     <el-card shadow="never" class="search-wrapper">
       <el-form :inline="true" :model="searchData">
         <el-form-item :label="orderType ? '工廠名稱' : '客戶名稱'">
-          <el-input v-model="searchData.keyword" placeholder="" style="width: 270px" />
+          <el-input v-model="searchData.keyword" placeholder="請輸入" style="width: 270px" />
         </el-form-item>
         <el-form-item label="信用額度" v-show="orderType === 0">
-          <el-input v-model="searchData.start_credit" type="number" style="width: 150px" />
+          <el-input v-model="searchData.start_credit" type="number" style="width: 150px" placeholder="最低額度" />
           <span class="mx">-</span>
-          <el-input v-model="searchData.end_credit" type="number" style="width: 150px" />
+          <el-input v-model="searchData.end_credit" type="number" style="width: 150px" placeholder="最高額度" />
         </el-form-item>
         <el-form-item label="預付金額" v-show="orderType === 1">
-          <el-input v-model="searchData.start_advance_payment" type="number" style="width: 150px" />
+          <el-input
+            v-model="searchData.start_advance_payment"
+            type="number"
+            style="width: 150px"
+            placeholder="最高金額"
+          />
           <span class="mx">-</span>
-          <el-input v-model="searchData.end_advance_payment" type="number" style="width: 150px" />
+          <el-input
+            v-model="searchData.end_advance_payment"
+            type="number"
+            style="width: 150px"
+            placeholder="最低金額"
+          />
         </el-form-item>
         <el-form-item>
           <el-button type="primary" :icon="Search" @click="handleSearch">查詢</el-button>

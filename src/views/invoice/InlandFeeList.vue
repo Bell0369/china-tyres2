@@ -175,11 +175,11 @@ const listMap = (list) => {
     </el-card>
     <el-card v-loading="loading" shadow="never">
       <div class="toolbar-wrapper">
-        <el-button type="warning" :icon="Upload" @click="handleExportInlandFee">導出內陸培養登記表</el-button>
+        <el-button type="warning" :icon="Upload" @click="handleExportInlandFee">導出內陸費用登記表</el-button>
       </div>
       <div class="table-wrapper">
         <el-table :data="tableData" border>
-          <el-table-column prop="sell_inv_no" label="發票號" align="center" width="120" />
+          <el-table-column prop="sell_inv_no" label="發票號" align="center" width="140" />
           <el-table-column
             prop="procurement_invoice_no"
             label="採購發票號"
@@ -209,7 +209,7 @@ const listMap = (list) => {
               <el-tag type="success" v-else> 已付 </el-tag>
             </template>
           </el-table-column>
-          <el-table-column prop="payer_time" label="付款時間" align="center" sortable width="120" />
+          <el-table-column prop="updated_at" label="更新時間" align="center" sortable width="120" />
           <el-table-column fixed="right" label="操作" width="120" align="center">
             <template #default="scope">
               <el-button
