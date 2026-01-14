@@ -98,7 +98,7 @@ const submitForm = (formEl) => {
         <el-row :gutter="10">
           <el-col :span="6">
             <el-form-item label="產品名稱" prop="name">
-              <el-input v-model="ruleForm.name" placeholder="請輸入產品名稱" :disabled="rowId" />
+              <el-input v-model="ruleForm.name" placeholder="請輸入產品名稱" />
             </el-form-item>
           </el-col>
           <el-col :span="6">
@@ -107,15 +107,30 @@ const submitForm = (formEl) => {
             </el-form-item>
           </el-col>
           <el-col :span="6">
-            <el-form-item label="條碼ENA" prop="ean">
-              <el-input v-model="ruleForm.ean" placeholder="請輸入條碼ENA" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="6">
             <el-form-item label="品牌" prop="brand_id">
               <el-select v-model="ruleForm.brand_id" :disabled="rowId">
                 <el-option v-for="item in brandOptions" :key="item.id" :label="item.name" :value="item.id" />
               </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="6">
+            <el-form-item label="工廠" prop="factory_id">
+              <el-select
+                v-model="ruleForm.factory_id"
+                filterable
+                remote
+                remote-show-suffix
+                :remote-method="loadFactoryData"
+                :loading="loadFactory"
+                :disabled="rowId"
+              >
+                <el-option v-for="item in optionsFactory" :key="item.id" :label="item.name" :value="item.id" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="6">
+            <el-form-item label="條碼ENA" prop="ean">
+              <el-input v-model="ruleForm.ean" placeholder="請輸入條碼ENA" />
             </el-form-item>
           </el-col>
           <el-col :span="6">
@@ -141,6 +156,12 @@ const submitForm = (formEl) => {
           <el-col :span="6">
             <el-form-item label="單重" prop="piece_weight">
               <el-input v-model="ruleForm.piece_weight" type="number" placeholder="請輸入單重" />
+              <!-- <el-input-number
+                v-model="ruleForm.piece_weight"
+                :min="0"
+                placeholder="請輸入單重"
+                :controls="false"
+              /> -->
             </el-form-item>
           </el-col>
           <el-col :span="6">
@@ -171,20 +192,6 @@ const submitForm = (formEl) => {
           <el-col :span="6">
             <el-form-item label="排序值">
               <el-input-number v-model="ruleForm.sort" :min="0" style="width: 100%" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="6">
-            <el-form-item label="工廠" prop="factory_id">
-              <el-select
-                v-model="ruleForm.factory_id"
-                filterable
-                remote
-                remote-show-suffix
-                :remote-method="loadFactoryData"
-                :loading="loadFactory"
-              >
-                <el-option v-for="item in optionsFactory" :key="item.id" :label="item.name" :value="item.id" />
-              </el-select>
             </el-form-item>
           </el-col>
         </el-row>

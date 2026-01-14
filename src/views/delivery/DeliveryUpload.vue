@@ -35,7 +35,7 @@ const router = useRouter()
 const ruleForm = reactive({
   file: "",
   client_code: "",
-  factory_code: "1",
+  factory_id: null,
   delivery_plan_no: [],
   company_name: "",
   destination: ""
@@ -51,14 +51,14 @@ const cities = ref([])
 const buttonLoading = ref(false)
 const getDeliveryPlanNo = () => {
   ruleForm.delivery_plan_no = []
-  if (ruleForm.client_code === "" || ruleForm.factory_code === "") {
-    ElMessage.error("請選擇客戶")
+  if (ruleForm.client_code === "" || ruleForm.factory_id === "") {
+    ElMessage.error("請選擇客戶&工廠")
     return
   }
   buttonLoading.value = true
   getDeliveryPlanNoApi({
     client_code: ruleForm.client_code,
-    factory_code: ruleForm.factory_code
+    factory_id: ruleForm.factory_id
   })
     .then(({ data }) => {
       if (data.length === 0) {
@@ -225,9 +225,9 @@ const changeCheckboxGroup = debounce(() => {
         </el-col>
         <el-col :span="1" />
         <el-col :span="6">
-          <el-form-item prop="factory_code" label="工廠代碼">
-            <el-select v-model="ruleForm.factory_code">
-              <el-option v-for="item in factoryCodeOptions" :key="item.id" :label="item.name" :value="item.code" />
+          <el-form-item prop="factory_id" label="工廠">
+            <el-select v-model="ruleForm.factory_id">
+              <el-option v-for="item in factoryCodeOptions" :key="item.id" :label="item.name" :value="item.id" />
             </el-select>
           </el-form-item>
         </el-col>

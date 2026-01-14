@@ -103,7 +103,10 @@ const inlandFee = reactive({
   payer_time: "",
   cargo_manifest_amount: "",
   freight_forwarder: "",
-  freight_rate: ""
+  freight_rate: "",
+  factory_responsibility_price: "",
+  factory_responsibility_remarks: "",
+  remarks: ""
 })
 
 const submitForm = async (formEl, otherFormRef) => {
@@ -305,17 +308,17 @@ const submitForm = async (formEl, otherFormRef) => {
                   </el-select>
                 </el-form-item>
               </el-col>
-              <el-col :span="12">
+              <el-col :span="8">
                 <el-form-item label="付款時間">
                   <el-date-picker v-model="inlandFee.payer_time" type="datetime" style="width: 100%" />
                 </el-form-item>
               </el-col>
-              <el-col :span="12">
+              <el-col :span="8">
                 <el-form-item label="運費">
                   <el-input type="number" v-model="inlandFee.freight_rate" />
                 </el-form-item>
               </el-col>
-              <el-col :span="12">
+              <el-col :span="8">
                 <el-form-item label="舱单金额">
                   <el-input type="number" v-model="inlandFee.cargo_manifest_amount" />
                 </el-form-item>
@@ -330,6 +333,21 @@ const submitForm = async (formEl, otherFormRef) => {
                       :value="item.name"
                     />
                   </el-select>
+                </el-form-item>
+              </el-col>
+              <el-col :span="12">
+                <el-form-item label="備注">
+                  <el-input v-model="inlandFee.remarks" />
+                </el-form-item>
+              </el-col>
+              <el-col :span="12">
+                <el-form-item label="工廠責任額外支付金額">
+                  <el-input type="number" v-model="inlandFee.factory_responsibility_price" />
+                </el-form-item>
+              </el-col>
+              <el-col :span="12">
+                <el-form-item label="工廠責任額外支付原因">
+                  <el-input v-model="inlandFee.factory_responsibility_remarks" />
                 </el-form-item>
               </el-col>
             </el-row>

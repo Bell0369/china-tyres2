@@ -1,16 +1,10 @@
 <script setup>
 import { ref, onMounted, reactive } from "vue"
 import { ElMessage, ElMessageBox } from "element-plus"
-import { EditPen, Search, Refresh } from "@element-plus/icons-vue"
+import { Search, Refresh } from "@element-plus/icons-vue"
 import { useRoute } from "vue-router"
 import ItemInfo from "./components/ItemInfo.vue"
-import {
-  getPiProductDetailApi,
-  getPiBasicDetailApi,
-  updatePiNumberApi,
-  accomplishPApi,
-  exportPiNotShippedDetailsApi
-} from "@/api/order"
+import { getPiProductDetailApi, getPiBasicDetailApi, accomplishPApi, exportPiNotShippedDetailsApi } from "@/api/order"
 import { useTagsViewStore } from "@/store/modules/tags-view"
 
 defineOptions({
@@ -53,35 +47,35 @@ onMounted(() => {
 })
 
 // 修改PI数量
-const handleUpdate = (row) => {
-  ElMessageBox.prompt("", "修改PI数量", {
-    confirmButtonText: "確定",
-    cancelButtonText: "取消",
-    inputPattern: /^\d+(\.\d+)?$/,
-    inputErrorMessage: "請輸入正確數量",
-    inputValue: row.number
-  })
-    .then(({ value }) => {
-      if (value < row.shipped_number) {
-        ElMessage.error("数量不可低于该产品已发货数")
-        return
-      }
-      updatePiNumberApi({
-        id: row.id,
-        number: value
-      }).then(() => {
-        ElMessage.success("修改成功")
-        getInfoData()
-        getTableData()
-      })
-    })
-    .catch(() => {
-      ElMessage({
-        type: "info",
-        message: "已取消"
-      })
-    })
-}
+// const handleUpdate = (row) => {
+//   ElMessageBox.prompt("", "修改PI数量", {
+//     confirmButtonText: "確定",
+//     cancelButtonText: "取消",
+//     inputPattern: /^\d+(\.\d+)?$/,
+//     inputErrorMessage: "請輸入正確數量",
+//     inputValue: row.number
+//   })
+//     .then(({ value }) => {
+//       if (value < row.shipped_number) {
+//         ElMessage.error("数量不可低于该产品已发货数")
+//         return
+//       }
+//       updatePiNumberApi({
+//         id: row.id,
+//         number: value
+//       }).then(() => {
+//         ElMessage.success("修改成功")
+//         getInfoData()
+//         getTableData()
+//       })
+//     })
+//     .catch(() => {
+//       ElMessage({
+//         type: "info",
+//         message: "已取消"
+//       })
+//     })
+// }
 
 // 查询产品信息
 const keyword = ref("")
@@ -224,19 +218,18 @@ const handeleExportPiNotShippedDetails = () => {
         <el-table-column prop="number" label="PI數量" align="center">
           <template #default="scope">
             {{ scope.row.number }}
+            <!-- 
             <EditPen
               v-permission="['editPiNumber']"
               @click="handleUpdate(scope.row)"
               class="w4 h4 cursor-pointer hover:c-blue"
             />
+             -->
           </template>
         </el-table-column>
         <el-table-column prop="unproduced" label="PI未分配發貨計劃數" align="center" />
         <el-table-column prop="shipped_number" label="已發貨數" align="center" />
         <el-table-column prop="not_shipped_number" label="未發貨數" align="center" />
-        <el-table-column prop="last_undone_number" label="最终末完成数" align="center" />
-        <el-table-column prop="unit_price" label="單價" align="center" />
-        <el-table-column prop="total_prices" label="金額" align="center" />
       </el-table>
     </el-card>
   </div>

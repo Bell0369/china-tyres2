@@ -25,6 +25,7 @@ watch(
   () => props.tableData,
   debounce((newList) => {
     unmatchedProductsData.value = newList
+    tableRawData.value = newList
   }, 500)
 )
 
@@ -37,14 +38,15 @@ const searchData = reactive({
 
 // 重置
 const resetSearch = () => {
+  currentPage.value = 1
   searchFormRef.value?.resetFields()
   unmatchedProductsData.value = tableRawData.value
 }
 
 // 查詢
-const orderMatch = ref([])
 const handleSearch = () => {
   loading.value = true
+  currentPage.value = 1
   setTimeout(() => {
     console.log(filteredData.value)
     unmatchedProductsData.value = filteredData.value
@@ -54,27 +56,35 @@ const handleSearch = () => {
 
 // 过滤数据 - 保持订单结构，只过滤产品
 const filteredData = computed(() => {
-  // console.log(orderMatch.value)
-  return orderMatch.value.map((order) => {
-    order.filter((product) => {
-      const nameMatch =
-        !searchData.product_name || product.product_name.toLowerCase().includes(searchData.product_name.toLowerCase())
+  return tableRawData.value.filter((product) => {
+    const nameMatch =
+      !searchData.product_name || product.product_name.toLowerCase().includes(searchData.product_name.toLowerCase())
 
-      const brandMatch = !searchData.brand_id || product.brand_id === searchData.brand_id
+    const brandMatch = !searchData.brand_id || product.brand_id === searchData.brand_id
 
-      const factoryMatch = !searchData.factory_id || product.factory_id === searchData.factory_id
+    const factoryMatch = !searchData.factory_id || product.factory_id === searchData.factory_id
 
-      return nameMatch && brandMatch && factoryMatch
-    })
-
-    return filteredOrder
+    return nameMatch && brandMatch && factoryMatch
   })
 })
+
+// 分页状态
+const currentPage = ref(1)
+const pageSize = 10
+const paginatedData = (data) => {
+  const start = (currentPage.value - 1) * pageSize
+  const end = start + pageSize
+  return data.slice(start, end)
+}
+
+const handlePageChange = (page) => {
+  currentPage.value = page
+}
 </script>
 
 <template>
   <div>
-    <div class="" style="display: none">
+    <div class="">
       <el-form ref="searchFormRef" :inline="true" :model="searchData">
         <el-form-item prop="product_name" label="產品名稱">
           <el-input v-model="searchData.product_name" placeholder="請輸入產品名稱" style="width: 200px" />
@@ -97,14 +107,24 @@ const filteredData = computed(() => {
         </el-form-item>
       </el-form>
     </div>
-    <el-table v-loading="loading" border :data="unmatchedProductsData" :max-height="400">
-      <el-table-column prop="product_name" label="產品名稱" align="center" />
+    <el-table v-loading="loading" border :data="paginatedData(unmatchedProductsData)">
+      <el-table-column prop="product_name" label="產品名稱" align="center" min-width="200" />
       <el-table-column prop="brand_code" label="品牌" align="center" />
       <el-table-column prop="factory_code" label="工廠" align="center" />
       <el-table-column prop="inventory_number" label="庫存" align="center" />
       <el-table-column prop="production_number" label="生產" align="center" />
       <el-table-column prop="production_date" label="生產時間" align="center" />
     </el-table>
+    <!-- 分页 -->
+    <div class="pager-wrapper mt-4 flex justify-end">
+      <el-pagination
+        layout="total, prev, pager, next"
+        :total="unmatchedProductsData.length"
+        :current-page="currentPage"
+        :page-size="pageSize"
+        @current-change="handlePageChange"
+      />
+    </div>
   </div>
 </template>
 

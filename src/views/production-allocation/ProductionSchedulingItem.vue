@@ -2,6 +2,7 @@
 import { ref, onMounted, reactive, computed } from "vue"
 import { useRoute } from "vue-router"
 import { ElMessage, ElMessageBox } from "element-plus"
+import { Search, Refresh } from "@element-plus/icons-vue"
 import { getProductionSchedulingDetailApi, submitProductionSchedulingApi } from "@/api/product"
 import { useBrandSelect } from "@/hooks/useSelectOption"
 
@@ -46,6 +47,7 @@ const searchData = reactive({
 
 // 重置
 const resetSearch = () => {
+  currentPage.value = 1
   searchFormRef.value?.resetFields()
   tableDataOrders.value = tableRawDataOrders.value
 }
@@ -53,6 +55,7 @@ const resetSearch = () => {
 // 查詢
 const handleSearch = () => {
   loading.value = true
+  currentPage.value = 1
   setTimeout(() => {
     tableDataOrders.value = filteredData.value
     loading.value = false
@@ -70,6 +73,19 @@ const filteredData = computed(() => {
     return nameMatch && brandMatch
   })
 })
+
+// 分页状态
+const currentPage = ref(1)
+const pageSize = 15
+const paginatedData = (data) => {
+  const start = (currentPage.value - 1) * pageSize
+  const end = start + pageSize
+  return data.slice(start, end)
+}
+
+const handlePageChange = (page) => {
+  currentPage.value = page
+}
 
 // 提交排產
 const isSubmit = ref(false)
@@ -98,7 +114,7 @@ const handleDelete = (id, index) => {
     type: "warning"
   }).then(() => {
     tableRawDataOrders.value = tableRawDataOrders.value.filter((item) => item.id !== id)
-    tableDataOrders.value.splice(index, 1)
+    tableDataOrders.value.splice((currentPage.value - 1) * pageSize + index, 1)
     ElMessage.success("移除成功")
   })
 }
@@ -132,17 +148,27 @@ const handleDelete = (id, index) => {
           </el-form-item>
         </el-form>
       </div>
-      <el-table v-loading="loading" border :data="tableDataOrders" max-height="600">
-        <el-table-column prop="product_name" label="產品名稱" align="center" />
+      <el-table v-loading="loading" border :data="paginatedData(tableDataOrders)">
+        <el-table-column prop="product_name" label="產品名稱" align="center" min-width="150px" />
         <el-table-column prop="brand_name" label="品牌" align="center" />
-        <el-table-column prop="inventory_number" label="庫存" align="center" width="140px">
+        <el-table-column prop="inventory_number" label="庫存" align="center" width="150px">
           <template #default="scope">
-            <el-input v-model="scope.row.inventory_number" type="number" input-style="text-align: center" />
+            <el-input-number
+              v-model="scope.row.inventory_number"
+              :min="0"
+              controls-position="right"
+              style="width: 100%"
+            />
           </template>
         </el-table-column>
-        <el-table-column prop="production_number" label="生產" align="center" width="140px">
+        <el-table-column prop="production_number" label="生產" align="center" width="150px">
           <template #default="scope">
-            <el-input v-model="scope.row.production_number" type="number" input-style="text-align: center" />
+            <el-input-number
+              v-model="scope.row.production_number"
+              :min="0"
+              controls-position="right"
+              style="width: 100%"
+            />
           </template>
         </el-table-column>
         <el-table-column label="操作" width="90" align="center">
@@ -153,6 +179,16 @@ const handleDelete = (id, index) => {
           </template>
         </el-table-column>
       </el-table>
+      <!-- 分页 -->
+      <div class="pager-wrapper mt-4 flex justify-end">
+        <el-pagination
+          layout="total, prev, pager, next"
+          :total="tableDataOrders.length"
+          :current-page="currentPage"
+          :page-size="pageSize"
+          @current-change="handlePageChange"
+        />
+      </div>
     </el-card>
   </div>
 </template>

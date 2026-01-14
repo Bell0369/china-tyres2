@@ -3,12 +3,16 @@ import { ref, reactive, computed } from "vue"
 import { useRoute, useRouter } from "vue-router"
 import { ElMessage } from "element-plus"
 import { UploadXlsx } from "@/components/UploadXlsx"
-import { Search, Refresh } from "@element-plus/icons-vue"
+import { Search, Refresh, Memo } from "@element-plus/icons-vue"
 import { uploadSortingGoodsApi, submitSortingGoodsApi } from "@/api/product"
 import { redirectTo } from "@/utils/tagsclose"
 import { useBrandSelect, useFactoryCodeSelect } from "@/hooks/useSelectOption"
 import { debounce } from "lodash-es"
 import UnmatchedProducts from "./components/UnmatchedProducts.vue"
+import { useClientSelect } from "@/hooks/useClientSelect"
+import { useRemarksSelect } from "@/hooks/useOrderRemarksSelect"
+import { useRoundToSevenDecimals } from "./hooks/utils"
+import { cloneDeep } from "lodash-es"
 
 defineOptions({
   name: "UploadSortingGoods"
@@ -19,6 +23,12 @@ const { brandOptions } = useBrandSelect()
 
 //工厂代碼
 const factoryCodeOptions = useFactoryCodeSelect()
+
+// 客户
+const { loadClient, optionsClient, loadClientData } = useClientSelect()
+
+// 订单备注
+const { loadRemarks, optionsRemarks, loadRemarksData } = useRemarksSelect()
 
 const loading = ref(false)
 const fullscreenLoading = ref(false)
@@ -32,16 +42,22 @@ const setUploadXlsx = (value) => {
   FileForm.value = value
 }
 
-// 上傳分貨
+// 上傳庫存
 const tableRawDataOrders = ref([]) // 原始數據
 const tableDataOrders = ref([])
 const unmatchedProductsData = ref([])
 
 const FileForm = ref("") // 文件
+const brandId = ref(null) // 品牌
 const isSubmit = ref(true)
 const uploadForm = () => {
+  if (brandId.value === null) {
+    ElMessage.error("請選擇品牌")
+    return
+  }
+
   if (FileForm.value === "") {
-    ElMessage.error("請上傳文件先")
+    ElMessage.error("請上傳文件")
     return
   }
 
@@ -52,12 +68,18 @@ const uploadForm = () => {
 const uploadSortingGoods = debounce(() => {
   const formData = new FormData()
   formData.append("file", FileForm.value)
+  formData.append("brand_id", brandId.value)
   uploadSortingGoodsApi(formData)
     .then(({ data }) => {
       isSubmit.value = false
-      tableRawDataOrders.value = data.orders
-      tableDataOrders.value = data.orders
+      tableRawDataOrders.value = cloneDeep(data.orders)
+      tableDataOrders.value = cloneDeep(data.orders)
       unmatchedProductsData.value = data.unmatched_products
+    })
+    .catch(() => {
+      tableRawDataOrders.value = []
+      tableDataOrders.value = []
+      unmatchedProductsData.value = []
     })
     .finally(() => {
       loading.value = false
@@ -86,56 +108,114 @@ const submitForm = () => {
 const searchFormRef = ref()
 const searchData = reactive({
   order_no: "",
+  order_remarks: "",
   product_name: "",
   brand_id: 0,
-  factory_id: 0
+  factory_id: 0,
+  client_id: 0,
+  production_date: ""
 })
 // 重置
 const resetSearch = () => {
   searchFormRef.value?.resetFields()
   currentPage.value = 1
-  tableDataOrders.value = tableRawDataOrders.value
+  tableDataOrders.value = cloneDeep(tableRawDataOrders.value)
 }
 
 // 查詢
 const orderMatch = ref([])
 const handleSearch = () => {
   currentPage.value = 1
-  const usersWithWang = tableRawDataOrders.value.filter((item) =>
-    item.order_no.toLowerCase().includes(searchData.order_no.toLowerCase())
-  )
-  if (usersWithWang.length === 0) {
+  if (usersWithWang.value.length === 0) {
     tableDataOrders.value = []
     return
   } else {
-    orderMatch.value = usersWithWang
+    orderMatch.value = cloneDeep(usersWithWang.value)
     loading.value = true
     setTimeout(() => {
       // console.log(displayResults.value)
-      tableDataOrders.value = displayResults.value
+      tableDataOrders.value = cloneDeep(displayResults.value)
       loading.value = false
     }, 1000)
   }
 }
 
-// 过滤数据 - 保持订单结构，只过滤产品
+// 过滤第一層数据
+const usersWithWang = computed(() => {
+  return tableRawDataOrders.value.filter((item) => {
+    const orederMatch = !searchData.order_no || item.order_no.toLowerCase().includes(searchData.order_no.toLowerCase())
+    const remarksMatch = !searchData.order_remarks || item.order_remarks === searchData.order_remarks
+
+    return orederMatch && remarksMatch
+  })
+})
+
+// 过滤第二層数据 - 保持订单结构，只过滤产品
 const filteredData = computed(() => {
-  // console.log(orderMatch.value)
+  // 检查是否所有搜索条件都为空
+  const noSearchConditions =
+    !searchData.product_name &&
+    !searchData.brand_id &&
+    !searchData.factory_id &&
+    !searchData.client_id &&
+    !searchData.production_date
 
-  return orderMatch.value.map((order) => {
-    // 复制订单信息
+  return orderMatch.value.map((order, index1) => {
     const filteredOrder = { ...order }
-    // 过滤产品数组
-    filteredOrder.item = order.item.filter((product) => {
-      const nameMatch =
-        !searchData.product_name || product.product_name.toLowerCase().includes(searchData.product_name.toLowerCase())
+    // 如果没有搜索条件，直接返回原始数据并添加索引
+    if (noSearchConditions) {
+      filteredOrder.item = order.item.map((product, index2) => ({
+        ...product,
+        orderIndex: index1,
+        originalIndex: index2
+      }))
+      return filteredOrder
+    }
 
-      const brandMatch = !searchData.brand_id || product.brand_id === searchData.brand_id
+    // 有搜索条件时才过滤
+    const filteredItems = []
+    const filteredOrderTotal = {
+      total_number: 0, // 訂單數量匯總
+      total_quantity: 0, // 訂單櫃量匯總
+      already_sorting_goods_total_number: 0, // 已分貨匯總
+      already_quantity_total_number: 0, // 已分貨櫃量匯總,
+      not_sorting_goods_total_number: 0, // 未分貨匯總
+      not_quantity_total_number: 0 // 未分貨櫃量匯總
+    }
 
-      const factoryMatch = !searchData.factory_id || product.factory_id === searchData.factory_id
+    for (let index2 = 0; index2 < order.item.length; index2++) {
+      const product = order.item[index2]
 
-      return nameMatch && brandMatch && factoryMatch
-    })
+      // 优化：只在需要时才计算匹配条件
+      const nameMatch = searchData.product_name
+        ? product.product_name.toLowerCase().includes(searchData.product_name.toLowerCase())
+        : true
+
+      const brandMatch = searchData.brand_id ? product.brand_id === searchData.brand_id : true
+
+      const factoryMatch = searchData.factory_id ? product.factory_id === searchData.factory_id : true
+
+      const clientMatch = searchData.client_id ? product.client_id === searchData.client_id : true
+
+      const productionDateMatch = searchData.production_date
+        ? product.production_date === searchData.production_date
+        : true
+
+      if (nameMatch && brandMatch && factoryMatch && clientMatch && productionDateMatch) {
+        // 汇总计算
+        filteredOrderTotal.total_number += product.unproduced
+        filteredOrderTotal.total_quantity += product.quantity * product.unproduced
+        filteredOrderTotal.already_sorting_goods_total_number += product.already_sorting_goods_number
+        filteredOrderTotal.already_quantity_total_number += product.quantity * product.already_sorting_goods_number
+        filteredOrderTotal.not_sorting_goods_total_number += product.not_sorting_goods_number
+        filteredOrderTotal.not_quantity_total_number += product.quantity * product.not_sorting_goods_number
+
+        filteredItems.push({ ...product, orderIndex: index1, originalIndex: index2 })
+      }
+    }
+    Object.assign(filteredOrder, filteredOrderTotal)
+    filteredOrder.item = filteredItems
+
     return filteredOrder
   })
 })
@@ -159,37 +239,140 @@ const handlePageChange = (page) => {
 }
 
 // 修改數量
-const RawData_already_sorting_goods_number = ref(0)
+let RawData_already_sorting_goods_number = 0
 const InputNumberFocus = (value) => {
-  RawData_already_sorting_goods_number.value = value
+  RawData_already_sorting_goods_number = value
 }
+
 const InputNumberBlur = (row, index) => {
   // 計算出當前行數據
   const not_sorting_goods_number = row.unproduced - row.already_sorting_goods_number
   row.not_sorting_goods_number = not_sorting_goods_number
-  const num = RawData_already_sorting_goods_number.value - row.already_sorting_goods_number
+  const num = RawData_already_sorting_goods_number - row.already_sorting_goods_number
   row.no_order_number += num
 
   // 订单已分货/未分货总数、柜量变化
   const quantityProduct = row.quantity * num
-  // console.log(num, quantityProduct)
+
   const indexData = paginatedData(tableDataOrders.value)[index]
-  const factor = 10000000
+
   // 已分货
   indexData.already_sorting_goods_total_number += -num
   const already_quantity = Number(indexData.already_quantity_total_number) + -quantityProduct
-  indexData.already_quantity_total_number = Math.round(already_quantity * factor) / factor
+  indexData.already_quantity_total_number = already_quantity
 
   // 未分货
   indexData.not_sorting_goods_total_number += num
   const not_quantity = Number(indexData.not_quantity_total_number) + quantityProduct
-  indexData.not_quantity_total_number = Math.round(not_quantity * factor) / factor
+  indexData.not_quantity_total_number = not_quantity
 
   // 查找其他訂單產品，修改無訂單庫存數據
+  tableRawDataOrders.value.forEach((subArray, rowIndex) => {
+    let rowIndexData = null
+    if (subArray.order_id === row.order_id) {
+      rowIndexData = tableRawDataOrders.value[rowIndex]
+
+      rowIndexData.already_sorting_goods_total_number += -num
+      rowIndexData.already_quantity_total_number = Number(indexData.already_quantity_total_number) + -quantityProduct
+      rowIndexData.not_sorting_goods_total_number += num
+      rowIndexData.not_quantity_total_number = Number(indexData.not_quantity_total_number) + quantityProduct
+    }
+    subArray.item.forEach((value, colIndex) => {
+      if (value.product_id === row.product_id) {
+        tableRawDataOrders.value[rowIndex].item[colIndex].no_order_number = row.no_order_number
+      }
+      if (subArray.id === row.sorting_goods_order_id && value.product_id === row.product_id) {
+        rowIndexData.item[colIndex].already_sorting_goods_number = row.already_sorting_goods_number
+        rowIndexData.item[colIndex].not_sorting_goods_number = row.not_sorting_goods_number
+      }
+    })
+  })
+}
+
+// 弹框 - 產品
+const dialogOrderVisible = ref(false)
+const tableDataOrdersItem = ref([])
+const getTableDataOrdersItem = (row) => {
+  tableDataOrdersItem.value = []
   tableRawDataOrders.value.forEach((subArray, rowIndex) => {
     subArray.item.forEach((value, colIndex) => {
       if (value.product_id === row.product_id) {
         tableRawDataOrders.value[rowIndex].item[colIndex].no_order_number = row.no_order_number
+
+        const data = {
+          ...tableRawDataOrders.value[rowIndex],
+          item: [tableRawDataOrders.value[rowIndex].item[colIndex]]
+        }
+        tableDataOrdersItem.value.push(data)
+      }
+    })
+  })
+}
+
+const InputNumberBlur2 = (row, index) => {
+  // 計算出當前行數據
+  const not_sorting_goods_number = row.unproduced - row.already_sorting_goods_number
+  // 未分货数
+  row.not_sorting_goods_number = not_sorting_goods_number
+
+  const num = RawData_already_sorting_goods_number - row.already_sorting_goods_number
+  // 無訂單庫存數據變化
+  row.no_order_number += num
+
+  // 订单已分货/未分货总数、柜量变化
+  const quantityProduct = row.quantity * num
+
+  const indexData = tableDataOrdersItem.value[index]
+
+  // 已分货
+  indexData.already_sorting_goods_total_number += -num
+  const already_quantity = Number(indexData.already_quantity_total_number) + -quantityProduct
+  indexData.already_quantity_total_number = already_quantity
+
+  // 未分货
+  indexData.not_sorting_goods_total_number += num
+  const not_quantity = Number(indexData.not_quantity_total_number) + quantityProduct
+  indexData.not_quantity_total_number = not_quantity
+
+  // 查找其他訂單產品，修改無訂單庫存數據
+  tableRawDataOrders.value.forEach((subArray, rowIndex) => {
+    let rowIndexData = null
+    if (subArray.order_id === row.order_id) {
+      rowIndexData = tableRawDataOrders.value[rowIndex]
+
+      rowIndexData.already_sorting_goods_total_number += -num
+      rowIndexData.already_quantity_total_number = Number(indexData.already_quantity_total_number) + -quantityProduct
+      rowIndexData.not_sorting_goods_total_number += num
+      rowIndexData.not_quantity_total_number = Number(indexData.not_quantity_total_number) + quantityProduct
+    }
+    subArray.item.forEach((value, colIndex) => {
+      if (value.product_id === row.product_id) {
+        tableRawDataOrders.value[rowIndex].item[colIndex].no_order_number = row.no_order_number
+      }
+      if (subArray.id === row.sorting_goods_order_id && value.product_id === row.product_id) {
+        rowIndexData.item[colIndex].already_sorting_goods_number = row.already_sorting_goods_number
+        rowIndexData.item[colIndex].not_sorting_goods_number = row.not_sorting_goods_number
+      }
+    })
+  })
+
+  tableDataOrders.value.forEach((subArray, rowIndex) => {
+    let rowIndexData = null
+    if (subArray.order_id === row.order_id) {
+      rowIndexData = tableDataOrders.value[rowIndex]
+
+      rowIndexData.already_sorting_goods_total_number += -num
+      rowIndexData.already_quantity_total_number = Number(indexData.already_quantity_total_number) + -quantityProduct
+      rowIndexData.not_sorting_goods_total_number += num
+      rowIndexData.not_quantity_total_number = Number(indexData.not_quantity_total_number) + quantityProduct
+    }
+    subArray.item.forEach((value, colIndex) => {
+      if (value.product_id === row.product_id) {
+        tableDataOrders.value[rowIndex].item[colIndex].no_order_number = row.no_order_number
+      }
+      if (subArray.id === row.sorting_goods_order_id && value.product_id === row.product_id) {
+        rowIndexData.item[colIndex].already_sorting_goods_number = row.already_sorting_goods_number
+        rowIndexData.item[colIndex].not_sorting_goods_number = row.not_sorting_goods_number
       }
     })
   })
@@ -200,7 +383,13 @@ const InputNumberBlur = (row, index) => {
   <div class="app-container" v-loading.fullscreen.lock="fullscreenLoading">
     <el-card shadow="never" class="search-wrapper">
       <div class="toolbar-wrapper">
-        <el-text tag="b" size="large">上傳分貨文件</el-text>
+        <el-text tag="b" size="large">上傳庫存/生產文件</el-text>
+      </div>
+      <div class="mb">
+        <el-text>品牌代碼</el-text>
+        <el-select v-model="brandId" style="width: 230px; margin-left: 10px">
+          <el-option v-for="item in brandOptions" :key="item.id" :label="item.name" :value="item.id" />
+        </el-select>
       </div>
       <div class="flex items-center">
         <div class="w-sm">
@@ -226,6 +415,20 @@ const InputNumberBlur = (row, index) => {
           <el-form-item prop="order_no" label="訂單編號">
             <el-input v-model="searchData.order_no" placeholder="請輸入訂單編號" style="width: 200px" />
           </el-form-item>
+          <el-form-item prop="order_remarks" label="訂單備註">
+            <el-select
+              v-model="searchData.order_remarks"
+              filterable
+              remote
+              remote-show-suffix
+              :remote-method="loadRemarksData"
+              :loading="loadRemarks"
+              style="width: 200px"
+            >
+              <el-option label="全部" value="" />
+              <el-option v-for="item in optionsRemarks" :key="item.id" :label="item.content" :value="item.content" />
+            </el-select>
+          </el-form-item>
           <el-form-item prop="product_name" label="產品名稱">
             <el-input v-model="searchData.product_name" placeholder="請輸入產品名稱" style="width: 200px" />
           </el-form-item>
@@ -241,18 +444,34 @@ const InputNumberBlur = (row, index) => {
               <el-option v-for="item in factoryCodeOptions" :key="item.id" :label="item.name" :value="item.id" />
             </el-select>
           </el-form-item>
+          <el-form-item prop="client_id" label="客戶編碼">
+            <el-select
+              v-model="searchData.client_id"
+              filterable
+              remote
+              remote-show-suffix
+              :remote-method="loadClientData"
+              :loading="loadClient"
+              style="width: 150px"
+            >
+              <el-option label="全部" :value="0" />
+              <el-option v-for="item in optionsClient" :key="item.id" :label="item.client_code" :value="item.id" />
+            </el-select>
+          </el-form-item>
+          <el-form-item prop="production_date" label="生產時間">
+            <el-input v-model="searchData.production_date" />
+          </el-form-item>
           <el-form-item>
             <el-button type="primary" :icon="Search" @click="handleSearch">查詢</el-button>
             <el-button :icon="Refresh" @click="resetSearch">重置</el-button>
           </el-form-item>
         </el-form>
       </div>
-      <!-- :show-header="false" -->
       <el-table
         v-loading="loading"
         :data="paginatedData(tableDataOrders)"
         border
-        row-key="order_no"
+        row-key="order_id"
         :expand-row-keys="[]"
         row-class-name="warning-row"
       >
@@ -265,12 +484,12 @@ const InputNumberBlur = (row, index) => {
                 <el-table-column label="品牌" prop="brand_code" />
                 <el-table-column label="工廠" prop="factory_name" />
                 <el-table-column label="訂單數量" prop="unproduced" />
+                <el-table-column label="生產時間" prop="production_date" />
                 <el-table-column label="已分貨數量" prop="already_sorting_goods_number" width="140" align="center">
                   <template #default="scope">
                     <el-input-number
                       v-model="scope.row.already_sorting_goods_number"
                       :min="0"
-                      :max="scope.row.unproduced"
                       controls-position="right"
                       style="width: 100%"
                       @blur="InputNumberBlur(scope.row, props.$index)"
@@ -280,7 +499,19 @@ const InputNumberBlur = (row, index) => {
                   </template>
                 </el-table-column>
                 <el-table-column label="未分貨數量" prop="not_sorting_goods_number" align="center" />
-                <el-table-column label="無訂單庫存" prop="no_order_number" align="center" />
+                <el-table-column label="無訂單庫存" prop="no_order_number" align="center">
+                  <template #default="scope">
+                    {{ scope.row.no_order_number }}
+                    <el-button
+                      style="padding: 5px"
+                      type="primary"
+                      plain
+                      size="small"
+                      :icon="Memo"
+                      @click="getTableDataOrdersItem(scope.row), (dialogOrderVisible = true)"
+                    />
+                  </template>
+                </el-table-column>
               </el-table>
             </div>
           </template>
@@ -298,15 +529,15 @@ const InputNumberBlur = (row, index) => {
             <div class="table-header-li">
               <ul>
                 <li>訂單數量匯總：{{ scope.row.total_number }}</li>
-                <li>訂單櫃量匯總：{{ scope.row.total_quantity }}</li>
+                <li>訂單櫃量匯總：{{ useRoundToSevenDecimals(scope.row.total_quantity) }}</li>
               </ul>
               <ul>
                 <li>已分貨匯總：{{ scope.row.already_sorting_goods_total_number }}</li>
-                <li>已分貨櫃量匯總：{{ scope.row.already_quantity_total_number }}</li>
+                <li>已分貨櫃量匯總：{{ useRoundToSevenDecimals(scope.row.already_quantity_total_number) }}</li>
               </ul>
               <ul>
                 <li>未分貨匯總：{{ scope.row.not_sorting_goods_total_number }}</li>
-                <li>未分貨櫃量匯總：{{ scope.row.not_quantity_total_number }}</li>
+                <li>未分貨櫃量匯總：{{ useRoundToSevenDecimals(scope.row.not_quantity_total_number) }}</li>
               </ul>
             </div>
           </template>
@@ -328,17 +559,81 @@ const InputNumberBlur = (row, index) => {
         <div class="mb">
           <el-text tag="b" size="large">無訂單產品</el-text>
         </div>
-        <!-- <el-table v-loading="loading" border :data="unmatchedProductsData" :max-height="400">
-          <el-table-column prop="product_name" label="產品名稱" align="center" />
-          <el-table-column prop="brand_code" label="品牌" align="center" />
-          <el-table-column prop="factory_code" label="工廠" align="center" />
-          <el-table-column prop="inventory_number" label="庫存" align="center" />
-          <el-table-column prop="production_number" label="生產" align="center" />
-          <el-table-column prop="production_date" label="生產時間" align="center" />
-        </el-table> -->
         <unmatched-products :tableData="unmatchedProductsData" />
       </div>
     </el-card>
+
+    <!-- 弹框 - 产品 -->
+    <el-dialog
+      v-model="dialogOrderVisible"
+      :title="`同產品訂單（${tableDataOrdersItem.length} 條記錄）`"
+      width="1200px"
+      destroy-on-close
+      top="4vh"
+    >
+      <el-table
+        :data="tableDataOrdersItem"
+        row-key="order_id"
+        :default-expand-all="true"
+        row-class-name="warning-row"
+        max-height="80vh"
+        :show-header="false"
+      >
+        <el-table-column type="expand">
+          <template #default="props">
+            <div class="px-2">
+              <el-table :data="props.row.item" size="small">
+                <el-table-column label="產品名稱" prop="product_name" min-width="150" />
+                <el-table-column label="客戶編碼" prop="client_code" />
+                <el-table-column label="品牌" prop="brand_code" />
+                <el-table-column label="工廠" prop="factory_name" />
+                <el-table-column label="訂單數量" prop="unproduced" />
+                <el-table-column label="生產時間" prop="production_date" />
+                <el-table-column label="已分貨數量" prop="already_sorting_goods_number" width="140" align="center">
+                  <template #default="scope">
+                    <el-input-number
+                      v-model="scope.row.already_sorting_goods_number"
+                      :min="0"
+                      controls-position="right"
+                      style="width: 100%"
+                      @blur="InputNumberBlur2(scope.row, props.$index)"
+                      @focus="InputNumberFocus(scope.row.already_sorting_goods_number)"
+                      :controls="false"
+                    />
+                  </template>
+                </el-table-column>
+                <el-table-column label="未分貨數量" prop="not_sorting_goods_number" align="center" />
+                <el-table-column label="無訂單庫存" prop="no_order_number" align="center" />
+              </el-table>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="訂單號" prop="order_no" min-width="220">
+          <template #default="scope">
+            <div>{{ scope.row.order_no }}</div>
+            <el-text size="small">備注：{{ scope.row.order_remarks || "----" }}</el-text>
+          </template>
+        </el-table-column>
+        <el-table-column label="數量匯總" min-width="570">
+          <template #default="scope">
+            <div class="table-header-li">
+              <ul>
+                <li>訂單數量匯總：{{ scope.row.total_number }}</li>
+                <li>訂單櫃量匯總：{{ useRoundToSevenDecimals(scope.row.total_quantity) }}</li>
+              </ul>
+              <ul>
+                <li>已分貨匯總：{{ scope.row.already_sorting_goods_total_number }}</li>
+                <li>已分貨櫃量匯總：{{ useRoundToSevenDecimals(scope.row.already_quantity_total_number) }}</li>
+              </ul>
+              <ul>
+                <li>未分貨匯總：{{ scope.row.not_sorting_goods_total_number }}</li>
+                <li>未分貨櫃量匯總：{{ useRoundToSevenDecimals(scope.row.not_quantity_total_number) }}</li>
+              </ul>
+            </div>
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-dialog>
   </div>
 </template>
 

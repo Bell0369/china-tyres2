@@ -287,7 +287,7 @@ export const dynamicRoutes: RouteRecordRaw[] = [
         component: () => import("@/views/production-allocation/UploadSortingGoods.vue"),
         name: "UploadSortingGoods",
         meta: {
-          title: "上傳分貨",
+          title: "上傳庫存/生產",
           name: "ProductionAllocation",
           hidden: true
         }

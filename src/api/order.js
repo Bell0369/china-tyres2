@@ -552,6 +552,26 @@ export function exportOrderContractApi(params) {
   })
 }
 
+// 導出未完成訂單匯總
+export function exportNotCompletedOrderApi(params) {
+  return request({
+    url: "order/exportNotCompletedOrder",
+    method: "post",
+    responseType: "blob",
+    params
+  })
+}
+
+// 導出未完成訂單匯總明細
+export function exportNotCompletedOrderDetailApi(params) {
+  return request({
+    url: "order/exportNotCompletedOrderDetail",
+    method: "post",
+    responseType: "blob",
+    params
+  })
+}
+
 // 導出發貨計劃列表
 export function exportDeliveryPlanListApi(params) {
   return request({

@@ -84,7 +84,7 @@ const handleCreatePiData = (id) => {
 // 是否可选
 const tableRef = ref(null)
 const selectable = (row) => {
-  if (row.status || !row.already_sorting_goods_total_number) return false
+  if (row.status) return false
   else return true
 }
 
@@ -132,7 +132,7 @@ const submitCreatePiData = () => {
       <div class="toolbar-wrapper">
         <div>
           <router-link to="/production-allocation/uploadsortinggoods">
-            <el-button type="primary" :icon="CirclePlus">上傳分貨</el-button>
+            <el-button type="primary" :icon="CirclePlus">上傳庫存/生產</el-button>
           </router-link>
         </div>
       </div>
@@ -179,7 +179,7 @@ const submitCreatePiData = () => {
       <div v-loading="dialogPiTableLoading">
         <el-table :data="PiTableData" ref="tableRef" max-height="500">
           <el-table-column property="id" type="selection" width="55" align="center" :selectable="selectable" />
-          <el-table-column property="order_no" label="訂單號" />
+          <el-table-column property="order_no" label="訂單號" min-width="200" />
           <el-table-column property="order_remarks" label="訂單備註">
             <template #default="scope">
               <div>{{ scope.row.order_remarks || "----" }}</div>

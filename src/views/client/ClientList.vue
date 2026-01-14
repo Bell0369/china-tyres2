@@ -185,9 +185,9 @@ const handleExportClient = () => {
       </div>
       <div class="table-wrapper">
         <el-table ref="tableRef" :data="tableData" border>
-          <el-table-column prop="client_name" label="客戶名稱" align="center" width="120" />
+          <el-table-column prop="client_name" label="客戶名稱" align="center" min-width="150" />
           <el-table-column prop="client_code" label="编码" align="center" />
-          <el-table-column prop="brand" label="品牌" align="center" />
+          <el-table-column prop="brand" label="品牌" align="center" :show-overflow-tooltip="true" min-width="120" />
           <el-table-column
             prop="payment_terms_name"
             label="付款條件"
@@ -195,10 +195,10 @@ const handleExportClient = () => {
             min-width="150"
             :show-overflow-tooltip="true"
           />
-          <el-table-column prop="credit" label="信用額度" align="center" width="100" />
+          <el-table-column prop="credit" label="信用額度" align="center" width="90" />
           <el-table-column prop="advance_payment" label="預付款" align="center" />
           <el-table-column prop="client_contact" label="聯繫人" align="center" />
-          <el-table-column prop="phone" label="電話" width="150" align="center" />
+          <el-table-column prop="phone" label="電話" width="130" align="center" />
           <el-table-column prop="last_inv_create_time" label="發票生成時間" align="center" width="120" />
           <el-table-column prop="created_at" label="创建时间" align="center" width="120" />
           <el-table-column fixed="right" label="操作" width="80" align="center">

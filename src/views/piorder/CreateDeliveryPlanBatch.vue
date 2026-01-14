@@ -3,10 +3,10 @@ import { ref, reactive } from "vue"
 import { useRoute, useRouter } from "vue-router"
 import { ElMessage } from "element-plus"
 import { UploadXlsx } from "@/components/UploadXlsx"
-import { createDeliveryPlanBatchApi } from "@/api/order"
-import { getOptionsApi } from "@/api/selects"
+import { createDeliveryPlanBatchApi, getPiListApi } from "@/api/order"
 import { useClientSelect } from "@/hooks/useClientSelect"
 import { redirectTo } from "@/utils/tagsclose"
+import { useBrandSelect, useFactoryCodeSelect } from "@/hooks/useSelectOption"
 
 defineOptions({
   name: "CreateDeliveryPlanBatch"
@@ -21,11 +21,31 @@ const router = useRouter()
 // 客户
 const { loadClient, optionsClient, loadClientData } = useClientSelect()
 
+// 品牌
+const { brandOptions } = useBrandSelect()
+
+//工厂代碼
+const factoryCodeOptions = useFactoryCodeSelect()
+
 // tag
 const ruleForm = reactive({
   file: "",
-  pi_ids: [],
-  client_code: ""
+  pi_ids: []
+})
+
+const searchFormRef = ref()
+const searchData = reactive({
+  client_code: "",
+  brand_code: "",
+  factory_code: "",
+  status: 0,
+  page: 1,
+  page_size: 1000
+})
+const rules = reactive({
+  client_code: [{ required: true, message: "請選擇客戶", trigger: "blur" }],
+  brand_code: [{ required: true, message: "請選擇品牌", trigger: "blur" }],
+  factory_code: [{ required: true, message: "請選擇工廠", trigger: "blur" }]
 })
 
 // 上传文件
@@ -40,7 +60,7 @@ const submitForm = (Type) => {
   orderCheck.value = []
 
   if (ruleForm.pi_ids.length === 0) {
-    ElMessage.error("請選擇客戶和PI號")
+    ElMessage.error("請先選擇PI號")
     return
   }
   if (ruleForm.file === "") {
@@ -71,20 +91,24 @@ const submitForm = (Type) => {
 
 // 获取PI列表
 const piList = ref([])
-const getPiList = () => {
-  ruleForm.pi_ids = []
-  FullLoading.value = true
-  getOptionsApi({
-    type: 9,
-    keyword: ruleForm.client_code
+const getPiList = async (formEl) => {
+  if (!formEl) return
+  await formEl.validate((valid) => {
+    if (valid) {
+      ruleForm.pi_ids = []
+      FullLoading.value = true
+      getPiListApi(searchData)
+        .then(({ data }) => {
+          if (data.data.length === 0) ElMessage.warning("該客戶沒有PI")
+          piList.value = data.data
+        })
+        .finally(() => {
+          FullLoading.value = false
+        })
+    } else {
+      console.log("error submit!")
+    }
   })
-    .then(({ data }) => {
-      if (data.length === 0) ElMessage.warning("該客戶沒有PI")
-      piList.value = data
-    })
-    .finally(() => {
-      FullLoading.value = false
-    })
 }
 </script>
 
@@ -95,26 +119,39 @@ const getPiList = () => {
         <el-text tag="b" size="large">批量生成發貨計劃</el-text>
       </div>
       <div>
-        <div>
-          <el-text>選擇客戶：</el-text>
-          <el-select
-            v-model="ruleForm.client_code"
-            filterable
-            remote
-            remote-show-suffix
-            :remote-method="loadClientData"
-            :loading="loadClient"
-            @change="getPiList"
-            style="width: 300px"
-          >
-            <el-option
-              v-for="item in optionsClient"
-              :key="item.id"
-              :label="item.client_code"
-              :value="item.client_code"
-            />
-          </el-select>
-        </div>
+        <el-form ref="searchFormRef" :inline="true" :model="searchData" :rules="rules">
+          <el-form-item prop="client_code" label="客戶">
+            <el-select
+              v-model="searchData.client_code"
+              filterable
+              remote
+              remote-show-suffix
+              :remote-method="loadClientData"
+              :loading="loadClient"
+              style="width: 150px"
+            >
+              <el-option
+                v-for="item in optionsClient"
+                :key="item.id"
+                :label="item.client_code"
+                :value="item.client_code"
+              />
+            </el-select>
+          </el-form-item>
+          <el-form-item prop="factory_code" label="工廠">
+            <el-select v-model="searchData.factory_code" style="width: 150px">
+              <el-option v-for="item in factoryCodeOptions" :key="item.id" :label="item.name" :value="item.code" />
+            </el-select>
+          </el-form-item>
+          <el-form-item prop="brand_code" label="品牌">
+            <el-select v-model="searchData.brand_code" style="width: 150px">
+              <el-option v-for="item in brandOptions" :key="item.id" :label="item.name" :value="item.name" />
+            </el-select>
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" @click="getPiList(searchFormRef)" plain>獲取PI</el-button>
+          </el-form-item>
+        </el-form>
         <div class="my">
           <el-checkbox-group v-model="ruleForm.pi_ids">
             <el-checkbox v-for="data in piList" :key="data.id" :label="data.pi_no" :value="data.id" />

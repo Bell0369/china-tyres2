@@ -205,7 +205,8 @@ export const exportDataPdf = async (inv_no, callback) => {
   })
 
   autoTable(doc, {
-    body: shippedType(data.shipped_type),
+    // body: shippedType(data.shipped_type),
+    body: data.made_in.map((item) => [item]),
     startY: doc.lastAutoTable.finalY + 10,
     styles: {
       fontSize: fontSize,
@@ -220,7 +221,8 @@ export const exportDataPdf = async (inv_no, callback) => {
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i) // 设置当前页
     doc.setFont("myFont")
-    const footerText = `第${i}页-共${pageCount}页`
+    // const footerText = `第${i}页-共${pageCount}页`
+    const footerText = `page ${i} of ${pageCount}`
     doc.text(footerText, doc.internal.pageSize.width / 2, doc.internal.pageSize.height - 8, {
       align: "center"
     })
@@ -284,15 +286,15 @@ const tableData = (data) => {
 }
 
 // 出貨類型判斷
-const shippedType = (type) => {
-  if (type === "WH") {
-    return [["WAREHOUSE ORDER"], ["ALL TYRES MENTIONED ON THIS INVOICE ARE MADE IN CHINA"]]
-  } else if (type === "DIR") {
-    return [["DIRECT ORDER"], ["ALL TYRES MENTIONED ON THIS INVOICE ARE MADE IN CHINA"]]
-  } else {
-    return []
-  }
-}
+// const shippedType = (type) => {
+//   if (type === "WH") {
+//     return [["WAREHOUSE ORDER"], ["ALL TYRES MENTIONED ON THIS INVOICE ARE MADE IN CHINA"]]
+//   } else if (type === "DIR") {
+//     return [["DIRECT ORDER"], ["ALL TYRES MENTIONED ON THIS INVOICE ARE MADE IN CHINA"]]
+//   } else {
+//     return []
+//   }
+// }
 
 // 文本居中的x轴距离
 const setTextCenter = (doc, text) => {

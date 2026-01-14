@@ -12,6 +12,7 @@ import {
 } from "@/api/selects"
 import { exportDataPdf } from "../jsPdf/exportPdf"
 import { exportDataPdfPacking } from "../jsPdf/exportPdfPacking"
+import { debounce } from "lodash-es"
 
 defineOptions({
   name: "ExportTow"
@@ -20,7 +21,7 @@ const loading = ref(false)
 
 // 發票號
 const optionsData = ref([])
-const remoteMethod = (query) => {
+const remoteMethod = debounce((query) => {
   loading.value = true
   getInvListApi({
     page_size: 20,
@@ -35,7 +36,7 @@ const remoteMethod = (query) => {
     .finally(() => {
       loading.value = false
     })
-}
+}, 800)
 
 // 銷售發票
 const loadingInv = ref(false)

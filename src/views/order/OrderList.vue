@@ -1,7 +1,7 @@
 <script setup>
 import { reactive, ref, watch, onActivated } from "vue"
 import { ElButton, ElMessage, ElMessageBox } from "element-plus"
-import { Search, CirclePlus, Refresh, EditPen } from "@element-plus/icons-vue"
+import { Search, CirclePlus, Refresh, EditPen, Upload } from "@element-plus/icons-vue"
 import { usePagination } from "@/hooks/usePagination"
 import {
   getOrderListApi,
@@ -9,7 +9,9 @@ import {
   deleteOrderApi,
   updateOrderStatusApi,
   quickGenerationApi,
-  exportOrderContractApi
+  exportOrderContractApi,
+  exportNotCompletedOrderApi,
+  exportNotCompletedOrderDetailApi
 } from "@/api/order"
 import { useBrandSelect, useFactoryCodeSelect } from "@/hooks/useSelectOption"
 import { useClientSelect } from "@/hooks/useClientSelect"
@@ -161,10 +163,27 @@ const handleShowDialogFormVisible = (id) => {
 
 // 导出導出訂單合同
 const handelExportOrderContract = (row) => {
-  loading.value = true
-  exportOrderContractApi({
+  const data = {
     id: row.id
-  })
+  }
+  exportFile(data, exportOrderContractApi, `訂單合同.${row.order_no}`)
+}
+
+// 導出未完成訂單匯總
+const handleExportNotCompletedOrder = () => {
+  exportFile({}, exportNotCompletedOrderApi, "未完成訂單匯總")
+}
+
+// 導出未完成訂單匯總明細
+const handleExportNotCompletedOrderDetail = () => {
+  exportFile({}, exportNotCompletedOrderDetailApi, "未完成訂單匯總明細")
+}
+
+// 導出方法
+const exportFile = (dataJson, api, name) => {
+  loading.value = true
+
+  api(dataJson)
     .then((data) => {
       if (data.type === "application/json") {
         const reader = new FileReader()
@@ -177,7 +196,7 @@ const handelExportOrderContract = (row) => {
       } else {
         const downloadLink = document.createElement("a")
         downloadLink.href = URL.createObjectURL(data)
-        downloadLink.download = `訂單合同.${row.order_no}.xlsx`
+        downloadLink.download = `${name}.xlsx`
         downloadLink.click()
       }
     })
@@ -259,9 +278,13 @@ const handelExportOrderContract = (row) => {
     </el-card>
     <el-card v-loading="loading" shadow="never">
       <div v-permission="['uploadOrder']" class="toolbar-wrapper">
-        <router-link to="/order/orderupload">
+        <router-link to="/order/orderupload" class="mr">
           <el-button type="primary" :icon="CirclePlus">上傳訂單</el-button>
         </router-link>
+        <el-button type="warning" :icon="Upload" @click="handleExportNotCompletedOrder">導出未完成訂單匯總</el-button>
+        <el-button type="warning" :icon="Upload" @click="handleExportNotCompletedOrderDetail">
+          導出未完成訂單匯總明細
+        </el-button>
       </div>
       <div class="mb5">
         <el-radio-group v-model="searchData.status" fill="#29d" @change="updataOrderStatus">
