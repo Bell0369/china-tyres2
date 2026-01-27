@@ -1,14 +1,15 @@
 <script setup>
-import { ref, reactive, onMounted, computed } from "vue"
+import { ref, reactive, onMounted, computed, watch } from "vue"
 import { useRoute } from "vue-router"
-import { ElMessage } from "element-plus"
+import { ElMessage, ElMessageBox } from "element-plus"
 import { Search, Refresh, Memo } from "@element-plus/icons-vue"
 import {
   submitSortingGoodsApi,
   getSortingGoodsDetailApi,
   exportNoOrderDetailApi,
   exportSortingGoodsProductDetailApi,
-  additionProductApi
+  additionProductApi,
+  submitCreatePiDataApi
 } from "@/api/product"
 import { useBrandSelect, useFactoryCodeSelect } from "@/hooks/useSelectOption"
 import UnmatchedProducts from "./components/UnmatchedProducts.vue"
@@ -16,6 +17,7 @@ import { useClientSelect } from "@/hooks/useClientSelect"
 import { useRemarksSelect } from "@/hooks/useOrderRemarksSelect"
 import { useRoundToSevenDecimals } from "./hooks/utils"
 import { cloneDeep } from "lodash-es"
+import AdditionOrder from "./components/AdditionOrder.vue"
 
 defineOptions({
   name: "UploadSortingGoods"
@@ -43,6 +45,11 @@ onMounted(() => {
   getSortingGoodsDetail()
 })
 
+const submitData = reactive({
+  brand_id: null,
+  factory_id: null,
+  sorting_goods_order_ids: []
+})
 // 詳情
 const tableRawDataOrders = ref([]) // 原始數據
 const tableDataOrders = ref([])
@@ -51,9 +58,14 @@ const getSortingGoodsDetail = () => {
   loading.value = true
   getSortingGoodsDetailApi({ id: route.query.id })
     .then(({ data }) => {
-      tableRawDataOrders.value = cloneDeep(data.orders)
-      tableDataOrders.value = cloneDeep(data.orders)
-      unmatchedProductsData.value = data.unmatched_products
+      const { orders, unmatched_products, brand_id, factory_id } = data
+
+      tableRawDataOrders.value = orders
+      tableDataOrders.value = cloneDeep(orders)
+      unmatchedProductsData.value = unmatched_products
+      submitData.brand_id = brand_id
+      submitData.factory_id = factory_id
+      submitData.sorting_goods_order_ids = orders.map((item) => item.order_id)
     })
     .finally(() => {
       loading.value = false
@@ -61,14 +73,16 @@ const getSortingGoodsDetail = () => {
 }
 
 // 提交分貨
-const isSubmit = ref(true)
+const isSubmit = ref(false)
 const submitForm = () => {
   fullscreenLoading.value = true
   isSubmit.value = true
   submitSortingGoodsApi({
     id: route.query.id,
     data: tableRawDataOrders.value,
-    not_order: unmatchedProductsData.value
+    not_order: unmatchedProductsData.value,
+    brand_id: submitData.brand_id,
+    factory_id: submitData.factory_id
   })
     .then(() => {
       ElMessage.success("分貨提交成功")
@@ -92,16 +106,22 @@ const searchData = reactive({
 
 // 使用 shallowRef 避免深度监听开销
 // const tableDataOrders = shallowRef([])
-// watch(
-//   [() => tableRawDataOrders.value.map((order) => order.already_sorting_goods_total_number)],
-//   ([newIds], [oldIds]) => {
-//     // ID变化（新增/删除）
-//     if (JSON.stringify(newIds) !== JSON.stringify(oldIds)) {
-//       console.log("订单结构变化（新增/删除）")
-//     }
-//   },
-//   { flush: "post" } // DOM更新后触发
-// )
+let isInitialized = false
+let isSubmitWatcher = false
+watch(
+  [() => tableRawDataOrders.value.map((order) => order.already_sorting_goods_total_number)],
+  ([newNum], [oldNum]) => {
+    if (!isInitialized) {
+      isInitialized = true
+      return
+    }
+    if (JSON.stringify(newNum) !== JSON.stringify(oldNum)) {
+      // console.log("订单结构变化（新增/删除）")
+      isSubmitWatcher = true
+    }
+  },
+  { flush: "post" } // DOM更新后触发
+)
 
 // 重置
 const resetSearch = () => {
@@ -111,14 +131,12 @@ const resetSearch = () => {
 }
 
 // 查詢
-const orderMatch = ref([])
 const handleSearch = () => {
   currentPage.value = 1
   if (usersWithWang.value.length === 0) {
     tableDataOrders.value = []
     return
   } else {
-    orderMatch.value = cloneDeep(usersWithWang.value)
     loading.value = true
     setTimeout(() => {
       tableDataOrders.value = cloneDeep(displayResults.value)
@@ -147,7 +165,7 @@ const filteredData = computed(() => {
     !searchData.client_id &&
     !searchData.production_date
 
-  return orderMatch.value.map((order, index1) => {
+  return usersWithWang.value.map((order, index1) => {
     const filteredOrder = { ...order }
     // 如果没有搜索条件，直接返回原始数据并添加索引
     if (noSearchConditions) {
@@ -190,8 +208,8 @@ const filteredData = computed(() => {
 
       if (nameMatch && brandMatch && factoryMatch && clientMatch && productionDateMatch) {
         // 汇总计算
-        filteredOrderTotal.total_number += product.unproduced
-        filteredOrderTotal.total_quantity += product.quantity * product.unproduced
+        filteredOrderTotal.total_number += product.order_product_number
+        filteredOrderTotal.total_quantity += product.quantity * product.order_product_number
         filteredOrderTotal.already_sorting_goods_total_number += product.already_sorting_goods_number
         filteredOrderTotal.already_quantity_total_number += product.quantity * product.already_sorting_goods_number
         filteredOrderTotal.not_sorting_goods_total_number += product.not_sorting_goods_number
@@ -340,17 +358,25 @@ const InputNumberBlur = (row, index) => {
       rowIndexData = tableRawDataOrders.value[rowIndex]
 
       rowIndexData.already_sorting_goods_total_number += -num
-      rowIndexData.already_quantity_total_number = Number(indexData.already_quantity_total_number) + -quantityProduct
+      rowIndexData.already_quantity_total_number = Number(rowIndexData.already_quantity_total_number) + -quantityProduct
       rowIndexData.not_sorting_goods_total_number += num
-      rowIndexData.not_quantity_total_number = Number(indexData.not_quantity_total_number) + quantityProduct
+      rowIndexData.not_quantity_total_number = Number(rowIndexData.not_quantity_total_number) + quantityProduct
     }
     subArray.item.forEach((value, colIndex) => {
       if (value.product_id === row.product_id) {
         tableRawDataOrders.value[rowIndex].item[colIndex].no_order_number = row.no_order_number
+        if (subArray.id === row.sorting_goods_order_id) {
+          rowIndexData.item[colIndex].already_sorting_goods_number = row.already_sorting_goods_number
+          rowIndexData.item[colIndex].not_sorting_goods_number = row.not_sorting_goods_number
+        }
       }
-      if (subArray.id === row.sorting_goods_order_id && value.product_id === row.product_id) {
-        rowIndexData.item[colIndex].already_sorting_goods_number = row.already_sorting_goods_number
-        rowIndexData.item[colIndex].not_sorting_goods_number = row.not_sorting_goods_number
+    })
+  })
+
+  tableDataOrders.value.forEach((subArray, rowIndex) => {
+    subArray.item.forEach((value, colIndex) => {
+      if (value.product_id === row.product_id) {
+        tableDataOrders.value[rowIndex].item[colIndex].no_order_number = row.no_order_number
       }
     })
   })
@@ -370,7 +396,7 @@ const getTableDataOrdersItem = (row) => {
           ...tableRawDataOrders.value[rowIndex],
           item: [tableRawDataOrders.value[rowIndex].item[colIndex]]
         }
-        tableDataOrdersItem.value.push(cloneDeep(data))
+        tableDataOrdersItem.value.push(data)
       }
     })
   })
@@ -408,9 +434,9 @@ const InputNumberBlur2 = (row, index) => {
       rowIndexData = tableRawDataOrders.value[rowIndex]
 
       rowIndexData.already_sorting_goods_total_number += -num
-      rowIndexData.already_quantity_total_number = Number(indexData.already_quantity_total_number) + -quantityProduct
+      rowIndexData.already_quantity_total_number = Number(rowIndexData.already_quantity_total_number) + -quantityProduct
       rowIndexData.not_sorting_goods_total_number += num
-      rowIndexData.not_quantity_total_number = Number(indexData.not_quantity_total_number) + quantityProduct
+      rowIndexData.not_quantity_total_number = Number(rowIndexData.not_quantity_total_number) + quantityProduct
     }
     subArray.item.forEach((value, colIndex) => {
       if (value.product_id === row.product_id) {
@@ -429,9 +455,9 @@ const InputNumberBlur2 = (row, index) => {
       rowIndexData = tableDataOrders.value[rowIndex]
 
       rowIndexData.already_sorting_goods_total_number += -num
-      rowIndexData.already_quantity_total_number = Number(indexData.already_quantity_total_number) + -quantityProduct
+      rowIndexData.already_quantity_total_number = Number(rowIndexData.already_quantity_total_number) + -quantityProduct
       rowIndexData.not_sorting_goods_total_number += num
-      rowIndexData.not_quantity_total_number = Number(indexData.not_quantity_total_number) + quantityProduct
+      rowIndexData.not_quantity_total_number = Number(rowIndexData.not_quantity_total_number) + quantityProduct
     }
     subArray.item.forEach((value, colIndex) => {
       if (value.product_id === row.product_id) {
@@ -444,6 +470,57 @@ const InputNumberBlur2 = (row, index) => {
     })
   })
 }
+
+// 提交生成PI
+const submitCreatePiData = (id) => {
+  if (isSubmitWatcher) {
+    ElMessageBox.confirm("有未保存修改數據，確定生成PI？", {
+      confirmButtonText: "確定",
+      cancelButtonText: "取消",
+      type: "warning"
+    })
+      .then(() => {
+        proceedSubmitCreatePiData(id)
+      })
+      .catch(() => {
+        console.log("取消")
+      })
+  } else {
+    ElMessageBox.confirm("確定生成PI？", {
+      confirmButtonText: "確定",
+      cancelButtonText: "取消",
+      type: "warning"
+    })
+      .then(() => {
+        proceedSubmitCreatePiData(id)
+      })
+      .catch(() => {
+        console.log("取消")
+      })
+  }
+}
+
+const proceedSubmitCreatePiData = (id) => {
+  fullscreenLoading.value = true
+  submitCreatePiDataApi({
+    sorting_goods_order_ids: [id]
+  })
+    .then(() => {
+      ElMessage.success("PI生成成功")
+      getSortingGoodsDetail()
+    })
+    .finally(() => {
+      fullscreenLoading.value = false
+    })
+}
+
+// 追加新訂單
+const dialogAddOrderVisible = ref(false)
+
+const handleChildConfirm = () => {
+  dialogAddOrderVisible.value = false
+  getSortingGoodsDetail()
+}
 </script>
 
 <template>
@@ -453,8 +530,9 @@ const InputNumberBlur2 = (row, index) => {
         <div class="flex justify-between">
           <el-text tag="b" size="large">分貨詳情</el-text>
           <div>
-            <el-button type="warning" @click="exportData(0, 0)">導出無訂單庫存</el-button>
-            <el-button type="primary" @click="submitForm()" :disabled="isSubmit">提交</el-button>
+            <el-button type="primary" plain @click="dialogAddOrderVisible = true">追加新訂單 </el-button>
+            <el-button type="warning" @click="exportData(0, 0)">導出無訂單庫存 </el-button>
+            <el-button type="primary" @click="submitForm" :disabled="isSubmit">提交</el-button>
           </div>
         </div>
       </div>
@@ -480,7 +558,7 @@ const InputNumberBlur2 = (row, index) => {
           <el-form-item prop="product_name" label="產品名稱">
             <el-input v-model="searchData.product_name" placeholder="請輸入產品名稱" style="width: 200px" />
           </el-form-item>
-          <el-form-item prop="brand_id" label="品牌代碼">
+          <el-form-item prop="brand_id" label="品牌">
             <el-select v-model="searchData.brand_id" style="width: 150px">
               <el-option label="全部" :value="0" />
               <el-option v-for="item in brandOptions" :key="item.id" :label="item.name" :value="item.id" />
@@ -492,7 +570,7 @@ const InputNumberBlur2 = (row, index) => {
               <el-option v-for="item in factoryCodeOptions" :key="item.id" :label="item.name" :value="item.id" />
             </el-select>
           </el-form-item>
-          <el-form-item prop="client_id" label="客戶編碼">
+          <el-form-item prop="client_id" label="客戶">
             <el-select
               v-model="searchData.client_id"
               filterable
@@ -519,7 +597,7 @@ const InputNumberBlur2 = (row, index) => {
         v-loading="loading"
         :data="paginatedData(tableDataOrders)"
         border
-        row-key="id"
+        row-key="order_id"
         :expand-row-keys="[]"
         row-class-name="warning-row"
       >
@@ -527,13 +605,16 @@ const InputNumberBlur2 = (row, index) => {
           <template #default="props">
             <div class="px-2">
               <el-table :data="props.row.item" :max-height="450" size="small">
-                <el-table-column label="產品名稱" prop="product_name" min-width="150" />
-                <el-table-column label="客戶編碼" prop="client_code" />
-                <el-table-column label="品牌" prop="brand_code" />
+                <el-table-column label="產品名稱" prop="product_name" min-width="200" />
+                <el-table-column label="客戶編碼" prop="client_code" min-width="100" />
+                <el-table-column label="品牌" prop="brand_code" min-width="100" />
                 <el-table-column label="工廠" prop="factory_name" />
-                <el-table-column label="訂單數量" prop="unproduced" />
+                <el-table-column label="發貨類型" prop="tyre_type" />
+                <el-table-column label="訂單數量" prop="order_product_number" />
+                <el-table-column label="PI數量" prop="pi_number" />
+                <el-table-column label="未分配PI數量" prop="unproduced" min-width="90" />
                 <el-table-column label="生產時間" prop="production_date" />
-                <el-table-column label="已分貨數量" prop="already_sorting_goods_number" width="140" align="center">
+                <el-table-column label="已分貨數量" prop="already_sorting_goods_number" width="120" align="center">
                   <template #default="scope">
                     <el-input-number
                       v-model="scope.row.already_sorting_goods_number"
@@ -588,7 +669,7 @@ const InputNumberBlur2 = (row, index) => {
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="180" fixed="right">
+        <el-table-column label="操作" width="180" align="center">
           <template #default="scope">
             <div style="display: inline-block; width: 80px">
               <el-upload
@@ -607,6 +688,9 @@ const InputNumberBlur2 = (row, index) => {
               </el-upload>
             </div>
             <el-button type="warning" plain size="small" @click="exportData(1, scope.row)">導出明細</el-button>
+            <el-button class="mt-1" type="primary" size="small" @click="submitCreatePiData(scope.row.id)">
+              生成PI
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -652,12 +736,12 @@ const InputNumberBlur2 = (row, index) => {
             <div class="px-2">
               <el-table :data="props.row.item" size="small">
                 <el-table-column label="產品名稱" prop="product_name" min-width="150" />
-                <el-table-column label="客戶編碼" prop="client_code" />
-                <el-table-column label="品牌" prop="brand_code" />
-                <el-table-column label="工廠" prop="factory_name" />
-                <el-table-column label="訂單數量" prop="unproduced" />
+                <el-table-column label="客戶編碼" prop="client_code" min-width="100" />
+                <el-table-column label="訂單數量" prop="order_product_number" />
+                <el-table-column label="PI數量" prop="pi_number" />
+                <el-table-column label="未分配PI數量" prop="unproduced" min-width="90" />
                 <el-table-column label="生產時間" prop="production_date" />
-                <el-table-column label="已分貨數量" prop="already_sorting_goods_number" width="140" align="center">
+                <el-table-column label="已分貨數量" prop="already_sorting_goods_number" width="120" align="center">
                   <template #default="scope">
                     <el-input-number
                       v-model="scope.row.already_sorting_goods_number"
@@ -701,6 +785,11 @@ const InputNumberBlur2 = (row, index) => {
           </template>
         </el-table-column>
       </el-table>
+    </el-dialog>
+
+    <!-- 弹框 - 追加新訂單 -->
+    <el-dialog v-model="dialogAddOrderVisible" title="追加新訂單" width="1100px" destroy-on-close>
+      <addition-order :parent-data="submitData" @submit-data="handleChildConfirm" />
     </el-dialog>
   </div>
 </template>

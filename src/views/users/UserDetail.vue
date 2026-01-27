@@ -40,13 +40,13 @@ onMounted(() => {
           })
           seenIds1.add(item.client_id)
         }
-        if (!seenIds2.has(item.factory_id)) {
-          optionsFactory.value.push({
-            id: item.factory_id,
-            name: item.factory_name
-          })
-          seenIds2.add(item.factory_id)
-        }
+        // if (!seenIds2.has(item.factory_id)) {
+        //   optionsFactory.value.push({
+        //     id: item.factory_id,
+        //     name: item.factory_name
+        //   })
+        //   seenIds2.add(item.factory_id)
+        // }
       })
       ruleForm.client_auth_flow_join = data.client_auth_flow_join
 
@@ -75,8 +75,8 @@ const ruleForm = reactive({
     {
       key: 1,
       client_id: "",
-      brand_id: "",
-      factory_id: ""
+      brand_id: ""
+      // factory_id: ""
     }
   ],
   factory_user: [
@@ -108,8 +108,8 @@ const addDomain = (type) => {
     ruleForm.client_auth_flow_join.push({
       key: Date.now(),
       user_id: "",
-      brand_id: "",
-      factory_id: ""
+      brand_id: ""
+      // factory_id: ""
     })
   } else {
     ruleForm.factory_user.push({
@@ -183,7 +183,7 @@ const emitEvents = defineEmits(["userDetail"])
                 </el-select>
               </el-form-item>
             </el-col>
-            <el-col :span="6">
+            <el-col :span="8">
               <el-form-item
                 label="品牌"
                 :prop="`client_auth_flow_join[${index}].brand_id`"
@@ -198,6 +198,7 @@ const emitEvents = defineEmits(["userDetail"])
                 </el-select>
               </el-form-item>
             </el-col>
+            <!--
             <el-col :span="6">
               <el-form-item
                 label="工厂"
@@ -220,9 +221,11 @@ const emitEvents = defineEmits(["userDetail"])
                 </el-select>
               </el-form-item>
             </el-col>
+            -->
             <el-col :span="2">
               <el-button type="primary" @click.prevent="removeDomain(domain, 1)" :icon="Delete" plain />
             </el-col>
+            <el-col :span="4" />
           </el-row>
         </el-scrollbar>
       </div>

@@ -89,7 +89,7 @@ const handlePageChange = (page) => {
         <el-form-item prop="product_name" label="產品名稱">
           <el-input v-model="searchData.product_name" placeholder="請輸入產品名稱" style="width: 200px" />
         </el-form-item>
-        <el-form-item prop="brand_id" label="品牌代碼">
+        <el-form-item prop="brand_id" label="品牌">
           <el-select v-model="searchData.brand_id" style="width: 150px">
             <el-option label="全部" :value="0" />
             <el-option v-for="item in brandOptions" :key="item.id" :label="item.name" :value="item.id" />

@@ -1,10 +1,10 @@
 <script setup>
 import { reactive, ref, watch, onActivated } from "vue"
-import { Search, CirclePlus, Refresh, EditPen, FolderAdd } from "@element-plus/icons-vue"
+import { Search, Refresh, EditPen, FolderAdd } from "@element-plus/icons-vue"
 import { getPiListApi, deletePiListApi, updatePiQuantityApi, exportPIApi, accomplishPApi } from "@/api/order"
 import { usePagination } from "@/hooks/usePagination"
 import { useDeleteList } from "@/hooks/useDeleteList"
-import { useBrandSelect, useFactoryCodeSelect } from "@/hooks/useSelectOption"
+import { useBrandSelect } from "@/hooks/useSelectOption"
 import { useClientSelect } from "@/hooks/useClientSelect"
 import { useRemarksSelect } from "@/hooks/useOrderRemarksSelect"
 import { useUpdateQuantity } from "@/hooks/useUpdateQuantity"
@@ -12,6 +12,7 @@ import { handleActivated } from "@/utils/tagsclose"
 import { ElMessage, ElMessageBox } from "element-plus"
 import { checkPermission } from "@/utils/permission"
 import { useUserStore } from "@/store/modules/user"
+import { useFactorySelect } from "@/hooks/useFactorySelect"
 
 defineOptions({
   name: "PIOrderList"
@@ -25,8 +26,8 @@ const { paginationData, handleCurrentChange, handleSizeChange } = usePagination(
 // 品牌
 const { brandOptions } = useBrandSelect()
 
-//工厂代碼
-const factoryCodeOptions = useFactoryCodeSelect()
+//工厂
+const { loadFactory, optionsFactory, loadFactoryData } = useFactorySelect()
 
 // 客户
 const { loadClient, optionsClient, loadClientData } = useClientSelect()
@@ -61,7 +62,7 @@ const searchData = reactive({
   keyword: "",
   client_code: "",
   brand_code: "",
-  factory_code: "",
+  factory_id: "",
   order_remarks: "",
   status: 0
 })
@@ -206,10 +207,18 @@ const { userinfo } = useUserStore()
             <el-option v-for="item in brandOptions" :key="item.id" :label="item.name" :value="item.name" />
           </el-select>
         </el-form-item>
-        <el-form-item prop="factory_code" label="工廠代碼">
-          <el-select v-model="searchData.factory_code" style="width: 150px">
+        <el-form-item prop="factory_id" label="工廠">
+          <el-select
+            v-model="searchData.factory_id"
+            filterable
+            remote
+            remote-show-suffix
+            :remote-method="loadFactoryData"
+            :loading="loadFactory"
+            style="width: 150px"
+          >
             <el-option label="全部" value="" />
-            <el-option v-for="item in factoryCodeOptions" :key="item.id" :label="item.name" :value="item.code" />
+            <el-option v-for="item in optionsFactory" :key="item.id" :label="item.name" :value="item.id" />
           </el-select>
         </el-form-item>
         <el-form-item prop="order_remarks" label="訂單備註">
@@ -236,14 +245,14 @@ const { userinfo } = useUserStore()
       <div class="toolbar-wrapper">
         <div class="flex justify-between">
           <div>
-            <el-button
+            <!-- <el-button
               v-permission="['uploadPi']"
               type="primary"
               :icon="CirclePlus"
               tag="router-link"
               to="/piorder/piorderupload"
               >上傳PI</el-button
-            >
+            > -->
             <el-button type="primary" :icon="FolderAdd" tag="router-link" to="/piorder/create-delivery-plan">
               批量生成發貨計劃
             </el-button>

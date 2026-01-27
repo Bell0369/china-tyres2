@@ -10,7 +10,7 @@ import { useeDeliverTypeSelect, usePayMentSelect, useBrandSelect } from "@/hooks
 import AddressList from "@/views/componrnts/address/AddressList.vue"
 // import PrepayMents from "@/views/componrnts/prepayments/PrepayMents.vue"
 import { validateNumberMin, validateNumberMinMax } from "@/utils/validate"
-import { useFactorySelect } from "@/hooks/useFactorySelect"
+// import { useFactorySelect } from "@/hooks/useFactorySelect"
 import { useUserSelect } from "@/hooks/useUserSelect"
 import { useUserStore } from "@/store/modules/user"
 
@@ -26,7 +26,7 @@ const route = useRoute()
 const { brandOptions } = useBrandSelect()
 
 //工厂
-const { loadFactory, optionsFactory, loadFactoryData } = useFactorySelect()
+// const { loadFactory, optionsFactory, loadFactoryData } = useFactorySelect()
 
 // 員工
 const { loadUser, optionsUser, loadUserData } = useUserSelect()
@@ -55,8 +55,8 @@ const ruleForm = reactive({
     {
       key: 1,
       user_id: "",
-      brand_id: "",
-      factory_id: ""
+      brand_id: ""
+      // factory_id: ""
     }
   ],
   inv_rise_one: "",
@@ -99,8 +99,8 @@ const addDomain = () => {
   ruleForm.client_auth_flow_join.push({
     key: Date.now(),
     user_id: "",
-    brand_id: "",
-    factory_id: ""
+    brand_id: ""
+    // factory_id: ""
   })
 }
 
@@ -125,7 +125,7 @@ const getClientShow = () => {
 
     // 員工
     const seenIds1 = new Set()
-    const seenIds2 = new Set()
+    // const seenIds2 = new Set()
     datas.client_auth_flow_join.forEach((item) => {
       if (!seenIds1.has(item.user_id)) {
         optionsUser.value.push({
@@ -134,13 +134,13 @@ const getClientShow = () => {
         })
         seenIds1.add(item.user_id)
       }
-      if (!seenIds2.has(item.factory_id)) {
-        optionsFactory.value.push({
-          id: item.factory_id,
-          name: item.factory_name
-        })
-        seenIds2.add(item.factory_id)
-      }
+      // if (!seenIds2.has(item.factory_id)) {
+      //   optionsFactory.value.push({
+      //     id: item.factory_id,
+      //     name: item.factory_name
+      //   })
+      //   seenIds2.add(item.factory_id)
+      // }
     })
 
     Object.assign(ruleForm, datas)
@@ -373,6 +373,7 @@ const updataContact = (value) => {
                   </el-select>
                 </el-form-item>
               </el-col>
+              <!-- 
               <el-col :span="6">
                 <el-form-item
                   label="工厂"
@@ -395,6 +396,7 @@ const updataContact = (value) => {
                   </el-select>
                 </el-form-item>
               </el-col>
+              -->
               <el-col :span="2">
                 <el-button type="primary" @click.prevent="removeDomain(domain)" :icon="Delete" plain />
               </el-col>

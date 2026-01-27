@@ -5,7 +5,6 @@ import { Delete } from "@element-plus/icons-vue"
 import { updateClientListApi } from "@/api/users"
 import { useeDeliverTypeSelect, usePayMentSelect, useBrandSelect } from "@/hooks/useSelectOption"
 import { validateNumberMin, validateNumberMinMax } from "@/utils/validate"
-import { useFactorySelect } from "@/hooks/useFactorySelect"
 import { useUserSelect } from "@/hooks/useUserSelect"
 
 defineOptions({
@@ -14,9 +13,6 @@ defineOptions({
 
 // 品牌
 const { brandOptions } = useBrandSelect()
-
-//工厂
-const { loadFactory, optionsFactory, loadFactoryData } = useFactorySelect()
 
 // 員工
 const { loadUser, optionsUser, loadUserData } = useUserSelect()
@@ -41,8 +37,7 @@ const ruleForm = reactive({
     {
       key: 1,
       user_id: "",
-      brand_id: "",
-      factory_id: ""
+      brand_id: ""
     }
   ],
   inv_rise_one: "",
@@ -86,8 +81,7 @@ const addDomain = () => {
   ruleForm.client_auth_flow_join.push({
     key: Date.now(),
     user_id: "",
-    brand_id: "",
-    factory_id: ""
+    brand_id: ""
   })
 }
 
@@ -246,28 +240,6 @@ const submitForm = (formEl) => {
               >
                 <el-select v-model="domain.brand_id">
                   <el-option v-for="item in brandOptions" :key="item.id" :label="item.name" :value="item.id" />
-                </el-select>
-              </el-form-item>
-            </el-col>
-            <el-col :span="7">
-              <el-form-item
-                label="工厂"
-                :prop="`client_auth_flow_join[${index}].factory_id`"
-                :rules="{
-                  required: true,
-                  message: '請選擇工厂',
-                  trigger: 'blur'
-                }"
-              >
-                <el-select
-                  v-model="domain.factory_id"
-                  filterable
-                  remote
-                  remote-show-suffix
-                  :remote-method="loadFactoryData"
-                  :loading="loadFactory"
-                >
-                  <el-option v-for="item in optionsFactory" :key="item.id" :label="item.name" :value="item.id" />
                 </el-select>
               </el-form-item>
             </el-col>

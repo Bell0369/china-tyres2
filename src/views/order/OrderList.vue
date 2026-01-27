@@ -8,31 +8,32 @@ import {
   updateQuantityApi,
   deleteOrderApi,
   updateOrderStatusApi,
-  quickGenerationApi,
   exportOrderContractApi,
   exportNotCompletedOrderApi,
   exportNotCompletedOrderDetailApi
 } from "@/api/order"
-import { useBrandSelect, useFactoryCodeSelect } from "@/hooks/useSelectOption"
+import { useBrandSelect } from "@/hooks/useSelectOption"
 import { useClientSelect } from "@/hooks/useClientSelect"
 import { useRemarksSelect } from "@/hooks/useOrderRemarksSelect"
 import { useDeleteList } from "@/hooks/useDeleteList"
 import { useUpdateQuantity } from "@/hooks/useUpdateQuantity"
 import { handleActivated } from "@/utils/tagsclose"
+import { useFactorySelect } from "@/hooks/useFactorySelect"
 
 defineOptions({
   name: "OrderList"
 })
 
 const loading = ref(false)
+
 // 分页
 const { paginationData, handleCurrentChange, handleSizeChange } = usePagination()
 
 // 品牌
 const { brandOptions } = useBrandSelect()
 
-//工厂代碼
-const factoryCodeOptions = useFactoryCodeSelect()
+//工厂
+const { loadFactory, optionsFactory, loadFactoryData } = useFactorySelect()
 
 // 客户
 const { loadClient, optionsClient, loadClientData } = useClientSelect()
@@ -66,7 +67,7 @@ const searchData = reactive({
   keyword: "",
   client_code: "",
   brand_code: "",
-  factory_code: "",
+  factory_id: "",
   order_remarks: "",
   status: 0
 })
@@ -135,31 +136,31 @@ const connectUpdate = (id) => {
 }
 
 // 一鍵生成PI
-const dialogFormVisible = ref(false)
-const dialogFormVisibleLoading = ref(false)
-const quickGenerationForm = reactive({
-  id: 0,
-  date: "",
-  factory_id: ""
-})
-const handelQuickGeneration = () => {
-  dialogFormVisibleLoading.value = true
-  quickGenerationApi(quickGenerationForm)
-    .then(() => {
-      ElMessage.success("成功生成PI")
-      dialogFormVisible.value = false
-    })
-    .finally(() => {
-      dialogFormVisibleLoading.value = false
-    })
-}
+// const dialogFormVisible = ref(false)
+// const dialogFormVisibleLoading = ref(false)
+// const quickGenerationForm = reactive({
+//   id: 0,
+//   date: "",
+//   factory_id: ""
+// })
+// const handelQuickGeneration = () => {
+//   dialogFormVisibleLoading.value = true
+//   quickGenerationApi(quickGenerationForm)
+//     .then(() => {
+//       ElMessage.success("成功生成PI")
+//       dialogFormVisible.value = false
+//     })
+//     .finally(() => {
+//       dialogFormVisibleLoading.value = false
+//     })
+// }
 // 打開彈框
-const handleShowDialogFormVisible = (id) => {
-  dialogFormVisible.value = true
-  quickGenerationForm.id = id
-  quickGenerationForm.date = ""
-  quickGenerationForm.factory_id = ""
-}
+// const handleShowDialogFormVisible = (id) => {
+//   dialogFormVisible.value = true
+//   quickGenerationForm.id = id
+//   quickGenerationForm.date = ""
+//   quickGenerationForm.factory_id = ""
+// }
 
 // 导出導出訂單合同
 const handelExportOrderContract = (row) => {
@@ -225,7 +226,7 @@ const exportFile = (dataJson, api, name) => {
             value-format="YYYY-MM-DD"
           />
         </el-form-item>
-        <el-form-item prop="client_code" label="客戶編碼">
+        <el-form-item prop="client_code" label="客戶">
           <el-select
             v-model="searchData.client_code"
             filterable
@@ -250,10 +251,18 @@ const exportFile = (dataJson, api, name) => {
             <el-option v-for="item in brandOptions" :key="item.id" :label="item.name" :value="item.short" />
           </el-select>
         </el-form-item>
-        <el-form-item prop="factory_code" label="工廠代碼">
-          <el-select v-model="searchData.factory_code" style="width: 150px">
+        <el-form-item prop="factory_id" label="工廠">
+          <el-select
+            v-model="searchData.factory_id"
+            filterable
+            remote
+            remote-show-suffix
+            :remote-method="loadFactoryData"
+            :loading="loadFactory"
+            style="width: 150px"
+          >
             <el-option label="全部" value="" />
-            <el-option v-for="item in factoryCodeOptions" :key="item.id" :label="item.name" :value="item.code" />
+            <el-option v-for="item in optionsFactory" :key="item.id" :label="item.name" :value="item.id" />
           </el-select>
         </el-form-item>
         <el-form-item prop="order_remarks" label="訂單備註">
@@ -338,6 +347,7 @@ const exportFile = (dataJson, api, name) => {
               <el-button type="primary" size="small" @click="connectUpdate(scope.row.id)" v-if="!searchData.status">
                 完成
               </el-button>
+              <!-- 
               <el-button
                 class="mt-2"
                 type="primary"
@@ -347,6 +357,7 @@ const exportFile = (dataJson, api, name) => {
               >
                 一鍵生成PI
               </el-button>
+              -->
               <el-button
                 :class="{ 'mt-2': !searchData.status }"
                 type="warning"
@@ -375,6 +386,7 @@ const exportFile = (dataJson, api, name) => {
     </el-card>
 
     <!-- 一鍵生成PI彈框 -->
+    <!-- 
     <el-dialog v-model="dialogFormVisible" title="一鍵生成PI" width="500">
       <el-form :model="quickGenerationForm">
         <el-form-item label="日期">
@@ -394,7 +406,8 @@ const exportFile = (dataJson, api, name) => {
           </el-button>
         </div>
       </template>
-    </el-dialog>
+    </el-dialog> 
+    -->
   </div>
 </template>
 

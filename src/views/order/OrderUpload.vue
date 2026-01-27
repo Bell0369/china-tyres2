@@ -2,13 +2,14 @@
 import { ref, reactive } from "vue"
 import { ElButton, ElMessage } from "element-plus"
 import { useRoute, useRouter } from "vue-router"
-import { useBrandSelect, useFactoryCodeSelect, useOriginatingListSelect } from "@/hooks/useSelectOption"
+import { useBrandSelect, useOriginatingListSelect } from "@/hooks/useSelectOption"
 import { useClientSelect } from "@/hooks/useClientSelect"
 import { useRemarksSelect } from "@/hooks/useOrderRemarksSelect"
 import { uploadOrderApi } from "@/api/order"
 import UploadInfo from "./components/UploadInfo.vue"
 import { UploadXlsx } from "@/components/UploadXlsx"
 import { redirectTo } from "@/utils/tagsclose"
+import { useFactorySelect } from "@/hooks/useFactorySelect"
 
 defineOptions({
   name: "OrderUpload"
@@ -19,8 +20,8 @@ const loading = ref(false)
 // 品牌
 const { brandOptions } = useBrandSelect()
 
-//工厂代碼
-const factoryCodeOptions = useFactoryCodeSelect()
+//工厂
+const { loadFactory, optionsFactory, loadFactoryData } = useFactorySelect()
 
 // 客户
 const { loadClient, optionsClient, loadClientData } = useClientSelect()
@@ -142,7 +143,7 @@ const filterTable = () => {
         <el-text tag="b" size="large">訂單資料</el-text>
       </div>
       <el-form ref="ruleFormRef" :model="ruleForm" :rules="rules" :inline="true">
-        <el-form-item prop="client_id" label="客戶編碼">
+        <el-form-item prop="client_id" label="客戶">
           <el-select
             v-model="ruleForm.client_id"
             filterable
@@ -155,12 +156,20 @@ const filterTable = () => {
             <el-option v-for="item in optionsClient" :key="item.id" :label="item.client_code" :value="item.id" />
           </el-select>
         </el-form-item>
-        <el-form-item prop="factory_id" label="工廠名稱">
-          <el-select v-model="ruleForm.factory_id" style="width: 220px">
-            <el-option v-for="item in factoryCodeOptions" :key="item.id" :label="item.name" :value="item.id" />
+        <el-form-item prop="factory_id" label="工廠">
+          <el-select
+            v-model="ruleForm.factory_id"
+            filterable
+            remote
+            remote-show-suffix
+            :remote-method="loadFactoryData"
+            :loading="loadFactory"
+            style="width: 220px"
+          >
+            <el-option v-for="item in optionsFactory" :key="item.id" :label="item.name" :value="item.id" />
           </el-select>
         </el-form-item>
-        <el-form-item label="品牌代碼" prop="brand_id" style="width: 300px">
+        <el-form-item label="品牌" prop="brand_id" style="width: 300px">
           <el-select v-model="ruleForm.brand_id">
             <el-option v-for="item in brandOptions" :key="item.id" :label="item.name" :value="item.id" />
           </el-select>

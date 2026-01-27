@@ -10,11 +10,11 @@ import {
   getDestinationApi
 } from "@/api/order"
 import { useClientSelect } from "@/hooks/useClientSelect"
-import { useFactoryCodeSelect } from "@/hooks/useSelectOption"
 import { UploadXlsx } from "@/components/UploadXlsx"
 import UploadInfo from "./components/UploadInfo.vue"
 import { redirectTo } from "@/utils/tagsclose"
 import { debounce } from "lodash-es"
+import { useFactorySelect } from "@/hooks/useFactorySelect"
 
 defineOptions({
   name: "DeliveryUpload"
@@ -22,8 +22,8 @@ defineOptions({
 
 const loading = ref(false)
 
-//工厂代碼
-const factoryCodeOptions = useFactoryCodeSelect()
+//工厂
+const { loadFactory, optionsFactory, loadFactoryData } = useFactorySelect()
 
 // 客戶
 const { loadClient, optionsClient, loadClientData } = useClientSelect()
@@ -226,8 +226,15 @@ const changeCheckboxGroup = debounce(() => {
         <el-col :span="1" />
         <el-col :span="6">
           <el-form-item prop="factory_id" label="工廠">
-            <el-select v-model="ruleForm.factory_id">
-              <el-option v-for="item in factoryCodeOptions" :key="item.id" :label="item.name" :value="item.id" />
+            <el-select
+              v-model="ruleForm.factory_id"
+              filterable
+              remote
+              remote-show-suffix
+              :remote-method="loadFactoryData"
+              :loading="loadFactory"
+            >
+              <el-option v-for="item in optionsFactory" :key="item.id" :label="item.name" :value="item.id" />
             </el-select>
           </el-form-item>
         </el-col>

@@ -1,7 +1,7 @@
 <script setup>
 import { reactive, ref, watch, onActivated } from "vue"
 import { getSortingGoodsListApi, createPiDataApi, submitCreatePiDataApi } from "@/api/product"
-import { ElButton } from "element-plus"
+import { ElButton, ElMessage } from "element-plus"
 import { Search, CirclePlus, Refresh } from "@element-plus/icons-vue"
 import { usePagination } from "@/hooks/usePagination"
 import { handleActivated } from "@/utils/tagsclose"
@@ -83,10 +83,6 @@ const handleCreatePiData = (id) => {
 
 // 是否可选
 const tableRef = ref(null)
-const selectable = (row) => {
-  if (row.status) return false
-  else return true
-}
 
 // 提交生成PI
 const submitCreatePiBtnLoading = ref(false)
@@ -97,8 +93,8 @@ const submitCreatePiData = () => {
     sorting_goods_order_ids: selectedIds
   })
     .then(() => {
-      ElMessage.success("PI生成成功")
       dialogPiTableVisible.value = false
+      ElMessage.success("PI生成成功")
     })
     .finally(() => {
       setTimeout(() => {
@@ -178,7 +174,7 @@ const submitCreatePiData = () => {
     <el-dialog v-model="dialogPiTableVisible" title="一鍵生成PI" width="95%">
       <div v-loading="dialogPiTableLoading">
         <el-table :data="PiTableData" ref="tableRef" max-height="500">
-          <el-table-column property="id" type="selection" width="55" align="center" :selectable="selectable" />
+          <el-table-column property="id" type="selection" width="55" align="center" />
           <el-table-column property="order_no" label="訂單號" min-width="200" />
           <el-table-column property="order_remarks" label="訂單備註">
             <template #default="scope">
@@ -190,13 +186,6 @@ const submitCreatePiData = () => {
           <el-table-column property="not_sorting_goods_total_number" label="未分貨數量" />
           <el-table-column property="already_quantity_total_number" label="已分貨櫃量" />
           <el-table-column property="not_quantity_total_number" label="未分貨櫃量" />
-          <el-table-column property="status" label="PI狀態">
-            <template #default="scope">
-              <el-tag :type="scope.row.status ? 'success' : 'danger'">
-                {{ scope.row.status ? "已生成PI" : "未生成PI" }}
-              </el-tag>
-            </template>
-          </el-table-column>
         </el-table>
       </div>
       <template #footer>

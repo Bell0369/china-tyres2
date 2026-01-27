@@ -213,3 +213,21 @@ export function getDownloadSysDocApi(params) {
     params
   })
 }
+
+// 追加新訂單
+export function sortingGoodsAdditionOrderApi(data) {
+  return request({
+    url: "sorting_goods/sortingGoodsAdditionOrder",
+    method: "post",
+    data
+  })
+}
+
+// 使用手冊
+export function getAdditionOrderListApi(params) {
+  return request({
+    url: "sorting_goods/additionOrderList",
+    method: "get",
+    params
+  })
+}

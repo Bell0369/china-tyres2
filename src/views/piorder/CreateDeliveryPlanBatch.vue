@@ -6,7 +6,8 @@ import { UploadXlsx } from "@/components/UploadXlsx"
 import { createDeliveryPlanBatchApi, getPiListApi } from "@/api/order"
 import { useClientSelect } from "@/hooks/useClientSelect"
 import { redirectTo } from "@/utils/tagsclose"
-import { useBrandSelect, useFactoryCodeSelect } from "@/hooks/useSelectOption"
+import { useBrandSelect } from "@/hooks/useSelectOption"
+import { useFactorySelect } from "@/hooks/useFactorySelect"
 
 defineOptions({
   name: "CreateDeliveryPlanBatch"
@@ -24,8 +25,8 @@ const { loadClient, optionsClient, loadClientData } = useClientSelect()
 // 品牌
 const { brandOptions } = useBrandSelect()
 
-//工厂代碼
-const factoryCodeOptions = useFactoryCodeSelect()
+//工厂
+const { loadFactory, optionsFactory, loadFactoryData } = useFactorySelect()
 
 // tag
 const ruleForm = reactive({
@@ -37,15 +38,14 @@ const searchFormRef = ref()
 const searchData = reactive({
   client_code: "",
   brand_code: "",
-  factory_code: "",
+  factory_id: "",
   status: 0,
   page: 1,
   page_size: 1000
 })
 const rules = reactive({
   client_code: [{ required: true, message: "請選擇客戶", trigger: "blur" }],
-  brand_code: [{ required: true, message: "請選擇品牌", trigger: "blur" }],
-  factory_code: [{ required: true, message: "請選擇工廠", trigger: "blur" }]
+  factory_id: [{ required: true, message: "請選擇工廠", trigger: "blur" }]
 })
 
 // 上传文件
@@ -81,7 +81,7 @@ const submitForm = (Type) => {
         orderCheck.value = data
       } else {
         ElMessage.success("生成成功")
-        redirectTo(router, route, `"/delivery/deliveryitem?id=${data.delivery_plan_id}"`)
+        redirectTo(router, route, `/delivery/deliveryitem?id=${data.delivery_plan_id}`)
       }
     })
     .finally(() => {
@@ -138,13 +138,21 @@ const getPiList = async (formEl) => {
               />
             </el-select>
           </el-form-item>
-          <el-form-item prop="factory_code" label="工廠">
-            <el-select v-model="searchData.factory_code" style="width: 150px">
-              <el-option v-for="item in factoryCodeOptions" :key="item.id" :label="item.name" :value="item.code" />
+          <el-form-item prop="factory_id" label="工廠">
+            <el-select
+              v-model="searchData.factory_id"
+              filterable
+              remote
+              remote-show-suffix
+              :remote-method="loadFactoryData"
+              :loading="loadFactory"
+              style="width: 150px"
+            >
+              <el-option v-for="item in optionsFactory" :key="item.id" :label="item.name" :value="item.id" />
             </el-select>
           </el-form-item>
           <el-form-item prop="brand_code" label="品牌">
-            <el-select v-model="searchData.brand_code" style="width: 150px">
+            <el-select v-model="searchData.brand_code" clearable style="width: 150px">
               <el-option v-for="item in brandOptions" :key="item.id" :label="item.name" :value="item.name" />
             </el-select>
           </el-form-item>
@@ -152,7 +160,7 @@ const getPiList = async (formEl) => {
             <el-button type="primary" @click="getPiList(searchFormRef)" plain>獲取PI</el-button>
           </el-form-item>
         </el-form>
-        <div class="my">
+        <div class="mb">
           <el-checkbox-group v-model="ruleForm.pi_ids">
             <el-checkbox v-for="data in piList" :key="data.id" :label="data.pi_no" :value="data.id" />
           </el-checkbox-group>
