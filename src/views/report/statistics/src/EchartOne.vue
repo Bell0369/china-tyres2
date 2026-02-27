@@ -4,12 +4,20 @@ import { ElMessage } from "element-plus"
 import { Search } from "@element-plus/icons-vue"
 import { getStatisticSalesVolumeApi } from "@/api/selects"
 import BaseEchart from "./BaseEchart.vue"
+import { useBrandSelect } from "@/hooks/useSelectOption"
+import { useFactorySelect } from "@/hooks/useFactorySelect"
 
 defineOptions({
   name: "EchartOne"
 })
 
 const loading = ref(false)
+
+// 品牌
+const { brandOptions } = useBrandSelect()
+
+//工厂
+const { loadFactory, optionsFactory, loadFactoryData } = useFactorySelect()
 
 const echartOptions = reactive({
   title: {
@@ -31,11 +39,17 @@ onMounted(() => {
 })
 
 // 加載數據
+const submitData = reactive({
+  brand_id: null,
+  factory_id: null
+})
 const getEchart1 = () => {
   loading.value = true
   getStatisticSalesVolumeApi({
     type: orderType.value,
-    date: dateValue.value
+    date: dateValue.value,
+    brand_id: submitData.brand_id,
+    factory_id: submitData.factory_id
   })
     .then(({ data }) => {
       // console.log(data)
@@ -57,6 +71,7 @@ const getEchart1 = () => {
 }
 
 // 查詢
+
 const orderType = ref(1)
 const handleSearch = () => {
   if (dateValue.value === "") {
@@ -95,6 +110,26 @@ const dateTypes = reactive({
           :value-format="dateTypes.value_format[orderType]"
           :format="dateTypes.format[orderType]"
         />
+      </el-form-item>
+      <el-form-item>
+        <el-select v-model="submitData.brand_id" placeholder="品牌" style="width: 180px" clearable>
+          <el-option v-for="item in brandOptions" :key="item.id" :label="item.name" :value="item.id" />
+        </el-select>
+      </el-form-item>
+      <el-form-item>
+        <el-select
+          v-model="submitData.factory_id"
+          filterable
+          remote
+          remote-show-suffix
+          :remote-method="loadFactoryData"
+          :loading="loadFactory"
+          placeholder="工廠"
+          style="width: 180px"
+          clearable
+        >
+          <el-option v-for="item in optionsFactory" :key="item.id" :label="item.name" :value="item.id" />
+        </el-select>
       </el-form-item>
       <el-form-item>
         <el-button type="primary" :icon="Search" @click="handleSearch">查詢</el-button>

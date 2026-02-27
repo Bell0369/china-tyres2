@@ -86,6 +86,7 @@ const submitForm = () => {
   })
     .then(() => {
       ElMessage.success("分貨提交成功")
+      isSubmitWatcher = false
     })
     .finally(() => {
       fullscreenLoading.value = false
@@ -116,7 +117,7 @@ watch(
       return
     }
     if (JSON.stringify(newNum) !== JSON.stringify(oldNum)) {
-      // console.log("订单结构变化（新增/删除）")
+      console.log("订单结构变化（新增/删除）")
       isSubmitWatcher = true
     }
   },

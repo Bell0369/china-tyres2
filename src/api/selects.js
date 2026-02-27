@@ -497,3 +497,33 @@ export function exportUndonePiNumberApi(params) {
     params
   })
 }
+
+// 導出工廠排產訂單匯總
+export function exportFactoryProductionSchedulingSummaryApi(params) {
+  return request({
+    url: "report/exportFactoryProductionSchedulingSummary",
+    method: "post",
+    responseType: "blob",
+    params
+  })
+}
+
+// 導出未完成訂單分貨發貨總覽
+export function exportOverviewOfUnfulfilledOrderSortingAndShippingApi(params) {
+  return request({
+    url: "report/exportOverviewOfUnfulfilledOrderSortingAndShipping",
+    method: "post",
+    responseType: "blob",
+    params
+  })
+}
+
+// 導出未完成訂單分貨明細匯總
+export function exportSummaryOfUnfulfilledOrderDistributionDetailsApi(params) {
+  return request({
+    url: "report/exportSummaryOfUnfulfilledOrderDistributionDetails",
+    method: "post",
+    responseType: "blob",
+    params
+  })
+}

@@ -161,8 +161,11 @@ const getPiList = async (formEl) => {
           </el-form-item>
         </el-form>
         <div class="mb">
-          <el-checkbox-group v-model="ruleForm.pi_ids">
-            <el-checkbox v-for="data in piList" :key="data.id" :label="data.pi_no" :value="data.id" />
+          <el-checkbox-group v-model="ruleForm.pi_ids" @change="changeCheckboxGroup">
+            <el-checkbox v-for="data in piList" :key="data.id" :label="data.pi_no" :value="data.id">
+              {{ data.pi_no }}
+              <span style="color: #999" v-show="data.order_remarks">({{ data.order_remarks }})</span>
+            </el-checkbox>
           </el-checkbox-group>
         </div>
       </div>

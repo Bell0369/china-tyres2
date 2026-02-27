@@ -133,6 +133,11 @@ const submitForm = (Type) => {
         redirectTo(router, route, "/delivery/deliverylist")
       }
     })
+    .catch(() => {
+      Object.assign(infoData, {})
+      listInfo.value = []
+      isSubmit.value = true
+    })
     .finally(() => {
       loading.value = false
     })

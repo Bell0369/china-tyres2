@@ -8,7 +8,6 @@ import { useBrandSelect } from "@/hooks/useSelectOption"
 import { useClientSelect } from "@/hooks/useClientSelect"
 import { useRemarksSelect } from "@/hooks/useOrderRemarksSelect"
 import { useUpdateQuantity } from "@/hooks/useUpdateQuantity"
-import { handleActivated } from "@/utils/tagsclose"
 import { ElMessage, ElMessageBox } from "element-plus"
 import { checkPermission } from "@/utils/permission"
 import { useUserStore } from "@/store/modules/user"
@@ -104,7 +103,7 @@ const resetSearch = () => {
 watch([() => paginationData.currentPage, () => paginationData.pageSize], getTableData, { immediate: true })
 
 onActivated(() => {
-  if (handleActivated()) getTableData()
+  getTableData()
 })
 
 // 导出PI

@@ -198,8 +198,8 @@ const listMap = (list) => {
           </el-table-column>
           <el-table-column prop="factory_name" label="工廠名稱" align="center" width="90" />
           <el-table-column prop="bell_price" label="賬單金額" align="center" width="100" />
-          <el-table-column prop="payee" label="收款方" align="center" />
-          <el-table-column prop="payer" label="付款方" align="center" />
+          <el-table-column prop="payee" label="收款方" align="center" min-width="100" :show-overflow-tooltip="true" />
+          <el-table-column prop="payer" label="付款方" align="center" min-width="100" :show-overflow-tooltip="true" />
           <el-table-column prop="cargo_manifest_amount" label="舱单金额" align="center" width="100" />
           <el-table-column prop="freight_forwarder" label="船代" align="center" />
           <el-table-column prop="freight_rate" label="運費" align="center" />

@@ -4,7 +4,6 @@ import { getSortingGoodsListApi, createPiDataApi, submitCreatePiDataApi } from "
 import { ElButton, ElMessage } from "element-plus"
 import { Search, CirclePlus, Refresh } from "@element-plus/icons-vue"
 import { usePagination } from "@/hooks/usePagination"
-import { handleActivated } from "@/utils/tagsclose"
 
 defineOptions({
   name: "SortingGoods"
@@ -51,7 +50,7 @@ const handleSearch = () => {
 
 // 激活
 onActivated(() => {
-  if (handleActivated()) getTableData()
+  getTableData()
 })
 
 // 重置

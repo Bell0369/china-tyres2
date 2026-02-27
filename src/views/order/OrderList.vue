@@ -17,7 +17,6 @@ import { useClientSelect } from "@/hooks/useClientSelect"
 import { useRemarksSelect } from "@/hooks/useOrderRemarksSelect"
 import { useDeleteList } from "@/hooks/useDeleteList"
 import { useUpdateQuantity } from "@/hooks/useUpdateQuantity"
-import { handleActivated } from "@/utils/tagsclose"
 import { useFactorySelect } from "@/hooks/useFactorySelect"
 
 defineOptions({
@@ -66,7 +65,7 @@ const searchFormRef = ref()
 const searchData = reactive({
   keyword: "",
   client_code: "",
-  brand_code: "",
+  brand_id: "",
   factory_id: "",
   order_remarks: "",
   status: 0
@@ -108,7 +107,7 @@ const resetSearch = () => {
 watch([() => paginationData.currentPage, () => paginationData.pageSize], getTableData, { immediate: true })
 
 onActivated(() => {
-  if (handleActivated()) getTableData()
+  getTableData()
 })
 
 // 切換完成狀態
@@ -172,12 +171,12 @@ const handelExportOrderContract = (row) => {
 
 // 導出未完成訂單匯總
 const handleExportNotCompletedOrder = () => {
-  exportFile({}, exportNotCompletedOrderApi, "未完成訂單匯總")
+  exportFile(searchData, exportNotCompletedOrderApi, "未完成訂單匯總")
 }
 
 // 導出未完成訂單匯總明細
 const handleExportNotCompletedOrderDetail = () => {
-  exportFile({}, exportNotCompletedOrderDetailApi, "未完成訂單匯總明細")
+  exportFile(searchData, exportNotCompletedOrderDetailApi, "未完成訂單匯總明細")
 }
 
 // 導出方法
@@ -245,10 +244,10 @@ const exportFile = (dataJson, api, name) => {
             />
           </el-select>
         </el-form-item>
-        <el-form-item prop="brand_code" label="品牌">
-          <el-select v-model="searchData.brand_code" style="width: 150px">
+        <el-form-item prop="brand_id" label="品牌">
+          <el-select v-model="searchData.brand_id" style="width: 150px">
             <el-option label="全部" value="" />
-            <el-option v-for="item in brandOptions" :key="item.id" :label="item.name" :value="item.short" />
+            <el-option v-for="item in brandOptions" :key="item.id" :label="item.name" :value="item.id" />
           </el-select>
         </el-form-item>
         <el-form-item prop="factory_id" label="工廠">
@@ -344,7 +343,13 @@ const exportFile = (dataJson, api, name) => {
                 @click="handleDelete(scope.row.id)"
                 >删除</el-button
               >
-              <el-button type="primary" size="small" @click="connectUpdate(scope.row.id)" v-if="!searchData.status">
+              <el-button
+                v-permission="['updateOrderStatus']"
+                type="primary"
+                size="small"
+                @click="connectUpdate(scope.row.id)"
+                v-if="!searchData.status"
+              >
                 完成
               </el-button>
               <!-- 

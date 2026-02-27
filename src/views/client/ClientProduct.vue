@@ -18,6 +18,7 @@ import updatePrice from "@/views/componrnts/updatePrice/updatePrice.vue"
 import { checkPermission } from "@/utils/permission"
 import { exportClientProductApi } from "@/api/selects"
 import { getToken } from "@/utils/cache/cookies"
+import { useFactorySelect } from "@/hooks/useFactorySelect"
 import axios from "axios"
 
 const loading = ref(false)
@@ -25,6 +26,9 @@ const loading = ref(false)
 const route = useRoute()
 
 const { paginationData, handleCurrentChange, handleSizeChange } = usePagination()
+
+//工厂
+const { loadFactory, optionsFactory, loadFactoryData } = useFactorySelect()
 
 const props = defineProps({
   isProduct: Number,
@@ -45,13 +49,17 @@ watch([isDeleted], () => {
 
 //#region 查
 const tableData = ref([])
-const keyword = ref("")
+const searchForm = reactive({
+  keyword: "",
+  factory_id: ""
+})
 const getTableData = () => {
   loading.value = true
   getClientProductApi({
     page: paginationData.currentPage,
     page_size: paginationData.pageSize,
-    keyword: keyword.value || undefined,
+    keyword: searchForm.keyword || undefined,
+    factory_id: searchForm.factory_id || undefined,
     id: route.query.id
   })
     .then(({ data }) => {
@@ -75,7 +83,8 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
 
 // 重置
 const resetSearch = () => {
-  keyword.value = ""
+  searchForm.keyword = ""
+  searchForm.factory_id = ""
   handleSearch()
 }
 
@@ -363,7 +372,24 @@ const svg = `
         </div>
         <div class="mt2 flex justify-between">
           <div>
-            <el-input v-model="keyword" placeholder="請輸入產品名稱" style="width: 280px; margin-right: 10px" />
+            <el-input
+              v-model="searchForm.keyword"
+              placeholder="請輸入產品名稱"
+              style="width: 280px; margin-right: 10px"
+            />
+            <el-select
+              v-model="searchForm.factory_id"
+              filterable
+              remote
+              remote-show-suffix
+              :remote-method="loadFactoryData"
+              :loading="loadFactory"
+              placeholder="工廠"
+              style="width: 150px; margin-right: 10px"
+            >
+              <el-option v-for="item in optionsFactory" :key="item.id" :label="item.name" :value="item.id" />
+            </el-select>
+
             <el-button type="primary" :icon="Search" @click="handleSearch">查詢</el-button>
             <el-button :icon="Refresh" @click="resetSearch">重置</el-button>
           </div>

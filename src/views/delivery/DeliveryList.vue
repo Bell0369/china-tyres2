@@ -16,7 +16,6 @@ import { useBrandSelect, useFactoryCodeSelect } from "@/hooks/useSelectOption"
 import { useClientSelect } from "@/hooks/useClientSelect"
 import { useRemarksSelect } from "@/hooks/useOrderRemarksSelect"
 import { useDeleteList } from "@/hooks/useDeleteList"
-import { handleActivated } from "@/utils/tagsclose"
 
 defineOptions({
   name: "DeliveryList"
@@ -164,7 +163,7 @@ const CreateInvoice = () => {
 }
 
 onActivated(() => {
-  if (handleActivated()) getTableData()
+  getTableData()
 })
 
 // 是否可选

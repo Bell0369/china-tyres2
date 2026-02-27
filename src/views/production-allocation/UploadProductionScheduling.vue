@@ -8,6 +8,7 @@ import { uploadProductionSchedulingApi, submitProductionSchedulingApi } from "@/
 import { redirectTo } from "@/utils/tagsclose"
 import { debounce } from "lodash-es"
 import { useBrandSelect } from "@/hooks/useSelectOption"
+import { useFactorySelect } from "@/hooks/useFactorySelect"
 
 defineOptions({
   name: "UploadProductionScheduling"
@@ -15,6 +16,9 @@ defineOptions({
 
 // 品牌
 const { brandOptions } = useBrandSelect()
+
+//工厂
+const { loadFactory, optionsFactory, loadFactoryData } = useFactorySelect()
 
 const loading = ref(false)
 const fullscreenLoading = ref(false)
@@ -24,6 +28,10 @@ const route = useRoute()
 const router = useRouter()
 
 const FileForm = ref("")
+const submitData = reactive({
+  brand_id: null,
+  factory_id: null
+})
 
 const isSubmit = ref(true)
 
@@ -36,6 +44,11 @@ const setUploadXlsx = (value) => {
 
 // 上傳排產
 const uploadForm = () => {
+  if (submitData.brand_id === null || submitData.factory_id === null) {
+    ElMessage.error("請選擇品牌和工廠")
+    return
+  }
+
   if (FileForm.value === "") {
     ElMessage.error("請上傳文件先")
     return
@@ -50,6 +63,8 @@ const uploadProductionScheduling = debounce(() => {
   currentPage.value = 1
   const formData = new FormData()
   formData.append("file", FileForm.value)
+  formData.append("brand_id", submitData.brand_id)
+  formData.append("factory_id", submitData.factory_id)
   uploadProductionSchedulingApi(formData)
     .then(({ data }) => {
       if (data.err_list.length > 0) {
@@ -153,12 +168,43 @@ const handlePageChange = (page) => {
       <div class="toolbar-wrapper">
         <el-text tag="b" size="large">上傳排產文件</el-text>
       </div>
-      <div class="flex items-center">
+      <div class="mb">
+        <el-form :inline="true" :model="submitData">
+          <el-form-item prop="brand_id" label="品牌">
+            <el-select v-model="submitData.brand_id" style="width: 180px">
+              <el-option v-for="item in brandOptions" :key="item.id" :label="item.name" :value="item.id" />
+            </el-select>
+          </el-form-item>
+          <el-form-item prop="factory_id" label="工廠">
+            <el-select
+              v-model="submitData.factory_id"
+              filterable
+              remote
+              remote-show-suffix
+              :remote-method="loadFactoryData"
+              :loading="loadFactory"
+              style="width: 180px"
+            >
+              <el-option v-for="item in optionsFactory" :key="item.id" :label="item.name" :value="item.id" />
+            </el-select>
+          </el-form-item>
+        </el-form>
+      </div>
+      <div class="flex">
         <div class="w-sm">
           <UploadXlsx @setUploadXlsx="setUploadXlsx" />
         </div>
-        <div class="ml-10">
-          <el-button type="success" @click="uploadForm()">確認上傳</el-button>
+        <div class="ml-10 pos-relative">
+          <div>
+            <el-text type="error">
+              1. 庫存數量要和裝箱單上傳一致，即在庫存裡面已經刪除的，裝好的貨，必須已經上傳到系統。
+            </el-text>
+            <br />
+            <el-text type="error"> 2. PI 未發貨餘數=PI 數量-全部已經上傳裝箱單的數量 </el-text>
+          </div>
+          <div class="pos-absolute" style="left: 0; top: 50%; transform: translateY(-50%)">
+            <el-button type="success" @click="uploadForm()">確認上傳</el-button>
+          </div>
         </div>
       </div>
     </el-card>

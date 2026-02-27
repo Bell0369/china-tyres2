@@ -96,7 +96,11 @@ const exportFile = (api, loadingRef, name) => {
 </script>
 
 <template>
-  <el-card shadow="never" class="search-wrapper">
+  <el-card
+    shadow="never"
+    class="search-wrapper"
+    v-permission="['exportTheShipmentLedger', 'exportSellRealSituation', 'exportBusiness', 'exportKilogramUnitPrice']"
+  >
     <el-form :inline="true">
       <el-form-item>
         <el-date-picker

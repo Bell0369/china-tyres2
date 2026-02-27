@@ -71,7 +71,7 @@ const exportFile = (api, loadingRef, name) => {
 </script>
 
 <template>
-  <el-card shadow="never" class="search-wrapper">
+  <el-card shadow="never" class="search-wrapper" v-permission="['exportSalesDataSalesman']">
     <el-form :inline="true">
       <el-form-item>
         <el-date-picker
@@ -83,8 +83,8 @@ const exportFile = (api, loadingRef, name) => {
           value-format="YYYY-MM-DD"
         />
       </el-form-item>
-      <el-form-item v-permission="['exportSalesDataSalesman']">
-        <el-button type="primary" @click="exportData(1)" :loading="loadingBtn1">導出Sales Data</el-button>
+      <el-form-item>
+        <el-button type="primary" @click="exportData(1)" :loading="loadingBtn1">導出客戶月度櫃量條數匯總表</el-button>
       </el-form-item>
       <el-form-item style="display: none">
         <el-button v-if="userinfo.role_name === '管理员'" type="primary" @click="exportData(2)" :loading="loadingBtn2"

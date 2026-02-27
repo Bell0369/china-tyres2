@@ -1,5 +1,5 @@
 <script setup>
-import { reactive, ref, watch } from "vue"
+import { reactive, ref, watch, onActivated } from "vue"
 import { getFactoryListApi, deleteFactoryApi } from "@/api/users"
 import { ElButton } from "element-plus"
 import { Search, CirclePlus, Refresh } from "@element-plus/icons-vue"
@@ -100,6 +100,10 @@ const handleChildEvent = () => {
   dialogVisible.value = false
   getTableData()
 }
+
+onActivated(() => {
+  getTableData()
+})
 </script>
 
 <template>

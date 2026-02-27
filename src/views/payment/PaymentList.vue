@@ -312,11 +312,7 @@ const handleListPayment = () => {
         <div v-show="orderType === 1">
           <el-table :data="tableData" border>
             <el-table-column prop="factory_name" label="工廠名稱" align="center" min-width="70" />
-            <el-table-column prop="procurement_invoice_no" label="採購發票" align="center" min-width="130">
-              <template #default="scope">
-                <span v-for="item in scope.row.procurement_invoice_no" :key="item">{{ item }}</span>
-              </template>
-            </el-table-column>
+            <el-table-column prop="procurement_invoice_no" label="採購發票" align="center" min-width="130" />
             <el-table-column prop="primitive_price" label="初始金額" align="center">
               <template #default="scope">
                 <span class="inline-block align-mid">{{ scope.row.primitive_price }}</span>

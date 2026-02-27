@@ -1,13 +1,17 @@
 <script setup>
 import { reactive, ref } from "vue"
 import { ElMessage } from "element-plus"
-import { exportOrderUnscheduledProductionApi, exportSalesUnitPriceQuantitySummaryApi } from "@/api/selects"
+import {
+  exportFactoryProductionSchedulingSummaryApi,
+  exportOverviewOfUnfulfilledOrderSortingAndShippingApi,
+  exportSummaryOfUnfulfilledOrderDistributionDetailsApi
+} from "@/api/selects"
 import { useClientSelect } from "@/hooks/useClientSelect"
 import { useBrandSelect } from "@/hooks/useSelectOption"
 import { useFactorySelect } from "@/hooks/useFactorySelect"
 
 defineOptions({
-  name: "ExportFour"
+  name: "ExportNine"
 })
 
 // 客户
@@ -19,38 +23,37 @@ const { brandOptions } = useBrandSelect()
 //工厂
 const { loadFactory, optionsFactory, loadFactoryData } = useFactorySelect()
 
-const monthrangeData = ref(["", ""])
 const FormData = reactive({
   client_id: "",
   brand_id: "",
-  factory_code: "",
-  tyre_type: ""
+  factory_id: ""
 })
 
-// 導出訂單客戶報表
+// 工廠排產訂單匯總
 const loadingBtn1 = ref(false)
 
-// 導出客戶銷售總覽
+// 未完成訂單分貨發貨總覽
 const loadingBtn2 = ref(false)
+
+// 未完成訂單分貨明細匯總
+const loadingBtn3 = ref(false)
 
 // 選中數據
 const exportData = (Type) => {
-  if (monthrangeData.value[0] === "") {
-    ElMessage.error("請選擇时间先")
-    return false
-  }
-
-  if (FormData.factory_code === "") {
+  if (FormData.factory_id === "") {
     ElMessage.error("請選擇工廠")
     return false
   }
 
   switch (Type) {
     case 1:
-      exportFile(exportSalesUnitPriceQuantitySummaryApi, loadingBtn1, "銷售單價數量匯總")
+      exportFile(exportFactoryProductionSchedulingSummaryApi, loadingBtn1, "工廠排產訂單匯總")
       break
     case 2:
-      exportFile(exportOrderUnscheduledProductionApi, loadingBtn2, "未排產訂單數量匯總")
+      exportFile(exportOverviewOfUnfulfilledOrderSortingAndShippingApi, loadingBtn2, "未完成訂單分貨發貨總覽")
+      break
+    case 3:
+      exportFile(exportSummaryOfUnfulfilledOrderDistributionDetailsApi, loadingBtn3, "未完成訂單分貨明細匯總")
       break
     default:
       break
@@ -60,25 +63,17 @@ const exportData = (Type) => {
 const exportFile = (api, loadingRef, name) => {
   loadingRef.value = true
 
-  // name工廠代碼.日期.品牌.輪胎類型
-  // 去除每个日期字符串中的 "-" 并格式化
-  const [startDate, endDate] = monthrangeData.value.map((date) => date.replace(/-/g, ""))
-  const { brand_id, tyre_type } = FormData
-
-  // 初始化日期格式字符串
-  let FormattingDates = `${startDate}-${endDate}`
+  const { brand_id, factory_id, client_id } = FormData
 
   // 条件添加品牌ID和轮胎类型
+  let FormattingDates = ""
+  FormattingDates += client_id ? `.${client_id.client_code}` : ""
   FormattingDates += brand_id ? `.${brand_id.short}` : ""
-  FormattingDates += tyre_type ? `.${tyre_type}` : ""
 
   api({
-    start_date: monthrangeData.value[0],
-    end_date: monthrangeData.value[1],
-    client_id: FormData.client_id || undefined,
-    factory_code: FormData.factory_code.factory_code,
-    brand_id: FormData.brand_id.id || undefined,
-    tyre_type: FormData.tyre_type || undefined
+    client_id: client_id.id || undefined,
+    factory_id: factory_id.id || undefined,
+    brand_id: brand_id.id || undefined
   })
     .then((data) => {
       if (data.type === "application/json") {
@@ -92,7 +87,7 @@ const exportFile = (api, loadingRef, name) => {
       } else {
         const downloadLink = document.createElement("a")
         downloadLink.href = URL.createObjectURL(data)
-        downloadLink.download = `${name}${FormData.factory_code.name}.${FormattingDates}.xlsx`
+        downloadLink.download = `${name}.${FormData.factory_id.name}${FormattingDates}.xlsx`
         downloadLink.click()
       }
     })
@@ -105,22 +100,12 @@ const exportFile = (api, loadingRef, name) => {
 </script>
 
 <template>
-  <el-card shadow="never" class="search-wrapper" v-permission="['exportSalesUnitPriceQuantitySummary']">
+  <el-card shadow="never" class="search-wrapper">
     <el-form :inline="true">
-      <el-form-item>
-        <el-date-picker
-          v-model="monthrangeData"
-          type="daterange"
-          range-separator="-"
-          start-placeholder="*開始日期*"
-          end-placeholder="*結束日期*"
-          value-format="YYYY-MM-DD"
-        />
-      </el-form-item>
       <el-form-item>
         <el-select
           value-key="id"
-          v-model="FormData.factory_code"
+          v-model="FormData.factory_id"
           filterable
           remote
           remote-show-suffix
@@ -134,6 +119,7 @@ const exportFile = (api, loadingRef, name) => {
       </el-form-item>
       <el-form-item>
         <el-select
+          value-key="id"
           v-model="FormData.client_id"
           filterable
           remote
@@ -144,7 +130,7 @@ const exportFile = (api, loadingRef, name) => {
           style="width: 150px"
           clearable
         >
-          <el-option v-for="item in optionsClient" :key="item.id" :label="item.client_code" :value="item.id" />
+          <el-option v-for="item in optionsClient" :key="item.id" :label="item.client_code" :value="item" />
         </el-select>
       </el-form-item>
       <el-form-item>
@@ -153,21 +139,14 @@ const exportFile = (api, loadingRef, name) => {
         </el-select>
       </el-form-item>
       <el-form-item>
-        <el-select v-model="FormData.tyre_type" placeholder="輪胎類型" style="width: 150px" clearable>
-          <el-option label="4S" value="4S" />
-          <el-option label="SUMMER" value="SUMMER" />
-          <el-option label="TBR" value="TBR" />
-          <el-option label="WINTER" value="WINTER" />
-        </el-select>
+        <el-button type="primary" @click="exportData(1)" :loading="loadingBtn1">導出工廠排產訂單匯總</el-button>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" @click="exportData(1)" :loading="loadingBtn1">導出銷售單價數量匯總</el-button>
+        <el-button type="primary" @click="exportData(2)" :loading="loadingBtn2">導出未完成訂單分貨發貨總覽</el-button>
       </el-form-item>
-      <!-- 
-      <el-form-item v-permission="['exportOrderUnscheduledProduction']">
-        <el-button type="primary" @click="exportData(2)" :loading="loadingBtn2">導出未排產訂單數量匯總</el-button>
+      <el-form-item>
+        <el-button type="primary" @click="exportData(3)" :loading="loadingBtn3">導出未完成訂單分貨明細匯總</el-button>
       </el-form-item>
-      -->
     </el-form>
   </el-card>
 </template>

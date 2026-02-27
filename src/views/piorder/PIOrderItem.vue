@@ -215,6 +215,8 @@ const handeleExportPiNotShippedDetails = () => {
       <el-table v-loading="loading" :data="tableData" :max-height="800">
         <el-table-column type="index" label="序號" width="80px" align="center" />
         <el-table-column prop="product_name" label="產品名稱" align="center" />
+        <el-table-column prop="unit_price" label="銷售單價" align="center" />
+        <!-- <el-table-column prop="total_prices" label="總價" align="center" /> -->
         <el-table-column prop="number" label="PI數量" align="center">
           <template #default="scope">
             {{ scope.row.number }}

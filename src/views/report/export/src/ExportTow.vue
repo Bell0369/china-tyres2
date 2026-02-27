@@ -134,7 +134,11 @@ const exportFile = (api, loadingRef, name) => {
 </script>
 
 <template>
-  <el-card shadow="never" class="search-wrapper">
+  <el-card
+    shadow="never"
+    class="search-wrapper"
+    v-permission="['exportInv', 'exportPackingList', 'exportSN', 'exportWeightNote', 'exportFourInOne', 'exportAll']"
+  >
     <el-form :inline="true">
       <el-form-item>
         <el-select

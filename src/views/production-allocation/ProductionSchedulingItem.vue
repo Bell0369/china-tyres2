@@ -22,6 +22,11 @@ onMounted(() => {
   getTableData()
 })
 
+const submitData = reactive({
+  brand_id: null,
+  factory_id: null
+})
+
 const tableRawDataOrders = ref([]) // 原始數據
 const tableDataOrders = ref([])
 
@@ -32,6 +37,8 @@ const getTableData = () => {
     .then(({ data }) => {
       tableDataOrders.value = data
       tableRawDataOrders.value = data
+      submitData.brand_id = data[0].brand_id
+      submitData.factory_id = data[0].factory_id
     })
     .finally(() => {
       loading.value = false
@@ -94,7 +101,9 @@ const submitForm = () => {
   isSubmit.value = true
   submitProductionSchedulingApi({
     data: tableRawDataOrders.value,
-    id: route.query.id
+    id: route.query.id,
+    brand_id: submitData.brand_id,
+    factory_id: submitData.factory_id
   })
     .then(() => {
       ElMessage.success("修改成功")

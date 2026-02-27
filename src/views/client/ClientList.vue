@@ -1,5 +1,5 @@
 <script setup>
-import { reactive, ref, watch } from "vue"
+import { reactive, ref, watch, onActivated } from "vue"
 import { getClientListApi, deleteClientListApi, exportClientApi } from "@/api/users"
 import { ElButton } from "element-plus"
 import { Search, CirclePlus, Refresh, Upload } from "@element-plus/icons-vue"
@@ -126,6 +126,10 @@ const handleExportClient = () => {
     })
 }
 
+onActivated(() => {
+  getTableData()
+})
+
 // 在setup中
 // const selectedLabel = computed(() => {
 //   const selectedId1 = searchData.payment_terms_id
@@ -196,9 +200,8 @@ const handleExportClient = () => {
             :show-overflow-tooltip="true"
           />
           <el-table-column prop="credit" label="信用額度" align="center" width="90" />
-          <el-table-column prop="advance_payment" label="預付款" align="center" />
+          <el-table-column prop="balance" label="賬戶餘額" align="center" min-width="90" />
           <el-table-column prop="client_contact" label="聯繫人" align="center" />
-          <el-table-column prop="phone" label="電話" width="130" align="center" />
           <el-table-column prop="last_inv_create_time" label="發票生成時間" align="center" width="120" />
           <el-table-column prop="created_at" label="创建时间" align="center" width="120" />
           <el-table-column fixed="right" label="操作" width="80" align="center">

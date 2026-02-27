@@ -1,10 +1,8 @@
 <script setup>
 import { reactive, ref } from "vue"
 import { ElMessage } from "element-plus"
-import { exportClientSellOverviewApi, exportOrderGeneralViewApi } from "@/api/selects"
+import { exportClientSellOverviewApi } from "@/api/selects"
 import { useClientSelect } from "@/hooks/useClientSelect"
-import { useBrandSelect } from "@/hooks/useSelectOption"
-import { useFactorySelect } from "@/hooks/useFactorySelect"
 
 defineOptions({
   name: "ExportFour"
@@ -13,21 +11,8 @@ defineOptions({
 // 客户
 const { loadClient, optionsClient, loadClientData } = useClientSelect()
 
-// 品牌
-const { brandOptions } = useBrandSelect()
-
-//工厂
-const { loadFactory, optionsFactory, loadFactoryData } = useFactorySelect()
-
 const monthrangeData = ref(["", ""])
 const clientItem = ref("")
-
-// 導出訂單客戶報表
-const loadingBtn1 = ref(false)
-const FormData = reactive({
-  brand_id: "",
-  factory_code: ""
-})
 
 // 導出客戶銷售總覽
 const loadingBtn2 = ref(false)
@@ -52,9 +37,6 @@ const exportData = (Type) => {
   }
 
   switch (Type) {
-    case 1:
-      exportFile(Object.assign(dataJson, FormData), exportOrderGeneralViewApi, loadingBtn1, "訂單發貨狀態總覽")
-      break
     case 2:
       exportFile(Object.assign(dataJson, FormData2), exportClientSellOverviewApi, loadingBtn2, "客戶銷售規格數量統計")
       break
@@ -93,8 +75,8 @@ const exportFile = (dataJson, api, loadingRef, name) => {
 </script>
 
 <template>
-  <el-card shadow="never" class="search-wrapper" v-permission="['exportClientSellOverview', 'exportOrderGeneralView']">
-    <el-form :inline="true" style="border-bottom: 1px dashed #67c23a">
+  <el-card shadow="never" class="search-wrapper" v-permission="['exportClientSellOverview']">
+    <el-form :inline="true">
       <el-form-item>
         <el-date-picker
           v-model="monthrangeData"
@@ -120,48 +102,18 @@ const exportFile = (dataJson, api, loadingRef, name) => {
           <el-option v-for="item in optionsClient" :key="item.id" :label="item.client_code" :value="item" />
         </el-select>
       </el-form-item>
+      <el-form-item>
+        <el-select v-model="FormData2.tyre_type" placeholder="輪胎類型" style="width: 150px" clearable>
+          <el-option label="4S" value="4S" />
+          <el-option label="SUMMER" value="SUMMER" />
+          <el-option label="TBR" value="TBR" />
+          <el-option label="WINTER" value="WINTER" />
+        </el-select>
+      </el-form-item>
+      <el-form-item>
+        <el-button type="primary" @click="exportData(2)" :loading="loadingBtn2">導出客戶銷售規格數量統計</el-button>
+      </el-form-item>
     </el-form>
-    <div class="mt" v-permission="['exportClientSellOverview']">
-      <el-form :inline="true">
-        <el-form-item>
-          <el-select v-model="FormData2.tyre_type" placeholder="輪胎類型" style="width: 150px">
-            <el-option label="4S" value="4S" />
-            <el-option label="SUMMER" value="SUMMER" />
-            <el-option label="TBR" value="TBR" />
-            <el-option label="WINTER" value="WINTER" />
-          </el-select>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="exportData(2)" :loading="loadingBtn2">導出客戶銷售規格數量統計</el-button>
-        </el-form-item>
-      </el-form>
-    </div>
-    <div class="mt" v-permission="['exportOrderGeneralView']">
-      <el-form :inline="true">
-        <el-form-item>
-          <el-select v-model="FormData.brand_id" style="width: 150px" placeholder="品牌">
-            <el-option v-for="item in brandOptions" :key="item.id" :label="item.name" :value="item.id" />
-          </el-select>
-        </el-form-item>
-        <el-form-item>
-          <el-select
-            v-model="FormData.factory_code"
-            filterable
-            remote
-            remote-show-suffix
-            :remote-method="loadFactoryData"
-            :loading="loadFactory"
-            style="width: 150px"
-            placeholder="工廠"
-          >
-            <el-option v-for="item in optionsFactory" :key="item.id" :label="item.name" :value="item.factory_code" />
-          </el-select>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="exportData(1)" :loading="loadingBtn1">導出訂單發貨狀態總覽</el-button>
-        </el-form-item>
-      </el-form>
-    </div>
   </el-card>
 </template>
 

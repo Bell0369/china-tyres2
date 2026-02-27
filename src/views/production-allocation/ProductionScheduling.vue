@@ -9,7 +9,8 @@ import { ElButton } from "element-plus"
 import { Search, CirclePlus, Refresh } from "@element-plus/icons-vue"
 import { usePagination } from "@/hooks/usePagination"
 import { useDeleteList } from "@/hooks/useDeleteList"
-import { handleActivated } from "@/utils/tagsclose"
+import { useBrandSelect } from "@/hooks/useSelectOption"
+import { useFactorySelect } from "@/hooks/useFactorySelect"
 
 defineOptions({
   name: "ProductionScheduling"
@@ -17,16 +18,27 @@ defineOptions({
 
 const loading = ref(false)
 
+// 品牌
+const { brandOptions } = useBrandSelect()
+
+//工厂
+const { loadFactory, optionsFactory, loadFactoryData } = useFactorySelect()
+
 const { paginationData, handleCurrentChange, handleSizeChange } = usePagination()
 
 //#region 查
 const tableData = ref([])
 const searchFormRef = ref(null)
 const searchData = reactive({
-  monthrangeData: ""
+  monthrangeData: "",
+  factory_id: "",
+  brand_id: ""
 })
 const getTableData = () => {
-  const monthrangeData = {}
+  const monthrangeData = {
+    factory_id: searchData.factory_id,
+    brand_id: searchData.brand_id
+  }
   if (searchData.monthrangeData) {
     monthrangeData.start_date = searchData.monthrangeData[0]
     monthrangeData.end_date = searchData.monthrangeData[1]
@@ -56,7 +68,7 @@ const handleSearch = () => {
 
 // 激活
 onActivated(() => {
-  if (handleActivated()) getTableData()
+  getTableData()
 })
 
 // 重置
@@ -75,7 +87,7 @@ const handleExport = (row) => {
     .then((data) => {
       const downloadLink = document.createElement("a")
       downloadLink.href = URL.createObjectURL(data)
-      downloadLink.download = `排產.${row.no}.xlsx`
+      downloadLink.download = `排產.${row.no}.${row.factory_name}.${row.brand_name}.xlsx`
       downloadLink.click()
     })
     .finally(() => {
@@ -111,6 +123,26 @@ watch([isDeleted], () => {
             value-format="YYYY-MM-DD"
           />
         </el-form-item>
+        <el-form-item prop="brand_id" label="品牌">
+          <el-select v-model="searchData.brand_id" style="width: 150px">
+            <el-option label="全部" value="" />
+            <el-option v-for="item in brandOptions" :key="item.id" :label="item.name" :value="item.id" />
+          </el-select>
+        </el-form-item>
+        <el-form-item prop="factory_id" label="工廠">
+          <el-select
+            v-model="searchData.factory_id"
+            filterable
+            remote
+            remote-show-suffix
+            :remote-method="loadFactoryData"
+            :loading="loadFactory"
+            style="width: 150px"
+          >
+            <el-option label="全部" value="" />
+            <el-option v-for="item in optionsFactory" :key="item.id" :label="item.name" :value="item.id" />
+          </el-select>
+        </el-form-item>
         <el-form-item>
           <el-button type="primary" :icon="Search" @click="handleSearch">查詢</el-button>
           <el-button :icon="Refresh" @click="resetSearch">重置</el-button>
@@ -121,13 +153,15 @@ watch([isDeleted], () => {
       <div class="toolbar-wrapper">
         <div>
           <router-link to="/production-allocation/uploadproductionscheduling">
-            <el-button type="primary" :icon="CirclePlus">上傳排產</el-button>
+            <el-button type="primary" :icon="CirclePlus">上傳排產當天庫存生產數</el-button>
           </router-link>
         </div>
       </div>
       <div class="table-wrapper">
         <el-table border :data="tableData">
           <el-table-column prop="no" label="排產編號" align="center" />
+          <el-table-column prop="factory_name" label="工廠" align="center" />
+          <el-table-column prop="brand_name" label="品牌" align="center" />
           <el-table-column prop="inventory_total_number" label="庫存總數" align="center" />
           <el-table-column prop="production_total_number" label="生產總數" align="center" />
           <el-table-column prop="created_at" label="创建时间" align="center" sortable />

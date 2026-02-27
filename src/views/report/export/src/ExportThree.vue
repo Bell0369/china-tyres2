@@ -77,7 +77,7 @@ const exportFile = (api, loadingRef, name) => {
 </script>
 
 <template>
-  <el-card shadow="never" class="search-wrapper">
+  <el-card shadow="never" class="search-wrapper" v-permission="['exportOrderCompleteFlowScheme']">
     <el-form :inline="true">
       <el-form-item>
         <el-select
@@ -94,7 +94,7 @@ const exportFile = (api, loadingRef, name) => {
           <el-option v-for="item in optionsData" :key="item.id" :label="item.order_no" :value="item" />
         </el-select>
       </el-form-item>
-      <el-form-item v-permission="['exportOrderCompleteFlowScheme']">
+      <el-form-item>
         <el-button type="primary" @click="exportData(1)" :loading="loadingBtn1">導出訂單全流程數據</el-button>
       </el-form-item>
     </el-form>

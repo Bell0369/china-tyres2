@@ -16,12 +16,13 @@ const { loadClient, optionsClient, loadClientData } = useClientSelect()
 // 數據
 const selectOptions = [
   { id: 1, value: "訂單量" },
-  { id: 2, value: "訂單金額" },
-  { id: 3, value: "PI金額" },
-  { id: 4, value: "裝貨數量" },
-  { id: 5, value: "采購金額" },
-  { id: 6, value: "銷售發票金額" },
-  { id: 7, value: "收款金額" }
+  // { id: 2, value: "訂單金額" },
+  // { id: 3, value: "PI金額" },
+  { id: 4, value: "已發貨數量" },
+  // { id: 5, value: "采購金額" },
+  // { id: 6, value: "銷售發票金額" },
+  // { id: 7, value: "收款金額" }
+  { id: 8, value: "PI數量" }
 ]
 
 const loading = ref(false)
@@ -112,6 +113,7 @@ const searchData = reactive({
           :loading="loadClient"
           placeholder="客戶"
           style="width: 200px"
+          clearable
         >
           <el-option v-for="item in optionsClient" :key="item.id" :label="item.client_code" :value="item.id" />
         </el-select>

@@ -124,6 +124,7 @@ const submitForm = async (formEl, otherFormRef) => {
     if (!valid2) return
 
     loading.value = true
+    // const newArr = otherDomainsForm.map(({ key, ...rest }) => rest)
     const formData = {
       inv_extra_fee_json: JSON.stringify({ inv_extra_fee_json: domainsForm }),
       other_fee: otherDomainsForm,

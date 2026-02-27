@@ -137,7 +137,7 @@ const filterTable = () => {
 </script>
 
 <template>
-  <div class="app-container">
+  <div class="app-container" v-loading="loading">
     <el-card shadow="never" class="search-wrapper">
       <div class="toolbar-wrapper">
         <el-text tag="b" size="large">訂單資料</el-text>
@@ -218,7 +218,7 @@ const filterTable = () => {
           <el-radio-button label="異常" :value="2" />
         </el-radio-group>
       </div>
-      <div v-loading="loading">
+      <div>
         <el-table :data="orderCheck" height="400">
           <el-table-column prop="serial_number" label="序號" width="100px" align="center" />
           <el-table-column prop="product_name" label="產品名稱" align="center" />

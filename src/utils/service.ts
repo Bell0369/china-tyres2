@@ -1,6 +1,6 @@
 import axios, { type AxiosInstance, type AxiosRequestConfig } from "axios"
 import { useUserStoreHook } from "@/store/modules/user"
-import { ElMessage } from "element-plus"
+import { ElMessage, ElNotification } from "element-plus"
 import { get, merge } from "lodash-es"
 import { getToken, setToken } from "./cache/cookies"
 
@@ -79,6 +79,14 @@ function createService() {
         case 301:
           // Token 过期时
           return logout()
+        case 1:
+          ElNotification({
+            title: "Error",
+            message: apiData.message || "Error",
+            type: "error",
+            duration: 0
+          })
+          return Promise.reject(new Error("Error"))
         default:
           // 不是正确的 code
           ElMessage.error(apiData.message || "Error")

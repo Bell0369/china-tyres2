@@ -1,5 +1,5 @@
 <script setup>
-import { reactive, ref, watch } from "vue"
+import { reactive, ref, watch, onActivated } from "vue"
 import { ElButton } from "element-plus"
 import { Search, Refresh } from "@element-plus/icons-vue"
 import { getInvListApi, deleteSellInvApi } from "@/api/order"
@@ -73,6 +73,11 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
 const userList = (list) => {
   return list.map((item) => item.delivery_plan_no).join(", ")
 }
+
+// 激活
+onActivated(() => {
+  getTableData()
+})
 </script>
 
 <template>
@@ -122,19 +127,6 @@ const userList = (list) => {
           <el-table-column prop="original_product_total_price" label="FOB 金額" align="center" min-width="110" />
           <el-table-column prop="inv_fee" label="附加金額" align="center" min-width="100" />
           <el-table-column prop="other_fee_price" label="其他費用" align="center" min-width="100" />
-          <el-table-column prop="inland_status" label="內陸費用狀態" align="center" width="120">
-            <template #default="scope">
-              <el-tag :type="scope.row.inland_status === 0 ? 'danger' : 'success'">
-                {{ scope.row.inland_status === 0 ? "未收" : "已收" }}
-              </el-tag>
-            </template>
-          </el-table-column>
-          <!-- <el-table-column prop="status" label="應收狀態" align="center">
-            <template #default="scope">
-              <el-tag type="danger" v-if="scope.row.status === 0"> 未收 </el-tag>
-              <el-tag type="success" v-else> 已收 </el-tag>
-            </template>
-          </el-table-column> -->
           <el-table-column
             prop="delivery_plan_no"
             label="發貨計劃"
