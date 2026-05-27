@@ -100,7 +100,15 @@ const exportFile = (api, loadingRef, name) => {
 </script>
 
 <template>
-  <el-card shadow="never" class="search-wrapper">
+  <el-card
+    shadow="never"
+    class="search-wrapper"
+    v-permission="[
+      'exportFactoryProductionSchedulingSummary',
+      'exportOverviewOfUnfulfilledOrderSortingAndShipping',
+      'exportSummaryOfUnfulfilledOrderDistributionDetails'
+    ]"
+  >
     <el-form :inline="true">
       <el-form-item>
         <el-select
@@ -138,13 +146,13 @@ const exportFile = (api, loadingRef, name) => {
           <el-option v-for="item in brandOptions" :key="item.id" :label="item.name" :value="item" />
         </el-select>
       </el-form-item>
-      <el-form-item>
+      <el-form-item v-permission="['exportFactoryProductionSchedulingSummary']">
         <el-button type="primary" @click="exportData(1)" :loading="loadingBtn1">導出工廠排產訂單匯總</el-button>
       </el-form-item>
-      <el-form-item>
-        <el-button type="primary" @click="exportData(2)" :loading="loadingBtn2">導出未完成訂單分貨發貨總覽</el-button>
+      <el-form-item v-permission="['exportOverviewOfUnfulfilledOrderSortingAndShipping']">
+        <el-button type="primary" @click="exportData(2)" :loading="loadingBtn2">導出未完成訂單/未完成PI總覽</el-button>
       </el-form-item>
-      <el-form-item>
+      <el-form-item v-permission="['exportSummaryOfUnfulfilledOrderDistributionDetails']">
         <el-button type="primary" @click="exportData(3)" :loading="loadingBtn3">導出未完成訂單分貨明細匯總</el-button>
       </el-form-item>
     </el-form>

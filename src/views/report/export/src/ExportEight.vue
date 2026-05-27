@@ -32,11 +32,6 @@ const loadingBtn11 = ref(false)
 
 // 選中數據
 const exportData2 = (Type) => {
-  if (monthrangeData2.value[0] === "") {
-    ElMessage.error("請選擇时间先")
-    return false
-  }
-
   if (FormData2.factory_id === "") {
     ElMessage.error("請選擇工廠")
     return false
@@ -61,12 +56,12 @@ const exportFile2 = (api, loadingRef, name) => {
 
   // name工廠代碼.日期.品牌.輪胎類型
   // 去除每个日期字符串中的 "-" 并格式化
-  const [startDate, endDate] = monthrangeData2.value.map((date) => date.replace(/-/g, ""))
+  // const [startDate, endDate] = monthrangeData2.value.map((date) => date.replace(/-/g, ""))
   const { brand_id, tyre_type } = FormData2
 
   // 初始化日期格式字符串
-  let FormattingDates = `${startDate}-${endDate}`
-
+  // let FormattingDates = `${startDate}-${endDate}`
+  let FormattingDates = ""
   // 条件添加品牌ID和轮胎类型
   FormattingDates += brand_id ? `.${brand_id.short}` : ""
   FormattingDates += tyre_type ? `.${tyre_type}` : ""
@@ -112,8 +107,8 @@ const exportFile2 = (api, loadingRef, name) => {
           v-model="monthrangeData2"
           type="daterange"
           range-separator="-"
-          start-placeholder="*開始日期*"
-          end-placeholder="*結束日期*"
+          start-placeholder="開始日期"
+          end-placeholder="結束日期"
           value-format="YYYY-MM-DD"
         />
       </el-form-item>

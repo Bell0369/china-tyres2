@@ -100,7 +100,9 @@ const submitForm = () => {
   fullscreenLoading.value = true
   isSubmit.value = true
   submitProductionSchedulingApi({
-    data: tableRawDataOrders.value
+    data: tableRawDataOrders.value,
+    brand_id: submitData.brand_id,
+    factory_id: submitData.factory_id
   })
     .then(() => {
       ElMessage.success("提交成功")

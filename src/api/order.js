@@ -658,3 +658,21 @@ export function createDeliveryPlanBatchApi(data) {
     data
   })
 }
+
+// 獲取内陸費用信息
+export function getInlandFeeApi(params) {
+  return request({
+    url: "inv/getInlandFee",
+    method: "get",
+    params
+  })
+}
+
+// 更新内陸費用信息
+export function updateInlandFeeApi(data) {
+  return request({
+    url: "inv/updateInlandFee",
+    method: "post",
+    data
+  })
+}

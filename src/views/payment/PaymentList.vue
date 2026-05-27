@@ -55,7 +55,8 @@ const searchData = reactive({
   keyword: "" || undefined,
   status: "" || undefined,
   client_id: "" || undefined,
-  factory_id: "" || undefined
+  factory_id: "" || undefined,
+  client_name: "" || undefined
 })
 const getTableData = () => {
   loading.value = true
@@ -201,6 +202,9 @@ const handleListPayment = () => {
             <el-option label="全部" value="" />
             <el-option v-for="item in optionsClient" :key="item.id" :label="item.client_code" :value="item.id" />
           </el-select>
+        </el-form-item>
+        <el-form-item prop="client_name" label="客戶名稱" v-show="orderType === 0">
+          <el-input v-model="searchData.client_name" placeholder="請輸入客戶名稱" style="width: 200px" />
         </el-form-item>
 
         <el-form-item prop="status" label="應付" v-show="orderType === 1">

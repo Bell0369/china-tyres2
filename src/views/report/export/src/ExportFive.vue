@@ -21,7 +21,7 @@ const { loadFactory, optionsFactory, loadFactoryData } = useFactorySelect()
 
 const monthrangeData = ref(["", ""])
 const FormData = reactive({
-  client_id: "",
+  client_id: [],
   brand_id: "",
   factory_code: "",
   tyre_type: ""
@@ -135,13 +135,14 @@ const exportFile = (api, loadingRef, name) => {
       <el-form-item>
         <el-select
           v-model="FormData.client_id"
+          multiple
           filterable
           remote
           remote-show-suffix
           :remote-method="loadClientData"
           :loading="loadClient"
           placeholder="客戶"
-          style="width: 150px"
+          style="min-width: 150px"
           clearable
         >
           <el-option v-for="item in optionsClient" :key="item.id" :label="item.client_code" :value="item.id" />

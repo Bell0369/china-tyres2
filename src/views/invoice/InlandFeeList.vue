@@ -1,12 +1,13 @@
 <script setup>
 import { reactive, ref, watch } from "vue"
-import { ElButton } from "element-plus"
+import { ElButton, ElDialog } from "element-plus"
 import { Search, Refresh } from "@element-plus/icons-vue"
 import { getInlandFeeListApi, updateInlandStatusApi, exportInlandFeeApi } from "@/api/order"
 import { usePagination } from "@/hooks/usePagination"
 import { usePayerListSelect, useFreightForwarderListSelect } from "@/hooks/useSelectOption"
 import { useFactoryCodeSelect } from "@/hooks/useSelectOption"
 import { Upload } from "@element-plus/icons-vue"
+import InlandFeeForm from "./components/InlandFeeForm.vue"
 
 defineOptions({
   name: "InlandFeeList"
@@ -122,6 +123,19 @@ const listMap = (list) => {
   const listMap = JSON.parse(list)
   return listMap.map((item) => item).join(", ")
 }
+
+// 内陸費用
+const dialogVisible = ref(false)
+const dialogId = ref(null)
+const handleInlandFee = (id) => {
+  dialogId.value = id
+  dialogVisible.value = true
+}
+
+const handleChildEvent = () => {
+  dialogVisible.value = false
+  getTableData()
+}
 </script>
 
 <template>
@@ -210,7 +224,7 @@ const listMap = (list) => {
             </template>
           </el-table-column>
           <el-table-column prop="updated_at" label="更新時間" align="center" sortable width="120" />
-          <el-table-column fixed="right" label="操作" width="120" align="center">
+          <el-table-column fixed="right" label="操作" width="180" align="center">
             <template #default="scope">
               <el-button
                 :type="scope.row.status ? 'info' : 'danger'"
@@ -220,6 +234,7 @@ const listMap = (list) => {
                 @click="handleUpdateInlandStatus(scope.row.sell_inv_id, scope.row.status)"
                 >{{ scope.row.status ? "取消付款" : "確認付款" }}</el-button
               >
+              <el-button type="primary" text bg size="small" @click="handleInlandFee(scope.row.id)">內陸費用</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -237,7 +252,21 @@ const listMap = (list) => {
         />
       </div>
     </el-card>
+
+    <ElDialog v-model="dialogVisible" title="內陸費用" width="850">
+      <inland-fee-form :rowId="dialogId" @childEvent="handleChildEvent" />
+    </ElDialog>
   </div>
 </template>
 
-<style lang="scss" scoped></style>
+<style lang="scss">
+.el-dialog {
+  &__header {
+    border-bottom: 1px solid var(--el-border-color-lighter);
+  }
+
+  &__body {
+    padding: 15px !important;
+  }
+}
+</style>

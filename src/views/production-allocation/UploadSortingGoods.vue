@@ -190,7 +190,9 @@ const filteredData = computed(() => {
       already_sorting_goods_total_number: 0, // 已分貨匯總
       already_quantity_total_number: 0, // 已分貨櫃量匯總,
       not_sorting_goods_total_number: 0, // 未分貨匯總
-      not_quantity_total_number: 0 // 未分貨櫃量匯總
+      not_quantity_total_number: 0, // 未分貨櫃量匯總
+      unproduced_total_number: 0, // 未生產數量匯總
+      unproduced_total_quantity: 0 // 未生產數量櫃量匯總
     }
 
     for (let index2 = 0; index2 < order.item.length; index2++) {
@@ -219,6 +221,8 @@ const filteredData = computed(() => {
         filteredOrderTotal.already_quantity_total_number += product.quantity * product.already_sorting_goods_number
         filteredOrderTotal.not_sorting_goods_total_number += product.not_sorting_goods_number
         filteredOrderTotal.not_quantity_total_number += product.quantity * product.not_sorting_goods_number
+        filteredOrderTotal.unproduced_total_number += product.unproduced
+        filteredOrderTotal.unproduced_total_quantity += product.quantity * product.unproduced
 
         filteredItems.push({ ...product, orderIndex: index1, originalIndex: index2 })
       }
@@ -553,7 +557,7 @@ const InputNumberBlur2 = (row, index) => {
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="訂單號" prop="order_no" min-width="220">
+        <el-table-column label="訂單號" prop="order_no" min-width="200">
           <template #default="scope">
             <div>
               <el-text>{{ scope.row.order_no }}</el-text>
@@ -561,7 +565,7 @@ const InputNumberBlur2 = (row, index) => {
             <el-text size="small">備注：{{ scope.row.order_remarks || "----" }}</el-text>
           </template>
         </el-table-column>
-        <el-table-column label="數量&櫃量匯總" min-width="570">
+        <el-table-column label="數量&櫃量匯總" min-width="600">
           <template #default="scope">
             <div class="table-header-li">
               <ul>
@@ -569,8 +573,16 @@ const InputNumberBlur2 = (row, index) => {
                 <li>訂單櫃量匯總：{{ useRoundToSevenDecimals(scope.row.total_quantity) }}</li>
               </ul>
               <ul>
+                <li>未生產數量匯總：{{ scope.row.unproduced_total_number }}</li>
+                <li>未生產數量櫃量匯總：{{ useRoundToSevenDecimals(scope.row.unproduced_total_quantity) }}</li>
+              </ul>
+              <ul>
                 <li>已分貨匯總：{{ scope.row.already_sorting_goods_total_number }}</li>
                 <li>已分貨櫃量匯總：{{ useRoundToSevenDecimals(scope.row.already_quantity_total_number) }}</li>
+              </ul>
+              <ul>
+                <li>PI未發貨數量匯總：{{ scope.row.pi_not_shipped_total_number }}</li>
+                <li>PI未發貨數量櫃量匯總：{{ useRoundToSevenDecimals(scope.row.pi_not_shipped_total_quantity) }}</li>
               </ul>
               <ul>
                 <li>未分貨匯總：{{ scope.row.not_sorting_goods_total_number }}</li>
@@ -645,13 +657,13 @@ const InputNumberBlur2 = (row, index) => {
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="訂單號" prop="order_no" min-width="220">
+        <el-table-column label="訂單號" prop="order_no" min-width="200">
           <template #default="scope">
             <div>{{ scope.row.order_no }}</div>
             <el-text size="small">備注：{{ scope.row.order_remarks || "----" }}</el-text>
           </template>
         </el-table-column>
-        <el-table-column label="數量匯總" min-width="570">
+        <el-table-column label="數量匯總" min-width="600">
           <template #default="scope">
             <div class="table-header-li">
               <ul>
@@ -659,8 +671,16 @@ const InputNumberBlur2 = (row, index) => {
                 <li>訂單櫃量匯總：{{ useRoundToSevenDecimals(scope.row.total_quantity) }}</li>
               </ul>
               <ul>
+                <li>未生產數量匯總：{{ scope.row.unproduced_total_number }}</li>
+                <li>未生產數量櫃量匯總：{{ useRoundToSevenDecimals(scope.row.unproduced_total_quantity) }}</li>
+              </ul>
+              <ul>
                 <li>已分貨匯總：{{ scope.row.already_sorting_goods_total_number }}</li>
                 <li>已分貨櫃量匯總：{{ useRoundToSevenDecimals(scope.row.already_quantity_total_number) }}</li>
+              </ul>
+              <ul>
+                <li>PI未發貨數量匯總：{{ scope.row.pi_not_shipped_total_number }}</li>
+                <li>PI未發貨數量櫃量匯總：{{ useRoundToSevenDecimals(scope.row.pi_not_shipped_total_quantity) }}</li>
               </ul>
               <ul>
                 <li>未分貨匯總：{{ scope.row.not_sorting_goods_total_number }}</li>

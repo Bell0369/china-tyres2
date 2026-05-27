@@ -6,9 +6,11 @@ import { getInvListApi, deleteSellInvApi } from "@/api/order"
 import { usePagination } from "@/hooks/usePagination"
 import { useDeleteList } from "@/hooks/useDeleteList"
 import { useClientSelect } from "@/hooks/useClientSelect"
+import { useBrandSelect } from "@/hooks/useSelectOption"
+import { useFactorySelect } from "@/hooks/useFactorySelect"
 
 defineOptions({
-  name: "DeliveryList"
+  name: "InvoiceList"
 })
 
 const loading = ref(false)
@@ -16,6 +18,12 @@ const { paginationData, handleCurrentChange, handleSizeChange } = usePagination(
 
 // 客户
 const { loadClient, optionsClient, loadClientData } = useClientSelect()
+
+// 品牌
+const { brandOptions } = useBrandSelect()
+
+//工厂
+const { loadFactory, optionsFactory, loadFactoryData } = useFactorySelect()
 
 // 删除
 const { handleDelete, isDeleted } = useDeleteList({
@@ -33,7 +41,9 @@ const searchFormRef = ref(null)
 const searchData = reactive({
   keyword: "",
   status: "",
-  client_code: ""
+  client_code: "",
+  brand_id: "",
+  factory_id: ""
 })
 const getTableData = () => {
   loading.value = true
@@ -42,7 +52,9 @@ const getTableData = () => {
     page_size: paginationData.pageSize,
     keyword: searchData.keyword || undefined,
     status: searchData.status,
-    client_code: searchData.client_code || undefined
+    client_code: searchData.client_code || undefined,
+    brand_id: searchData.brand_id || undefined,
+    factory_id: searchData.factory_id || undefined
   })
     .then(({ data }) => {
       paginationData.total = data.total
@@ -94,7 +106,7 @@ onActivated(() => {
             <el-option label="已收" :value="1" />
           </el-select>
         </el-form-item>
-        <el-form-item prop="client_code" label="客戶編碼">
+        <el-form-item prop="client_code" label="客戶">
           <el-select
             v-model="searchData.client_code"
             filterable
@@ -111,6 +123,26 @@ onActivated(() => {
               :label="item.client_code"
               :value="item.client_code"
             />
+          </el-select>
+        </el-form-item>
+        <el-form-item prop="brand_id" label="品牌">
+          <el-select v-model="searchData.brand_id" style="width: 150px">
+            <el-option label="全部" value="" />
+            <el-option v-for="item in brandOptions" :key="item.id" :label="item.name" :value="item.id" />
+          </el-select>
+        </el-form-item>
+        <el-form-item prop="factory_id" label="工廠">
+          <el-select
+            v-model="searchData.factory_id"
+            filterable
+            remote
+            remote-show-suffix
+            :remote-method="loadFactoryData"
+            :loading="loadFactory"
+            style="width: 150px"
+          >
+            <el-option label="全部" value="" />
+            <el-option v-for="item in optionsFactory" :key="item.id" :label="item.name" :value="item.id" />
           </el-select>
         </el-form-item>
         <el-form-item>

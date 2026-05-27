@@ -6,10 +6,13 @@ import { useRoute } from "vue-router"
 import ItemInfo from "./components/ItemInfo.vue"
 import { getPiProductDetailApi, getPiBasicDetailApi, accomplishPApi, exportPiNotShippedDetailsApi } from "@/api/order"
 import { useTagsViewStore } from "@/store/modules/tags-view"
+import { useUserStore } from "@/store/modules/user"
 
 defineOptions({
   name: "PIOrderItem"
 })
+
+const { userinfo } = useUserStore()
 
 const route = useRoute()
 
@@ -213,10 +216,11 @@ const handeleExportPiNotShippedDetails = () => {
         </div>
       </div>
       <el-table v-loading="loading" :data="tableData" :max-height="800">
-        <el-table-column type="index" label="序號" width="80px" align="center" />
-        <el-table-column prop="product_name" label="產品名稱" align="center" />
+        <el-table-column type="index" label="序號" width="60px" align="center" />
+        <el-table-column prop="product_name" label="產品名稱" align="center" min-width="150px" />
         <el-table-column prop="unit_price" label="銷售單價" align="center" />
-        <!-- <el-table-column prop="total_prices" label="總價" align="center" /> -->
+        <el-table-column prop="cost_d_price" label="成本單價" align="center" v-if="userinfo.role_id === 1" />
+        <el-table-column prop="profit_margin" label="毛利率" align="center" v-if="userinfo.role_id === 1" />
         <el-table-column prop="number" label="PI數量" align="center">
           <template #default="scope">
             {{ scope.row.number }}

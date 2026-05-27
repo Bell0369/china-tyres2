@@ -48,6 +48,7 @@ onMounted(() => {
 const submitData = reactive({
   brand_id: null,
   factory_id: null,
+  no: "",
   sorting_goods_order_ids: []
 })
 // 詳情
@@ -58,7 +59,7 @@ const getSortingGoodsDetail = () => {
   loading.value = true
   getSortingGoodsDetailApi({ id: route.query.id })
     .then(({ data }) => {
-      const { orders, unmatched_products, brand_id, factory_id } = data
+      const { orders, unmatched_products, brand_id, factory_id, no } = data
 
       tableRawDataOrders.value = orders
       tableDataOrders.value = cloneDeep(orders)
@@ -66,6 +67,7 @@ const getSortingGoodsDetail = () => {
       submitData.brand_id = brand_id
       submitData.factory_id = factory_id
       submitData.sorting_goods_order_ids = orders.map((item) => item.order_id)
+      submitData.no = no
     })
     .finally(() => {
       loading.value = false
@@ -183,6 +185,8 @@ const filteredData = computed(() => {
     const filteredOrderTotal = {
       total_number: 0, // 訂單數量匯總
       total_quantity: 0, // 訂單櫃量匯總
+      unproduced_total_number: 0, // 未生產數量匯總
+      unproduced_total_quantity: 0, // 未生產數量櫃量匯總
       already_sorting_goods_total_number: 0, // 已分貨匯總
       already_quantity_total_number: 0, // 已分貨櫃量匯總,
       not_sorting_goods_total_number: 0, // 未分貨匯總
@@ -211,6 +215,8 @@ const filteredData = computed(() => {
         // 汇总计算
         filteredOrderTotal.total_number += product.order_product_number
         filteredOrderTotal.total_quantity += product.quantity * product.order_product_number
+        filteredOrderTotal.unproduced_total_number += product.unproduced
+        filteredOrderTotal.unproduced_total_quantity += product.quantity * product.unproduced
         filteredOrderTotal.already_sorting_goods_total_number += product.already_sorting_goods_number
         filteredOrderTotal.already_quantity_total_number += product.quantity * product.already_sorting_goods_number
         filteredOrderTotal.not_sorting_goods_total_number += product.not_sorting_goods_number
@@ -256,7 +262,7 @@ const exportData = (type, row) => {
     const dataJson = {
       sorting_goods_id: route.query.id
     }
-    exportFile(dataJson, exportNoOrderDetailApi, "無訂單庫存明細")
+    exportFile(dataJson, exportNoOrderDetailApi, `${submitData.no} 無訂單庫存明細`)
   }
 }
 
@@ -646,13 +652,13 @@ const handleChildConfirm = () => {
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="訂單號" prop="order_no" min-width="220">
+        <el-table-column label="訂單號" prop="order_no" min-width="200">
           <template #default="scope">
             <div>{{ scope.row.order_no }}</div>
             <el-text size="small">備注：{{ scope.row.order_remarks || "----" }}</el-text>
           </template>
         </el-table-column>
-        <el-table-column label="數量匯總" min-width="570">
+        <el-table-column label="數量匯總" min-width="800">
           <template #default="scope">
             <div class="table-header-li">
               <ul>
@@ -660,8 +666,16 @@ const handleChildConfirm = () => {
                 <li>訂單櫃量匯總：{{ useRoundToSevenDecimals(scope.row.total_quantity) }}</li>
               </ul>
               <ul>
+                <li>未生產數量匯總：{{ scope.row.unproduced_total_number }}</li>
+                <li>未生產數量櫃量匯總：{{ useRoundToSevenDecimals(scope.row.unproduced_total_quantity) }}</li>
+              </ul>
+              <ul>
                 <li>已分貨匯總：{{ scope.row.already_sorting_goods_total_number }}</li>
                 <li>已分貨櫃量匯總：{{ useRoundToSevenDecimals(scope.row.already_quantity_total_number) }}</li>
+              </ul>
+              <ul>
+                <li>PI未發貨數量匯總：{{ scope.row.pi_not_shipped_total_number }}</li>
+                <li>PI未發貨數量櫃量匯總：{{ useRoundToSevenDecimals(scope.row.pi_not_shipped_total_quantity) }}</li>
               </ul>
               <ul>
                 <li>未分貨匯總：{{ scope.row.not_sorting_goods_total_number }}</li>
@@ -761,13 +775,13 @@ const handleChildConfirm = () => {
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="訂單號" prop="order_no" min-width="220">
+        <el-table-column label="訂單號" prop="order_no" min-width="200">
           <template #default="scope">
             <div>{{ scope.row.order_no }}</div>
             <el-text size="small">備注：{{ scope.row.order_remarks || "----" }}</el-text>
           </template>
         </el-table-column>
-        <el-table-column label="數量匯總" min-width="570">
+        <el-table-column label="數量匯總" min-width="600">
           <template #default="scope">
             <div class="table-header-li">
               <ul>
@@ -775,8 +789,16 @@ const handleChildConfirm = () => {
                 <li>訂單櫃量匯總：{{ useRoundToSevenDecimals(scope.row.total_quantity) }}</li>
               </ul>
               <ul>
+                <li>未生產數量匯總：{{ scope.row.unproduced_total_number }}</li>
+                <li>未生產數量櫃量匯總：{{ useRoundToSevenDecimals(scope.row.unproduced_total_quantity) }}</li>
+              </ul>
+              <ul>
                 <li>已分貨匯總：{{ scope.row.already_sorting_goods_total_number }}</li>
                 <li>已分貨櫃量匯總：{{ useRoundToSevenDecimals(scope.row.already_quantity_total_number) }}</li>
+              </ul>
+              <ul>
+                <li>PI未發貨數量匯總：{{ scope.row.pi_not_shipped_total_number }}</li>
+                <li>PI未發貨數量櫃量匯總：{{ useRoundToSevenDecimals(scope.row.pi_not_shipped_total_quantity) }}</li>
               </ul>
               <ul>
                 <li>未分貨匯總：{{ scope.row.not_sorting_goods_total_number }}</li>

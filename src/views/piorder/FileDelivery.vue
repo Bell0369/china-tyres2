@@ -153,8 +153,8 @@ const filterTable = () => {
           <el-button type="primary" @click="submitForm(2)" :disabled="isSubmit">生成發貨計劃</el-button>
         </div>
         <div class="mt">
-          <el-tag effect="dark" type="danger" class="mr"> 總櫃量：{{ infoData.file_total_number || "----" }} </el-tag>
-          <el-tag effect="dark" type="success" class="mr">總數量：{{ infoData.file_total_quantity || "----" }}</el-tag>
+          <el-tag effect="dark" type="danger" class="mr"> 總櫃量：{{ infoData.file_total_quantity || "----" }} </el-tag>
+          <el-tag effect="dark" type="success" class="mr">總數量：{{ infoData.file_total_number || "----" }}</el-tag>
         </div>
       </div>
       <div class="mb">
