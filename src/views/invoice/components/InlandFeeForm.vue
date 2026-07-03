@@ -1,5 +1,5 @@
 <script setup>
-import { reactive, ref, watch, defineProps } from "vue"
+import { reactive, ref, defineProps, onMounted } from "vue"
 import { ElMessage } from "element-plus"
 import { getInlandFeeApi, updateInlandFeeApi } from "@/api/order"
 import { usePayerListSelect, useFreightForwarderListSelect } from "@/hooks/useSelectOption"
@@ -8,13 +8,6 @@ const props = defineProps({
   rowId: Number
 })
 
-watch(
-  () => props.rowId,
-  () => {
-    getInlandFeeDetail()
-  }
-)
-
 const loading = ref(false)
 
 // 付款方
@@ -22,6 +15,10 @@ const payerListOptions = usePayerListSelect()
 
 // 船代
 const freightForwarderListOptions = useFreightForwarderListSelect()
+
+onMounted(() => {
+  getInlandFeeDetail()
+})
 
 // 內陸費用
 const inlandFee = reactive({
@@ -113,7 +110,12 @@ const submitForm = () => {
             </el-col>
             <el-col :span="8">
               <el-form-item label="付款時間">
-                <el-date-picker v-model="inlandFee.payer_time" type="datetime" style="width: 100%" />
+                <el-date-picker
+                  v-model="inlandFee.payer_time"
+                  type="date"
+                  style="width: 100%"
+                  value-format="YYYY-MM-DD"
+                />
               </el-form-item>
             </el-col>
             <el-col :span="8">

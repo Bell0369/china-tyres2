@@ -53,6 +53,7 @@ watch([isDeleted, isQuantity], () => {
 //查
 const tableData = ref([])
 const notShipped = ref(0)
+const productTotalNumber = ref(0)
 
 const monthrangeData = ref(["", ""])
 
@@ -79,6 +80,7 @@ const getTableData = () => {
       paginationData.total = data.total
       tableData.value = data.data
       notShipped.value = data.not_shipped
+      productTotalNumber.value = data.product_total_number
     })
     .catch(() => {
       tableData.value = []
@@ -113,7 +115,7 @@ const exportPI = (row) => {
     .then((data) => {
       const downloadLink = document.createElement("a")
       downloadLink.href = URL.createObjectURL(data)
-      downloadLink.download = `PI.${row.pi_no}.xlsx`
+      downloadLink.download = `${row.pi_no}.xlsx`
       downloadLink.click()
     })
     .finally(() => {
@@ -257,6 +259,9 @@ const { userinfo } = useUserStore()
             </el-button>
           </div>
           <div>
+            <el-text>未完成PI總數量：</el-text>
+            <el-text size="large" type="danger">{{ productTotalNumber }}</el-text>
+            &nbsp;&nbsp;&nbsp;
             <el-text>未發貨PI總數量：</el-text>
             <el-text size="large" type="danger">{{ notShipped }}</el-text>
           </div>

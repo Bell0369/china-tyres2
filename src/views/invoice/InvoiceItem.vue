@@ -311,7 +311,12 @@ const submitForm = async (formEl, otherFormRef) => {
               </el-col>
               <el-col :span="8">
                 <el-form-item label="付款時間">
-                  <el-date-picker v-model="inlandFee.payer_time" type="datetime" style="width: 100%" />
+                  <el-date-picker
+                    v-model="inlandFee.payer_time"
+                    type="date"
+                    style="width: 100%"
+                    value-format="YYYY-MM-DD"
+                  />
                 </el-form-item>
               </el-col>
               <el-col :span="8">

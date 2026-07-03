@@ -8,7 +8,9 @@ import {
   exportSNApi,
   exportWeightNoteApi,
   exportAllApi,
-  exportFourInOneApi
+  exportFourInOneApi,
+  exportInvPackingListApi,
+  exportPackingListWeightNoteApi
 } from "@/api/selects"
 import { exportDataPdf } from "../jsPdf/exportPdf"
 import { exportDataPdfPacking } from "../jsPdf/exportPdfPacking"
@@ -54,6 +56,8 @@ const loadingPdfInv = ref(false)
 const loadingPdfPacking = ref(false)
 //
 const loadingAll2 = ref(false)
+const loadingAll3 = ref(false)
+const loadingAll4 = ref(false)
 
 // 選中數據
 const inv_no = ref(null)
@@ -93,6 +97,12 @@ const exportData = (Type) => {
     case 8:
       exportFile(exportFourInOneApi, loadingAll2, "INV-PL-SN-WN")
       break
+    case 122:
+      exportFile(exportInvPackingListApi, loadingAll3, "INV-PL")
+      break
+    case 123:
+      exportFile(exportPackingListWeightNoteApi, loadingAll4, "INV-WN")
+      break
     default:
       break
   }
@@ -117,9 +127,9 @@ const exportFile = (api, loadingRef, name) => {
         // 仅在發貨類型為WH或DIR的時候加上工廠名稱，發票列表已返回發貨類型字段：shipped_type
         if (inv_no.value.shipped_type === "WH" || inv_no.value.shipped_type === "DIR") {
           const factoryName = inv_no.value.factory_name.join("-")
-          downloadLink.download = `${name}${InvNo}-${inv_no.value.quantity}X40HQ-${factoryName}-${inv_no.value.client_code}.xlsx`
+          downloadLink.download = `${name}-${InvNo}-${inv_no.value.quantity}X40HQ-${factoryName}-${inv_no.value.client_code}.xlsx`
         } else {
-          downloadLink.download = `${name}${InvNo}-${inv_no.value.quantity}X40HQ-${inv_no.value.client_code}.xlsx`
+          downloadLink.download = `${name}-${InvNo}-${inv_no.value.quantity}X40HQ-${inv_no.value.client_code}.xlsx`
         }
         // downloadLink.download = `${name}${InvNo}-${inv_no.value.quantity}X40HQ-${inv_no.value.client_code}.xlsx`
         downloadLink.click()
@@ -137,7 +147,16 @@ const exportFile = (api, loadingRef, name) => {
   <el-card
     shadow="never"
     class="search-wrapper"
-    v-permission="['exportInv', 'exportPackingList', 'exportSN', 'exportWeightNote', 'exportFourInOne', 'exportAll']"
+    v-permission="[
+      'exportInv',
+      'exportPackingList',
+      'exportSN',
+      'exportWeightNote',
+      'exportFourInOne',
+      'exportAll',
+      'exportInvPackingList',
+      'exportPackingListWeightNote'
+    ]"
   >
     <el-form :inline="true">
       <el-form-item>
@@ -175,6 +194,14 @@ const exportFile = (api, loadingRef, name) => {
       <el-form-item v-permission="['exportAll']">
         <el-button type="primary" @click="exportData(5)" :loading="loadingAll">合併發票/裝箱單/SN</el-button>
       </el-form-item>
+
+      <el-form-item v-permission="['exportInvPackingList']">
+        <el-button type="primary" @click="exportData(122)" :loading="loadingAll3">合并銷售發票/裝箱單</el-button>
+      </el-form-item>
+      <el-form-item v-permission="['exportPackingListWeightNote']">
+        <el-button type="primary" @click="exportData(123)" :loading="loadingAll4">合并裝箱單/Weight Note</el-button>
+      </el-form-item>
+
       <el-form-item v-permission="['exportInv']">
         <el-button type="warning" @click="exportData(6)" :loading="loadingPdfInv">導出銷售發票(PDF)</el-button>
       </el-form-item>

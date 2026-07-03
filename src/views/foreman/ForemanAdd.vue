@@ -26,7 +26,7 @@ const ruleForm = reactive({
   name: "",
   factory_code: "",
   factory_label_id: 1,
-  primitive_price: "",
+  primitive_price: 0,
   factory_user: [
     {
       key: 1,

@@ -1,6 +1,6 @@
 <script setup>
 import { reactive, ref, watch } from "vue"
-import { ElButton, ElDialog } from "element-plus"
+import { ElButton } from "element-plus"
 import { Search, Refresh } from "@element-plus/icons-vue"
 import { getInlandFeeListApi, updateInlandStatusApi, exportInlandFeeApi } from "@/api/order"
 import { usePagination } from "@/hooks/usePagination"
@@ -8,6 +8,8 @@ import { usePayerListSelect, useFreightForwarderListSelect } from "@/hooks/useSe
 import { useFactoryCodeSelect } from "@/hooks/useSelectOption"
 import { Upload } from "@element-plus/icons-vue"
 import InlandFeeForm from "./components/InlandFeeForm.vue"
+import { useBrandSelect } from "@/hooks/useSelectOption"
+import { Dialog } from "@/components/Dialog"
 
 defineOptions({
   name: "InlandFeeList"
@@ -22,6 +24,9 @@ const payerListOptions = usePayerListSelect()
 // 船代
 const freightForwarderListOptions = useFreightForwarderListSelect()
 
+// 品牌
+const { brandOptions } = useBrandSelect()
+
 const loading = ref(false)
 const { paginationData, handleCurrentChange, handleSizeChange } = usePagination()
 
@@ -33,7 +38,9 @@ const searchData = reactive({
   factory_name: "",
   payee: "",
   payer: "",
-  freight_forwarder: ""
+  freight_forwarder: "",
+  status: "",
+  brand_id: ""
 })
 const monthrangeData = ref(["", ""])
 
@@ -181,6 +188,19 @@ const handleChildEvent = () => {
             value-format="YYYY-MM-DD"
           />
         </el-form-item>
+        <el-form-item prop="status" label="付款狀態">
+          <el-select v-model="searchData.status" style="width: 150px">
+            <el-option label="全部" value="" />
+            <el-option label="未付" :value="0" />
+            <el-option label="已付" :value="1" />
+          </el-select>
+        </el-form-item>
+        <el-form-item prop="brand_id" label="品牌">
+          <el-select v-model="searchData.brand_id" style="width: 150px">
+            <el-option label="全部" value="" />
+            <el-option v-for="item in brandOptions" :key="item.id" :label="item.name" :value="item.id" />
+          </el-select>
+        </el-form-item>
         <el-form-item>
           <el-button type="primary" :icon="Search" @click="handleSearch">查詢</el-button>
           <el-button :icon="Refresh" @click="resetSearch">重置</el-button>
@@ -253,9 +273,9 @@ const handleChildEvent = () => {
       </div>
     </el-card>
 
-    <ElDialog v-model="dialogVisible" title="內陸費用" width="850">
+    <Dialog v-model="dialogVisible" title="內陸費用" width="850">
       <inland-fee-form :rowId="dialogId" @childEvent="handleChildEvent" />
-    </ElDialog>
+    </Dialog>
   </div>
 </template>
 

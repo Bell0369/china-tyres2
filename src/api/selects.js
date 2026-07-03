@@ -527,3 +527,23 @@ export function exportSummaryOfUnfulfilledOrderDistributionDetailsApi(params) {
     params
   })
 }
+
+// 發票裝箱單二合一導出
+export function exportInvPackingListApi(params) {
+  return request({
+    url: "report/exportInvPackingList",
+    method: "post",
+    responseType: "blob",
+    params
+  })
+}
+
+// 裝箱單WeightNote二合一導出
+export function exportPackingListWeightNoteApi(params) {
+  return request({
+    url: "report/exportPackingListWeightNote",
+    method: "post",
+    responseType: "blob",
+    params
+  })
+}
